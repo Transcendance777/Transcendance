@@ -1,2 +1,2 @@
 # Transcendance
-c’est la fin
+c’est la fin de 42
