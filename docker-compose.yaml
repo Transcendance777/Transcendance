@@ -1,27 +1,48 @@
+# Commenter les ports une fois en production pour reduire les risques d'attaques
+# et faire le nginx.conf pour faire le reverse proxy
+
 services:
   frontend:
     build: front
     ports:
-      - "8080:80"
+      - "8080:80" # Commenter ce port en production pour éviter les attaques directes sur le frontend
     networks:
       - gamerev
+
   backend:
     build: backend
     ports:
-      - "4000:4000"
+      - "4000:4000" # Commenter ce port en production pour éviter les attaques directes sur le backend
     networks:
       - gamerev
     depends_on:
       - postgres
+
   postgres:
     image: postgres:latest
     ports:
-      - "5432:5432"
+      - "5432:5432"  # Commenter ce port en production pour éviter les attaques directes sur la base de données
     volumes:
-      - postgre-data:/var/lib/postgresql
+      - ./postgre-data:/var/lib/postgresql
     environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASS}
+    networks:
+      - gamerev
+
+  nginx:
+    build: nginx
+    ports:
+      - "80:80"   #Reste ouvert pour la redirection HTTP
+      - "443:443" #Reste ouvert pour la redirection HTTPS
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/nginx.conf # copier le nginx.conf dans le container
+      - ./nginx/certs:/etc/nginx/certs # copier les certificats dans le container
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - gamerev
 
 
 networks:
