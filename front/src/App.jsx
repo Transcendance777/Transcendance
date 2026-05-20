@@ -1,16 +1,34 @@
+import axios from 'axios'
+
 const App = () => {
+
+	const titreStyle = {
+
+	}
 	return (
 		<>
-		<h1>GAME REV</h1>
+		<div style={{ backgroundColor: "black", minHeight: "100vh" }}>
+		<nav className="navbar">
+		<h1 className="GameRev">GAME REV</h1>
+		<input type="search" placeholder="Rechercher un jeu..." />
+		<a href="" className="texte">Games</a>
+		<a href="" className="texte">Reviews</a>
+		<a href="" className="texte">Profil</a>
+		</nav>
+		<div className="hero">
+		<div className="formBackground">
 		<form action="" method="POST">
-		<p>Saissez votre adressse email :</p>
-		<input type="email" style={{ width: "230px" }} placeholder="Exemple: TungTungSahur@gmail.com"/>
+		<p className="emailMessage texte">Saissez votre adressse email :</p>
+		<input className="emailArea" type="email" placeholder="Exemple: TungTungSahur@gmail.com"/>
 		<br />
-		<p>Saissez votre mot de passe :</p>
-		<input type="password" style={{ width: "230px" }}/>
+		<p className="passwordMessage texte">Saissez votre mot de passe :</p>
+		<input className="passwordArea" type="password"/>
 		<br /><br />
 		<input type="submit"/>
 		</form>
+		</div>
+		</div>
+		</div>
 		</>
 	)
 }
