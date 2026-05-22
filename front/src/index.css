@@ -13,94 +13,9 @@
 	font-family: "policeConthrax";
 	src: url("/Conthrax-SemiBold.otf")
 }
-		
-.GameRev {
-	font-family: "policePS3", sans-serif;
-	color: #e7e7e7;
-	font-size: 35px;
-}
-
-.emailMessage{
-	color: #e7e7e7;
-	text-align: center;
-	padding-bottom: 15px;
-}
-
-.passwordMessage{
-	color: #e7e7e7;
-	text-align: center;
-	padding-top: 30px;
-	padding-bottom: 15px;
-}
-
-.emailArea {
-	width: 230px;
-}
-
-.passwordArea {
-	width: 230px;
-}
 
 .texte {
 	font-family: "policeConthrax", sans-serif;
 	color: #e7e7e7;
-}
-
-.navbar {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	background-color: black;
-	padding: 25px 20px;
-}
-
-.navbar-left {
-	display: flex;
-	align-items: center;
-	flex: 1;
-	gap: 40px;
-}
-
-.navbar-center {
-	display: flex;
-	justify-content: center;
-	flex: 1;
-	text-align: center;
-	overflow: visible;
-	white-space: nowrap;
-}
-
-.navbar-right {
-	display: flex;
-	align-items: center;
-	justify-content: flex-end;
-	flex: 1;
-	gap: 250px;
-}
-
-.backgroundImage {
-	position: relative;
-	background-image: url("/backgroundImage.jpg");
-	background-size: cover;
-	min-height: 100vh;
-	display: flex;
-}
-
-.backgroundOverlay {
-	position: absolute;
-	top: 1000;
-	left: 0;
-	width: 100%;
-	height: 100%;
-	background-color: rgba(0, 0, 0, 0.5);
-}
-
-.formBackground {
-	background-color: rgba(0, 0, 0, 0.75);
-	border-radius: 30px;
-	padding: 25px;
-	width: fit-content;
-	position: relative;
-	z-index: 1;
-	text-align: center;
+	font-size: clamp(14px, 1.4vw, 18px);
 }

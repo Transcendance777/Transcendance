@@ -1,76 +1,13 @@
-import axios from 'axios'
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-
-const NavBar = () => {
-	return (
-		<div style={{ backgroundColor: "black" }}>
-			<nav className="navbar">
-				<div className="navbar-left">
-					<a href="" className="texte">Games</a>
-					<a href="" className="texte">Reviews</a>
-					<a href="" className="texte">Friends</a>
-					<a href="" className="texte" style={{ fontSize: "35px"}}>+</a>
-				</div>
-				<div className="navbar-center">
-					<h1 className="GameRev">GAME REV</h1>
-				</div>
-				<div className="navbar-right">
-					<input type="search" placeholder="Rechercher un jeu..." />
-					<a href="" className="texte">Profil</a>
-				</div>
-			</nav>
-		</div>
-	)
-}
-
-const Background = ({children, ...rest}) =>{
-	return (
-		<div className="backgroundImage" {...rest}>
-			<div className="backgroundOverlay"></div>
-			{children}
-		</div>
-	)
-}
-
-const InscriptionForm = () => {
-
-	const [email, setEmail] = useState('')
-	const [password, setPassword] = useState('')
-
-	return (
-		<div className="formBackground">
-			<form>
-				<p className="emailMessage texte">Saissez votre adressse email :</p>
-				<input 
-					className="emailArea"
-					type="email"
-					placeholder="Exemple: TungTungSahur@gmail.com"
-					onChange={(e) => setEmail(e.target.value)}
-				 />
-				<br />
-				<p className="passwordMessage texte">Saissez votre mot de passe :</p>
-				<input
-					className="passwordArea"
-					type="password"
-					onChange={(e) => setPassword(e.target.value)}
-				/>
-				<br /><br />
-				<input type="submit" />
-			</form>
-		</div>
-	)
-}
+import { Routes, Route } from 'react-router-dom'
+import LoginPage from './pages/LoginPage'
+import HomePage from './pages/HomePage'
 
 const App = () => {
-
 	return (
-		<>
-		<NavBar />
-		<Background style={{ justifyContent: "center", alignItems: "center" }}>
-			<InscriptionForm />
-		</Background>
-		</>
+		<Routes>
+			<Route path="/" element={<LoginPage />} />
+			<Route path="/home" element={<HomePage />} />
+		</Routes>
 	)
 }
 
