@@ -1,6 +1,4 @@
 import axios from 'axios'
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 
 const NavBar = () => {
 	return (
@@ -33,42 +31,13 @@ const Background = ({children, ...rest}) =>{
 	)
 }
 
-const InscriptionForm = () => {
-
-	const [email, setEmail] = useState('')
-	const [password, setPassword] = useState('')
-
-	return (
-		<div className="formBackground">
-			<form>
-				<p className="emailMessage texte">Saissez votre adressse email :</p>
-				<input 
-					className="emailArea"
-					type="email"
-					placeholder="Exemple: TungTungSahur@gmail.com"
-					onChange={(e) => setEmail(e.target.value)}
-				 />
-				<br />
-				<p className="passwordMessage texte">Saissez votre mot de passe :</p>
-				<input
-					className="passwordArea"
-					type="password"
-					onChange={(e) => setPassword(e.target.value)}
-				/>
-				<br /><br />
-				<input type="submit" />
-			</form>
-		</div>
-	)
-}
-
 const App = () => {
 
 	return (
 		<>
 		<NavBar />
 		<Background style={{ justifyContent: "center", alignItems: "center" }}>
-			<InscriptionForm />
+			<p>Connected !</p>
 		</Background>
 		</>
 	)
