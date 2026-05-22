@@ -1,0 +1,30 @@
+.emailMessage {
+	color: #e7e7e7;
+	text-align: center;
+	padding-bottom: 15px;
+}
+
+.passwordMessage {
+	color: #e7e7e7;
+	text-align: center;
+	padding-top: 30px;
+	padding-bottom: 15px;
+}
+
+.emailArea {
+	width: 230px;
+}
+
+.passwordArea {
+	width: 230px;
+}
+
+.formBackground {
+	background-color: rgba(0, 0, 0, 0.75);
+	border-radius: 30px;
+	padding: 25px;
+	width: fit-content;
+	position: relative;
+	z-index: 1;
+	text-align: center;
+}

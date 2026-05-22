@@ -1,0 +1,98 @@
+.GameRev {
+	font-family: "policePS3", sans-serif;
+	color: #e7e7e7;
+	font-size: clamp(25px, 2.5vw, 35px);
+	white-space: nowrap;
+}
+
+.plus {
+	font-family: "policeConthrax", sans-serif;
+	color: #e7e7e7;
+	font-size: clamp(16px, 2vw, 30px);
+}
+
+.navbar {
+	position: relative;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	background-color: black;
+	padding: 25px 20px;
+}
+
+.navbar-left {
+	display: flex;
+	align-items: center;
+	flex: 1;
+	gap: clamp(10px, 2vw, 40px);
+	min-width: 0;
+}
+
+.navbar-center {
+	display: flex;
+	justify-content: center;
+	flex: 1;
+	text-align: center;
+	min-width: 0;
+}
+
+.navbar-right {
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	flex: 1;
+	gap: clamp(10px, 3vw, 150px);
+	min-width: 0;
+}
+
+.hamburger {
+	display: none;
+	background: none;
+	border: none;
+	color: #e7e7e7;
+	font-size: 30px;
+	cursor: pointer;
+}
+
+.dropdown-menu {
+	position: absolute;
+	top: 80px;
+	right: 0;
+	background-color: black;
+	display: flex;
+	flex-direction: column;
+	padding: 20px;
+	gap: 15px;
+	z-index: 100;
+}
+
+@media (max-width: 1100px) {
+	.GameRev {
+		font-size: clamp(18px, 2.7vw, 28px);
+	}
+}
+
+@media (max-width: 900px) {
+	.navbar-left {
+		display: none;
+	}
+
+	.navbar-center {
+		display: flex;
+	}
+
+	.hamburger {
+		display: block;
+	}
+}
+
+@media (max-width: 768px) {
+	.navbar {
+		flex-direction: column;
+		gap: 10px;
+	}
+
+	.navbar-right {
+		gap: 10px;
+	}
+}
