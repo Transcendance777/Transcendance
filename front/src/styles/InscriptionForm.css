@@ -12,11 +12,25 @@
 }
 
 .emailArea {
-	width: 230px;
+	height: 30px;
+	width: 300px;
+	font-size: 17px;
+	margin-top: 10px;
+
 }
 
 .passwordArea {
-	width: 230px;
+	height: 30px;
+	width: 300px;
+	font-size: 17px;
+	margin-top: 10px;
+}
+
+.submitButton {
+	height: 35px;
+	width: 100px;
+	font-size: 17px;
+	margin-top: 20px;
 }
 
 .formBackground {
@@ -28,3 +42,4 @@
 	z-index: 1;
 	text-align: center;
 }
+

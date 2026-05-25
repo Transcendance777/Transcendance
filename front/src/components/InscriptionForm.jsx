@@ -41,7 +41,7 @@ const InscriptionForm = () => {
 					onChange={(e) => setPassword(e.target.value)}
 				/>
 				<br /><br />
-				<input type="submit" />
+				<input type="submit" className="submitButton" />
 			</form>
 		</div>
 	)
