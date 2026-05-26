@@ -1,5 +1,5 @@
 .env
 *.o
 /generated/prisma
-
-/backend
+.*
+/backend/node_modules
