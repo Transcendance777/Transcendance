@@ -12,11 +12,25 @@
 }
 
 .emailArea {
-	width: 230px;
+	height: 30px;
+	width: 300px;
+	font-size: 17px;
+	margin-top: 10px;
+
 }
 
 .passwordArea {
-	width: 230px;
+	height: 30px;
+	width: 300px;
+	font-size: 17px;
+	margin-top: 10px;
+}
+
+.submitButton {
+	height: 35px;
+	width: 100px;
+	font-size: 17px;
+	margin-top: 20px;
 }
 
 .formBackground {
@@ -27,4 +41,32 @@
 	position: relative;
 	z-index: 1;
 	text-align: center;
+}
+
+.welcomeText {
+	color: #e7e7e7;
+	font-family: "policePS3", sans-serif;
+	font-size: clamp(25px, 4vw, 60px);
+	overflow: visible;
+	z-index: 1;
+	text-align: center;
+	animation: apparition 0.8s ease-out forwards;
+}
+
+@keyframes apparition {
+	0% {
+		letter-spacing: 30px;
+		opacity: 0;
+	}
+
+	100% {
+		letter-spacing: normal;
+		opacity: 1;
+	}
+}
+
+@media (max-width: 600px) {
+	.welcomeText {
+		font-size: clamp(16px, 4vw, 55px);
+	}
 }

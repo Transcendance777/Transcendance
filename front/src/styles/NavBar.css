@@ -1,14 +1,15 @@
 .GameRev {
 	font-family: "policePS3", sans-serif;
 	color: #e7e7e7;
-	font-size: clamp(25px, 2.5vw, 35px);
+	z-index: 1;
+	font-size: clamp(25px, 2.5vw, 65px);
 	white-space: nowrap;
 }
 
 .plus {
 	font-family: "policeConthrax", sans-serif;
 	color: #e7e7e7;
-	font-size: clamp(16px, 2vw, 30px);
+	font-size: clamp(16px, 2vw, 40px);
 }
 
 .navbar {
@@ -24,7 +25,7 @@
 	display: flex;
 	align-items: center;
 	flex: 1;
-	gap: clamp(10px, 2vw, 40px);
+	gap: clamp(10px, 2vw, 100px);
 	min-width: 0;
 }
 
@@ -66,13 +67,7 @@
 	z-index: 100;
 }
 
-@media (max-width: 1100px) {
-	.GameRev {
-		font-size: clamp(18px, 2.7vw, 28px);
-	}
-}
-
-@media (max-width: 900px) {
+@media (max-width: 1500px) {
 	.navbar-left {
 		display: none;
 	}
@@ -83,6 +78,12 @@
 
 	.hamburger {
 		display: block;
+	}
+}
+
+@media (max-width: 1500px) {
+	.GameRev {
+		font-size: clamp(30px, 2.5vw, 65px);
 	}
 }
 

@@ -16,7 +16,7 @@ const InscriptionForm = () => {
 			email: email,
 			password: password
 		})
-		navigate('../pages/homePage')
+		navigate('../pages/HomePage')
 	}
 
 	/*const handleSubmit = async (e) => {
@@ -42,7 +42,7 @@ const InscriptionForm = () => {
 					onChange={(e) => setPassword(e.target.value)}
 				/>
 				<br /><br />
-				<input type="submit" />
+				<input type="submit" className="submitButton" />
 			</form>
 		</div>
 	)
