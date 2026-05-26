@@ -1,5 +1,11 @@
+
 .DS_Store
 .env
 DEVOPS_ROADMAP.MD
 nginx/certs/*
+
+*.o
+/generated/prisma
+.*
+/backend/node_modules
 
