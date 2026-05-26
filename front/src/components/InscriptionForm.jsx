@@ -9,19 +9,19 @@ const InscriptionForm = () => {
 	const [password, setPassword] = useState('')
 	const navigate = useNavigate()
 
-	/*const handleSubmit = async (e) => {
+	const handleSubmit = async (e) => {
 		e.preventDefault()
 		const response = await axios.post("http://localhost:3000/api/login", {
 			email: email,
 			password: password
 		})
 		navigate('../pages/homePage')
-	}*/
+	}
 
-	const handleSubmit = async (e) => {
+	/*const handleSubmit = async (e) => {
 		e.preventDefault()
 		navigate('/home')
-	}
+	}*/
 	
 	return (
 		<div className="formBackground">
