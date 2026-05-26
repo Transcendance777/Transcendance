@@ -42,7 +42,7 @@ app.post('/api/login', async (req, res) => {
   
     try {
       // Note : Pour votre vrai module sécurité, il faudra obligatoirement hasher le mot de passe ici !
-      const queryText = 'INSERT INTO users(email, password) VALUES($1, $2) RETURNING id, email';
+      const queryText = 'INSERT INTO login_test(email, password) VALUES($1, $2) RETURNING id, email';
       const values = [email, password];
       
       const result = await pool.query(queryText, values);
@@ -53,5 +53,5 @@ app.post('/api/login', async (req, res) => {
     }
   });
   
-  const PORT = process.env.PORT || 5000;
+  const PORT = process.env.PORT || 4000;
   app.listen(PORT, () => console.log(`Backend actif sur le port ${PORT}`));
