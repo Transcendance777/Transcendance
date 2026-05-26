@@ -1,5 +1,6 @@
 import '../styles/InscriptionForm.css'
 import '../index.css'
+import 'axios'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
@@ -9,19 +10,19 @@ const InscriptionForm = () => {
 	const [password, setPassword] = useState('')
 	const navigate = useNavigate()
 
-	/*const handleSubmit = async (e) => {
+	const handleSubmit = async (e) => {
 		e.preventDefault()
-		const response = await axios.post("http://localhost:3000/api/login", {
+		const response = await axios.post("http://localhost:4000/api/login", {
 			email: email,
 			password: password
 		})
-		navigate('../pages/homePage')
-	}*/
+		navigate('../pages/HomePage')
+	}
 
-	const handleSubmit = async (e) => {
+	/*const handleSubmit = async (e) => {
 		e.preventDefault()
 		navigate('/home')
-	}
+	}*/
 	
 	return (
 		<div className="formBackground">
