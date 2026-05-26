@@ -1,5 +1,12 @@
+
 .DS_Store
 .env
 DEVOPS_ROADMAP.MD
 nginx/certs/*
+
 tr.subject.pdf
+
+/generated/prisma
+/backend/node_modules
+
+
