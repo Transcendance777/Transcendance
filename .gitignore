@@ -2,4 +2,4 @@
 .env
 DEVOPS_ROADMAP.MD
 nginx/certs/*
-
+tr.subject.pdf
