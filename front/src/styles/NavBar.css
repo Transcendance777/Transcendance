@@ -74,6 +74,8 @@
 
 	.navbar-center {
 		display: flex;
+		justify-content: center;
+		
 	}
 
 	.hamburger {
