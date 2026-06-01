@@ -46,7 +46,7 @@ app.post('/api/login', async (req, res) => {
       const values = [email, password];
       
       const result = await pool.query(queryText, values);
-      res.status(201).json({ message: "Utilisateur créé !", email: result.rows[0] });
+      console.log("DATABASE INSERTION SUCCESS:", result.rows[0]);      res.status(201).json({ message: "Utilisateur créé !", email: result.rows[0] });
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: "Erreur lors de l'insertion en base." });
