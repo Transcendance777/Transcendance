@@ -1,5 +1,6 @@
 #!/bin/bash
 
+set -e
 # Dossier de stockage certificats
 CERT_DIR="./nginx/certs"
 
