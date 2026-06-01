@@ -1,6 +1,6 @@
 import '../styles/InscriptionForm.css'
 import '../index.css'
-import 'axios'
+import axios from 'axios'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
@@ -12,10 +12,11 @@ const InscriptionForm = () => {
 
 	const handleSubmit = async (e) => {
 		e.preventDefault()
-		const response = await axios.post("http://localhost:4000/api/login", {
+		const response = await axios.post("/api/login", {
 			email: email,
 			password: password
 		})
+		console.log("Success:", response.data)
 		navigate('../pages/homePage')
 	}
 
