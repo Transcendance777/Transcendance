@@ -8,9 +8,13 @@ services:
       - gamerev
 
   backend:
-    # build: backend
+    build: backend
     networks:
       - gamerev
+    env_file:
+      - .env
+    volumes:
+      - ./backend:/app
     depends_on:
       postgres:
         condition: service_healthy

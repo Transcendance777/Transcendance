@@ -42,16 +42,16 @@ app.post('/api/login', async (req, res) => {
   
     try {
       // Note : Pour votre vrai module sécurité, il faudra obligatoirement hasher le mot de passe ici !
-      const queryText = 'INSERT INTO users(email, password) VALUES($1, $2) RETURNING id, email';
+      const queryText = 'INSERT INTO login_test(email, password) VALUES($1, $2) RETURNING id, email';
       const values = [email, password];
       
       const result = await pool.query(queryText, values);
-      res.status(201).json({ message: "Utilisateur créé !", email: result.rows[0] });
+      console.log("DATABASE INSERTION SUCCESS:", result.rows[0]);      res.status(201).json({ message: "Utilisateur créé !", email: result.rows[0] });
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: "Erreur lors de l'insertion en base." });
     }
   });
   
-  const PORT = process.env.PORT || 5000;
+  const PORT = process.env.PORT || 4000;
   app.listen(PORT, () => console.log(`Backend actif sur le port ${PORT}`));

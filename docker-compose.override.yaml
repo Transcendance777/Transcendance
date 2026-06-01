@@ -4,13 +4,13 @@ services:
       - "8080:80"
 
   backend:
-    image: mendhak/http-https-echo:31
-    environment:
-      - HTTP_PORT=8888
-      - HTTPS_PORT=9999
+    # image: mendhak/http-https-echo:31
+    # environment:
+    #   - HTTP_PORT=8888
+    #   - HTTPS_PORT=9999
     ports:
-      - "4000:8888"
+      - "4000:4000"
 
   postgres:
     ports:
-      - "5432:5432"
+      - "5433:5432"

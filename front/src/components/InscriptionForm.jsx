@@ -1,5 +1,6 @@
 import '../styles/InscriptionForm.css'
 import '../index.css'
+import axios from 'axios'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
@@ -11,11 +12,11 @@ const InscriptionForm = () => {
 
 	const handleSubmit = async (e) => {
 		e.preventDefault()
-		const response = await axios.post("http://localhost:3000/api/login", {
+		const response = await axios.post("/api/login", {
 			email: email,
 			password: password
 		})
-		navigate('../pages/homePage')
+		navigate('../pages/HomePage')
 	}
 
 	/*const handleSubmit = async (e) => {
@@ -41,7 +42,7 @@ const InscriptionForm = () => {
 					onChange={(e) => setPassword(e.target.value)}
 				/>
 				<br /><br />
-				<input type="submit" />
+				<input type="submit" className="submitButton" />
 			</form>
 		</div>
 	)
