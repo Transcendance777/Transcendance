@@ -4,6 +4,7 @@
 CERT_DIR="./nginx/certs"
 
 mkdir -p $CERT_DIR
+sudo chown -R $(whoami) $CERT_DIR
 
 # Générer le certificat sans poser de questions (grâce à -subj)
 openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
