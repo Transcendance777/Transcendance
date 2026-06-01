@@ -8,7 +8,6 @@ const NavBar = () => {
 	return (
 		<nav className="navbar">
 			<div className="navbar-left">
-				{/* visible seulement sur grand écran */}
 				<a href="" className="texte">Games</a>
 				<a href="" className="texte">Reviews</a>
 				<a href="" className="texte">Friends</a>
