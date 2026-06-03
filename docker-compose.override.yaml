@@ -4,10 +4,9 @@ services:
       - "8080:80"
 
   backend:
-    # image: mendhak/http-https-echo:31
-    # environment:
-    #   - HTTP_PORT=8888
-    #   - HTTPS_PORT=9999
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
     ports:
       - "4000:4000"
 

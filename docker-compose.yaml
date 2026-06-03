@@ -13,8 +13,6 @@ services:
       - gamerev
     env_file:
       - .env
-    volumes:
-      - ./backend:/app
     depends_on:
       postgres:
         condition: service_healthy

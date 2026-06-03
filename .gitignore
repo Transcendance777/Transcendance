@@ -4,8 +4,9 @@
 DEVOPS_ROADMAP.MD
 nginx/certs/*
 
-*.o
+tr.subject.pdf
+
 /generated/prisma
-.*
 /backend/node_modules
+
 

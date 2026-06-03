@@ -6,6 +6,13 @@
 	white-space: nowrap;
 }
 
+.nav-link {
+	font-family: "policeConthrax", sans-serif;
+	color: #e7e7e7;
+	font-size: clamp(12px, 1.2vw, 16px);
+	text-decoration: none;
+}
+
 .plus {
 	font-family: "policeConthrax", sans-serif;
 	color: #e7e7e7;
@@ -67,24 +74,24 @@
 	z-index: 100;
 }
 
-@media (max-width: 1500px) {
+@media (max-width: 900px) {
 	.navbar-left {
 		display: none;
 	}
 
 	.navbar-center {
 		display: flex;
+		justify-content: center;
+		
 	}
 
 	.hamburger {
 		display: block;
 	}
-}
-
-@media (max-width: 1500px) {
 	.GameRev {
 		font-size: clamp(30px, 2.5vw, 65px);
 	}
+				
 }
 
 @media (max-width: 768px) {
@@ -96,4 +103,28 @@
 	.navbar-right {
 		gap: 10px;
 	}
+}
+
+.search-container {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+
+.search-icon {
+	background: none;
+	border: none;
+	color: #e7e7e7;
+	font-size: 25px;
+	cursor: pointer;
+}
+
+.search-input {
+	background: transparent;
+	border: 2px solid #e7e7e7;
+	border-radius: 20px;
+	padding: 5px 15px;
+	color: #e7e7e7;
+	outline: none;
+	width: clamp(150px, 15vw, 250px);
 }

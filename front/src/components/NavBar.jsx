@@ -1,16 +1,36 @@
 import '../styles/NavBar.css'
 import '../index.css'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { FiSearch } from 'react-icons/fi'
 
 const NavBar = () => {
 	const [menuOpen, setMenuOpen] = useState(false)
+	const [searchOpen, setSearchOpen] = useState(false)
+
+	useEffect(() => {
+		const handleClick = () => setMenuOpen(false)
+		if (menuOpen) {
+			document.addEventListener('click', handleClick)
+		}
+		return () => document.removeEventListener('click', handleClick)
+	}, [menuOpen])
+
+	useEffect(() => {
+		const handleResize = () => {
+			if (window.innerWidth > 900) {
+				setMenuOpen(false)
+			}
+		}
+		window.addEventListener('resize', handleResize)
+		return () => window.removeEventListener('resize', handleResize)
+	}, [])
 
 	return (
 		<nav className="navbar">
 			<div className="navbar-left">
-				<a href="" className="texte">Games</a>
-				<a href="" className="texte">Reviews</a>
-				<a href="" className="texte">Friends</a>
+				<a href="" className="nav-link">Games</a>
+				<a href="" className="nav-link">Reviews</a>
+				<a href="" className="nav-link">Friends</a>
 				<a href="" className="plus">+</a>
 			</div>
 
@@ -19,19 +39,29 @@ const NavBar = () => {
 			</div>
 
 			<div className="navbar-right">
-				<input type="search" placeholder="Rechercher un jeu..." />
-				<a href="" className="texte">Profil</a>
-				{/* bouton hamburger visible seulement sur petit écran */}
-				<button className="hamburger" onClick={() => setMenuOpen(!menuOpen)}>☰</button>
+				<div className="search-container">
+					<button className="search-icon" onClick={() => setSearchOpen(!searchOpen)}>
+						<FiSearch />
+					</button>
+					{searchOpen && (
+						<input
+							className="search-input"
+							type="text"
+							placeholder="Rechercher un jeu..."
+							autoFocus
+						/>
+					)}
+				</div>
+				<a href="" className="nav-link">Profil</a>
+				<button className="hamburger" onClick={(e) => { e.stopPropagation(); setMenuOpen(!menuOpen) }}>☰</button>
 			</div>
 
-			{/* menu déroulant */}
 			{menuOpen && (
 				<div className="dropdown-menu">
-					<a href="" className="texte">Games</a>
-					<a href="" className="texte">Reviews</a>
-					<a href="" className="texte">Friends</a>
-					<a href="" className="texte">+</a>
+					<a href="" className="nav-link">Games</a>
+					<a href="" className="nav-link">Reviews</a>
+					<a href="" className="nav-link">Friends</a>
+					<a href="" className="plus">+</a>
 				</div>
 			)}
 		</nav>
