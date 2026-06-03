@@ -16,7 +16,7 @@ const InscriptionForm = () => {
 			email: email,
 			password: password
 		})
-		navigate('../pages/HomePage')
+		navigate('/home')
 	}
 
 	/*const handleSubmit = async (e) => {
