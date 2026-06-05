@@ -1,16 +1,27 @@
-// console.log("hiiiiii");
-
 //libraries
-require('dotenv').config();
+require('dotenv').config(); //parse env
 const express = require('express'); //require-> import tool/library
 const { Pool } = require('pg'); // {} -> import only the tool Pool from pg(postgres) library
 const cors = require('cors'); // cors-> tool to comunicate safely with another service
 const { execSync } = require('child_process'); //for execSync function
 const { PrismaClient } = require('@prisma/client'); //prisma client
+const { PrismaPg } = require('@prisma/adapter-pg'); // prisma adapter
+
+// port
+const PORT = process.env.PORT_BACK || 4000;
+
+//create connexion PostgreSQL
+const pool = new Pool ({
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASS,
+    database: process.env.DB_NAME,
+    port: process.env.DB_PORT,
+});
 
 //start prisma client
-const prisma = new PrismaClient();
-const PORT = process.env.PORT_BACK || 4000;
+const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter });
 
 //checks if DB schema has been changed, if so, update the DB
 function syncDatabaseSchema() {
@@ -26,22 +37,15 @@ function syncDatabaseSchema() {
   }
 }
 syncDatabaseSchema();
-// await prisma.$connect();
+
+// connect prisma client
 prisma.$connect();
+console.log('✅ Prisma connected to database!');
 
 //starting the app
 const app = express(); //actual start
 app.use(cors()); //apply this tool to the server
 app.use(express.json());//translates JSON files to JS directly
-
-//create connexion PostgreSQL
-const pool = new Pool ({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASS,
-    database: process.env.DB_NAME,
-    port: 5432,
-});
 
 //create a POST route -> if data is received on /api/login, heres how its being processed :
 app.post('/api/login', async (req, res) => {
@@ -49,11 +53,27 @@ app.post('/api/login', async (req, res) => {
   
     try {
       // Note : Pour votre vrai module sécurité, il faudra obligatoirement hasher le mot de passe ici !
-      const queryText = 'INSERT INTO login_test(email, password) VALUES($1, $2) RETURNING id, email';
-      const values = [email, password];
+	// insert user in DB with SQL
+    //   const queryText = 'INSERT INTO login_test(email, password) VALUES($1, $2) RETURNING id, email';
+    //   const values = [email, password];
       
-      const result = await pool.query(queryText, values);
-      console.log("DATABASE INSERTION SUCCESS:", result.rows[0]);      res.status(201).json({ message: "Utilisateur créé !", email: result.rows[0] });
+    //   const result = await pool.query(queryText, values);
+    //   console.log("DATABASE INSERTION SUCCESS:", result.rows[0]);      
+	//   res.status(201).json({ message: "Utilisateur créé !", email: result.rows[0] });
+
+	// insert user in DB with prisma
+		const newUser = await prisma.login_test.create({
+			data: {
+				email: email,
+				password: password,
+			},
+			select: { //to return those values so we can print them
+				id: true,
+				email: true,
+			}
+		});
+		console.log("DATABASE INSERTION SUCCESS:", newUser);
+		res.status(201).json({ message: "Utilisateur créé !", email: newUser });
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: "Erreur lors de l'insertion en base." });
