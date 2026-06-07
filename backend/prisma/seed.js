@@ -1,7 +1,12 @@
 import axios from 'axios';
 import { faker } from '@faker-js/faker';
-import prisma from '../src/init/initPrisma.js'
 import 'dotenv/config';
+import prisma from '../src/init/initPrisma.js' //prisma instance
+
+// async function connectionToIGDB()
+// {
+
+// }
 
 async function main()
 {
@@ -74,6 +79,54 @@ async function main()
 		insertedGames.push(dbGame);
 	}
 	console.log(`✅ [SEED] ${insertedGames.length} jeux synchronisés en base de données.`);
+
+	// ---------------------------------------------------------
+	// Génération de 20 faux utilisateurs
+	// ---------------------------------------------------------
+	console.log("👥 [SEED] Génération des utilisateurs de test...");
+	const insertedUsers = [];
+	
+	for (let i = 0; i < 20; i++) {
+		const fakeUsername = faker.internet.username(123);
+		const fakeEmail = faker.internet.email(123);
+
+		const dbUser = await prisma.users.upsert({
+		where: { email: fakeEmail },
+		update: {},
+		create: {
+			username: fakeUsername,
+			email: fakeEmail,
+			// Mot de passe haché en dur pour les tests
+			passwordHash: "$2b$10$EpjX0Zp2FfhkEa1k1F6Sbe6aUj683Uv9/y6R5Q9zIepFh.GfOnWKm", 
+		},
+		});
+		insertedUsers.push(dbUser);
+	}
+
+	// ---------------------------------------------------------
+	// Génération de fausses reviews / notes
+	// ---------------------------------------------------------
+	console.log("📝 [SEED] Génération des notes et des commentaires...");
+	for (const game of insertedGames) {
+		// Pour chaque jeu, on sélectionne entre 1 et 4 utilisateurs au hasard pour mettre un avis
+		const randomUsers = faker.helpers.arrayElements(insertedUsers, faker.number.int({ min: 1, max: 4 }));
+
+		for (const user of randomUsers) {
+		await prisma.review.upsert({
+			where: {
+			unique_user_game_review: { userId: user.id, gameId: game.id } // Utilise l'index unique combiné
+			},
+			update: {},
+			create: {
+			userId: user.id,
+			gameId: game.id,
+			rating: faker.number.int({ min: 1, max: 5 }),
+			reviewText: faker.lorem.paragraph(),
+			},
+		});
+		}
+	}
+
 	console.log("✨ [SEED] Base de données PostgreSQL initialisée avec succès !");
 }
 
