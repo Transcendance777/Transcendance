@@ -1,27 +1,13 @@
-//libraries
-require('dotenv').config(); //parse env
-const express = require('express'); //require-> import tool/library
-const { Pool } = require('pg'); // {} -> import only the tool Pool from pg(postgres) library
-const cors = require('cors'); // cors-> tool to comunicate safely with another service
-const { execSync } = require('child_process'); //for execSync function
-const { PrismaClient } = require('@prisma/client'); //prisma client
-const { PrismaPg } = require('@prisma/adapter-pg'); // prisma adapter
+//libraries and includes
+import 'dotenv/config'; //parse env
+import express from 'express'; //import-> import tool/library
+import cors from 'cors'; // cors-> tool to comunicate safely with another service
+import { execSync } from 'child_process'; //for execSync function
+
+import prisma from './init/initPrisma.js'; //prisma singleton instance
 
 // port
 const PORT = process.env.PORT_BACK || 4000;
-
-//create connexion PostgreSQL
-const pool = new Pool ({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASS,
-    database: process.env.DB_NAME,
-    port: process.env.DB_PORT,
-});
-
-//start prisma client
-const adapter = new PrismaPg(pool);
-const prisma = new PrismaClient({ adapter });
 
 //checks if DB schema has been changed, if so, update the DB
 function syncDatabaseSchema() {
@@ -32,11 +18,33 @@ function syncDatabaseSchema() {
     console.log('✅ Database schema is up to date!');
   } catch (error) {
     console.error('❌ Failed to sync database schema:', error);
-    // Exit the process if the DB is out of sync to prevent app errors
-    process.exit(1); 
+    console.log('🔄 Wiping and resetting database for a clean start...');
+
+    try {
+      // If a normal push fails, force a clean reset of the local DB
+      execSync('npx prisma db push --force-reset', { stdio: 'inherit' });
+      console.log('✨ Database reset and schema applied cleanly!');
+    } catch (resetError) {
+      console.error('❌ Critical failure updating database schema:', resetError);
+      process.exit(1); 
+    }
   }
 }
+
+function seedDatabase() {
+  console.log('🌱 Seeding the database...');
+  try {
+    // This triggers Prisma's seeding mechanism
+    execSync('npx prisma db seed', { stdio: 'inherit' });
+    console.log('✅ Database seeding completed!');
+  } catch (error) {
+    console.error('❌ Failed to seed database:', error);
+    // Optional: decide if you want to crash the app if seeding fails
+  }
+}
+
 syncDatabaseSchema();
+seedDatabase();
 
 // connect prisma client
 prisma.$connect();
@@ -52,7 +60,6 @@ app.post('/api/login', async (req, res) => {
     const { email, password } = req.body; 
   
     try {
-      // Note : Pour votre vrai module sécurité, il faudra obligatoirement hasher le mot de passe ici !
 	// insert user in DB with SQL
     //   const queryText = 'INSERT INTO login_test(email, password) VALUES($1, $2) RETURNING id, email';
     //   const values = [email, password];
@@ -62,6 +69,7 @@ app.post('/api/login', async (req, res) => {
 	//   res.status(201).json({ message: "Utilisateur créé !", email: result.rows[0] });
 
 	// insert user in DB with prisma
+	// * Hash passwords !!
 		const newUser = await prisma.login_test.create({
 			data: {
 				email: email,

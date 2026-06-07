@@ -37,12 +37,13 @@ model Users {
 // Table des Jeux Vidéo
 model Game {
   id            Int       @id @default(autoincrement())
+  idExterne     String    @unique @map("id_externe")
   title         String    @db.VarChar(150)
   summary       String?
   releaseDate   DateTime? @map("release_date") @db.Date
   coverImageUrl String?   @map("cover_image_url")
   developer     String?   @db.VarChar(100)
-  genre         String?   @db.VarChar(50)
+  genre         String?   @db.VarChar(255)
   
   // Relations
   reviews       Review[]
