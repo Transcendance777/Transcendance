@@ -1,10 +1,10 @@
 .games-card {
 	flex-shrink: 0;
-	width: clamp(120px, 12vw, 200px);
 	cursor: pointer;
 	transition: transform 0.2s ease;
 	overflow: visible;
 	border-radius: 10px;
+	position: relative;
 }
 
 .games-card:hover {

@@ -11,9 +11,9 @@ const GamesCarousel = ({ title, games }) => {
 			const width = window.innerWidth
 			if (width < 600) setVisible(3)
 			else if (width < 900) setVisible(5)
-			else if (width < 1200) setVisible(7)
+			else if (width < 1200) setVisible(6)
 			else if (width < 1500) setVisible(8)
-			else setVisible(8)
+			else setVisible(9)
 		}
 		updateVisible()
 		window.addEventListener('resize', updateVisible)
@@ -30,7 +30,7 @@ const GamesCarousel = ({ title, games }) => {
 				<button className="games-carousel-btn" onClick={prev}>&#8249;</button>
 				<div className="games-carousel-track">
 					{games.slice(index, index + visible).map((game, i) => (
-						<GamesCard key={i} game={game} />
+						<GamesCard key={i} game={game} visibleCount={visible} />
 					))}
 				</div>
 				<button className="games-carousel-btn" onClick={next}>&#8250;</button>
