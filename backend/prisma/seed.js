@@ -2,35 +2,38 @@ import axios from 'axios';
 import { faker } from '@faker-js/faker';
 import 'dotenv/config';
 import prisma from '../src/init/initPrisma.js' //prisma instance
+import { raw } from 'express';
 
-// async function connectionToIGDB()
-// {
 
-// }
-
-async function main()
+/**
+ * Authentification Twitch / IGDB
+ * @param {*} clientId identifiant twitch
+ * @param {*} clientSecret clé d'acces
+ * @returns token d'acces
+ */
+async function connectToIGDB(clientId, clientSecret)
 {
-	console.log("🚀 [SEED] Début du peuplement de la base de données...");
-
-	// ---------------------------------------------------------
-	// Authentification Twitch / IGDB
-	// ---------------------------------------------------------
-	const clientId = process.env.TWITCH_CLIENT_ID;
-	const clientSecret = process.env.TWITCH_CLIENT_SECRET;
-
 	if (!clientId || !clientSecret) {
 		throw new Error("Les variables TWITCH_CLIENT_ID et TWITCH_CLIENT_SECRET sont requises.");
 	}
 
+	//get the access token from twitch with our secret credentials
 	const authUrl = `https://id.twitch.tv/oauth2/token?client_id=${clientId}&client_secret=${clientSecret}&grant_type=client_credentials`;
 	const authResponse = await axios.post(authUrl);
 	const accessToken = authResponse.data.access_token;
 
 	console.log("🔑 [SEED] Jeton d'accès Twitch obtenu.");
+	return accessToken;
+}
 
-	// ---------------------------------------------------------
-	// Récupération des 50 jeux depuis IGDB
-	// ---------------------------------------------------------
+/**
+ * Récupération des 50 jeux depuis IGDB
+ * @param {*} clientId identifiant twitch
+ * @param {*} accessToken token d'acces
+ * @returns les jeux récupérés depuis IGDB
+ */
+async function getGames(clientId, accessToken)
+{
 	const igdbUrl = 'https://api.igdb.com/v4/games';
 	const apicalypseQuery = `
 		fields name, summary, cover.url, genres.name, first_release_date;
@@ -49,10 +52,15 @@ async function main()
 
 	const rawGames = gamesResponse.data;
 	console.log(`🎮 [SEED] ${rawGames.length} jeux récupérés depuis IGDB. Insertion dans PostgreSQL...`);
-
-	// ---------------------------------------------------------
-	// Insertion des jeux dans PostgreSQL avec Prisma
-	// ---------------------------------------------------------
+	return rawGames;
+}
+/**
+ * Insertion des jeux dans PostgreSQL avec Prisma
+ * @param {*} rawGames les jeux récupérés depuis IGDB
+ * @returns la liste des jeux insérés en DB
+ */
+async function insertGames(rawGames)
+{
 	const insertedGames = [];
 
 	for (const game of rawGames) {
@@ -78,17 +86,24 @@ async function main()
 		});
 		insertedGames.push(dbGame);
 	}
-	console.log(`✅ [SEED] ${insertedGames.length} jeux synchronisés en base de données.`);
 
-	// ---------------------------------------------------------
-	// Génération de 20 faux utilisateurs
-	// ---------------------------------------------------------
+	console.log(`✅ [SEED] ${insertedGames.length} jeux synchronisés en base de données.`);
+	return insertedGames;
+}
+
+/**
+ * Génération de 20 faux utilisateurs
+ * @returns les utilisateurs générés
+ */
+async function generateUsers()
+{
 	console.log("👥 [SEED] Génération des utilisateurs de test...");
 	const insertedUsers = [];
-	
+	faker.seed(123);
+
 	for (let i = 0; i < 20; i++) {
-		const fakeUsername = faker.internet.username(123);
-		const fakeEmail = faker.internet.email(123);
+		const fakeUsername = faker.internet.username();
+		const fakeEmail = faker.internet.email();
 
 		const dbUser = await prisma.users.upsert({
 		where: { email: fakeEmail },
@@ -103,10 +118,18 @@ async function main()
 		insertedUsers.push(dbUser);
 	}
 
-	// ---------------------------------------------------------
-	// Génération de fausses reviews / notes
-	// ---------------------------------------------------------
+	return insertedUsers;
+}
+
+/**
+ * Génération de fausses reviews / notes
+ * @param {*} insertedGames jeux déjà insérés en DB
+ * @param {*} insertedUsers utilisateurs déjà insérés en DB
+ */
+async function generateReviews(insertedGames, insertedUsers)
+{
 	console.log("📝 [SEED] Génération des notes et des commentaires...");
+
 	for (const game of insertedGames) {
 		// Pour chaque jeu, on sélectionne entre 1 et 4 utilisateurs au hasard pour mettre un avis
 		const randomUsers = faker.helpers.arrayElements(insertedUsers, faker.number.int({ min: 1, max: 4 }));
@@ -126,6 +149,42 @@ async function main()
 		});
 		}
 	}
+}
+
+/**
+ * main function of the seeding script
+ */
+async function main()
+{
+	console.log("🚀 [SEED] Début du peuplement de la base de données...");
+
+	// ---------------------------------------------------------
+	// Authentification Twitch / IGDB
+	// ---------------------------------------------------------
+	const clientId = process.env.TWITCH_CLIENT_ID;
+	const clientSecret = process.env.TWITCH_CLIENT_SECRET;
+
+	const accessToken = await connectToIGDB(clientId, clientSecret);
+
+	// ---------------------------------------------------------
+	// Récupération des 50 jeux depuis IGDB
+	// ---------------------------------------------------------
+	const rawGames = await getGames(clientId, accessToken);
+
+	// ---------------------------------------------------------
+	// Insertion des jeux dans PostgreSQL avec Prisma
+	// ---------------------------------------------------------
+	const insertedGames = await insertGames(rawGames);
+
+	// ---------------------------------------------------------
+	// Génération de 20 faux utilisateurs
+	// ---------------------------------------------------------
+	const insertedUsers = await generateUsers();
+
+	// ---------------------------------------------------------
+	// Génération de fausses reviews / notes
+	// ---------------------------------------------------------
+	await generateReviews(insertedGames, insertedUsers);
 
 	console.log("✨ [SEED] Base de données PostgreSQL initialisée avec succès !");
 }

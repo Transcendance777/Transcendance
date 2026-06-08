@@ -9,7 +9,9 @@ import prisma from './init/initPrisma.js'; //prisma singleton instance
 // port
 const PORT = process.env.PORT_BACK || 4000;
 
-//checks if DB schema has been changed, if so, update the DB
+/**
+ * checks if DB schema has been changed, if so, update the DB
+ */
 function syncDatabaseSchema() {
   console.log('🔄 Checking for database schema changes...');
   try {
@@ -31,9 +33,21 @@ function syncDatabaseSchema() {
   }
 }
 
-function seedDatabase() {
-  console.log('🌱 Seeding the database...');
+/**
+ * if the database is empty, it feels it with a few games and basic users
+ * @returns nothing
+ */
+async function seedDatabase() {
+  console.log('🌱 Checking database for seeding...');
+
   try {
+    const gameCount = await prisma.game.count();
+
+    if (gameCount > 0) {
+      console.log(`Database already contains ${gameCount} games. Skipping seed script.`);
+      return;
+    }
+
     // This triggers Prisma's seeding mechanism
     execSync('npx prisma db seed', { stdio: 'inherit' });
     console.log('✅ Database seeding completed!');
@@ -44,11 +58,10 @@ function seedDatabase() {
 }
 
 syncDatabaseSchema();
-seedDatabase();
+await seedDatabase();
 
 // connect prisma client
 prisma.$connect();
-console.log('✅ Prisma connected to database!');
 
 //starting the app
 const app = express(); //actual start
@@ -60,16 +73,7 @@ app.post('/api/login', async (req, res) => {
     const { email, password } = req.body; 
   
     try {
-	// insert user in DB with SQL
-    //   const queryText = 'INSERT INTO login_test(email, password) VALUES($1, $2) RETURNING id, email';
-    //   const values = [email, password];
-      
-    //   const result = await pool.query(queryText, values);
-    //   console.log("DATABASE INSERTION SUCCESS:", result.rows[0]);      
-	//   res.status(201).json({ message: "Utilisateur créé !", email: result.rows[0] });
-
-	// insert user in DB with prisma
-	// * Hash passwords !!
+	// insert user in DB with prisma (for login test, remove later)
 		const newUser = await prisma.login_test.create({
 			data: {
 				email: email,
