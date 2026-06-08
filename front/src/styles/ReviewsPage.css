@@ -1,0 +1,11 @@
+.reviews-page {
+	min-height: 100vh;
+	background-color: black;
+}
+
+.reviews-content {
+	width: 100%;
+	z-index: 1;
+	position: relative;
+	background-color: rgba(0, 0, 0, 0.7);
+}

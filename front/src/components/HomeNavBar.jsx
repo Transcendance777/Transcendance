@@ -1,11 +1,15 @@
-import '../styles/NavBar.css'
+import '../styles/HomeNavBar.css'
 import '../index.css'
+import { useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { FiSearch } from 'react-icons/fi'
+import { Link } from 'react-router-dom'
 
-const NavBar = () => {
+
+const HomeNavBar = () => {
 	const [menuOpen, setMenuOpen] = useState(false)
 	const [searchOpen, setSearchOpen] = useState(false)
+	const navigate = useNavigate()
 
 	useEffect(() => {
 		const handleClick = () => setMenuOpen(false)
@@ -28,14 +32,14 @@ const NavBar = () => {
 	return (
 		<nav className="navbar">
 			<div className="navbar-left">
-				<a href="" className="nav-link">Games</a>
-				<a href="" className="nav-link">Reviews</a>
+				<a onClick={() => navigate('/games')} className="nav-link" style={{ cursor: 'pointer' }}>Games</a>
+				<a onClick={() => navigate('/reviews')} className="nav-link" style={{ cursor: 'pointer' }}>Reviews</a>
 				<a href="" className="nav-link">Friends</a>
-				<a href="" className="plus">+</a>
+				<a onClick={() => navigate('/post')} className="nav-link plus" style={{ cursor: 'pointer' }}>+</a>
 			</div>
 
 			<div className="navbar-center">
-				<h1 className="GameRev">GAME REV</h1>
+				<Link to="/home" className="GameRev">GAME REV</Link>
 			</div>
 
 			<div className="navbar-right">
@@ -52,20 +56,22 @@ const NavBar = () => {
 						/>
 					)}
 				</div>
-				<a href="" className="nav-link">Profil</a>
+				<a onClick={() => navigate('/profile')} className="nav-link profil-link" style={{ cursor: 'pointer' }}>Profile</a>
 				<button className="hamburger" onClick={(e) => { e.stopPropagation(); setMenuOpen(!menuOpen) }}>☰</button>
 			</div>
 
 			{menuOpen && (
 				<div className="dropdown-menu">
-					<a href="" className="nav-link">Games</a>
-					<a href="" className="nav-link">Reviews</a>
+					<a onClick={() => navigate('/profile')} className="nav-link" style={{ cursor: 'pointer' }}>Profile</a>
+					<a onClick={() => navigate('/games')} className="nav-link" style={{ cursor: 'pointer' }}>Games</a>
+					<a onClick={() => navigate('/reviews')} className="nav-link" style={{ cursor: 'pointer' }}>Reviews</a>
 					<a href="" className="nav-link">Friends</a>
-					<a href="" className="plus">+</a>
+					<a onClick={() => navigate('/post')} className="nav-link" style={{ cursor: 'pointer' }}>Post</a>
+					
 				</div>
 			)}
 		</nav>
 	)
 }
 
-export default NavBar
+export default HomeNavBar

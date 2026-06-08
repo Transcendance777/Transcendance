@@ -1,0 +1,237 @@
+.review-card {
+	display: flex;
+	gap: 30px;
+	padding: 30px 40px;
+	border-bottom: 1px solid rgba(231, 231, 231, 0.2);
+	position: relative;
+	z-index: 1;
+}
+
+.review-card-left {
+	flex-shrink: 0;
+}
+
+.review-game-img {
+	width: clamp(100px, 10vw, 160px);
+	border-radius: 8px;
+	object-fit: cover;
+}
+
+.review-card-right {
+	display: flex;
+	flex-direction: column;
+	gap: 15px;
+	flex: 1;
+}
+
+.review-game-title {
+	font-family: "policeConthrax", sans-serif;
+	color: #e7e7e7;
+	font-size: clamp(10px, 1vw, 13px);
+	text-align: center;
+	margin-top: 8px;
+}
+
+.review-author {
+	font-family: "policeConthrax", sans-serif;
+	color: #e7e7e7;
+	font-size: clamp(14px, 1.5vw, 18px);
+	font-weight: bold;
+}
+
+.review-text {
+	font-family: "policeConthrax", sans-serif;
+	color: #e7e7e7;
+	font-size: clamp(12px, 1.2vw, 15px);
+	line-height: 1.6;
+}
+
+.review-footer {
+	display: flex;
+	align-items: center;
+	gap: 20px;
+	flex-wrap: wrap;
+}
+
+.review-stars {
+	display: flex;
+	gap: 4px;
+}
+
+.review-star {
+	font-size: clamp(20px, 2vw, 28px);
+	color: #555;
+}
+
+.review-star.active {
+	color: #f5a623;
+}
+
+.review-actions {
+	display: flex;
+	gap: 10px;
+}
+
+.review-like-btn {
+	background: none;
+	border: none;
+	font-size: clamp(18px, 2vw, 24px);
+	cursor: pointer;
+	transition: transform 0.2s ease, color 0.2s ease;
+	color: #555;
+	display: flex;
+	align-items: center;
+}
+
+.review-dislike-btn {
+	background: none;
+	border: none;
+	font-size: clamp(18px, 2vw, 24px);
+	cursor: pointer;
+	transition: transform 0.2s ease, color 0.2s ease;
+	color: #555;
+	display: flex;
+	align-items: center;
+}
+
+.review-like-btn:hover,
+.review-dislike-btn:hover {
+	transform: scale(1.2);
+	opacity: 0.8;
+}
+
+.review-like-btn,
+.review-dislike-btn,
+.review-reply-btn {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.review-like-btn.liked {
+	color: #4caf50;
+}
+
+.review-dislike-btn.disliked {
+	color: #f44336;
+}
+
+.review-reply-btn {
+	background: none;
+	border: none;
+	color: #e7e7e7;
+	font-size: clamp(18px, 2vw, 24px);
+	cursor: pointer;
+	transition: transform 0.2s ease, color 0.2s ease;
+	display: flex;
+	align-items: center;
+}
+
+.review-reply-btn:hover {
+	transform: scale(1.2);
+}
+
+.review-reply-btn.active {
+	color: #4caf50;
+}
+
+.review-reply-box {
+	display: flex;
+	align-items: flex-start;
+	gap: 10px;
+	margin-top: 10px;
+	background: rgba(0, 0, 0, 0.5);
+	border-radius: 10px;
+	padding: 10px;
+}
+
+.reply-emoji-btn {
+	background: none;
+	border: none;
+	color: #e7e7e7;
+	font-size: 24px;
+	cursor: pointer;
+	transition: transform 0.2s ease;
+	flex-shrink: 0;
+	padding-top: 5px;
+}
+
+.reply-emoji-btn:hover {
+	transform: scale(1.2);
+}
+
+.reply-textarea {
+	flex: 1;
+	background: transparent;
+	border: 2px solid #e7e7e7;
+	border-radius: 8px;
+	color: #e7e7e7;
+	font-family: "policeConthrax", sans-serif;
+	font-size: 13px;
+	padding: 8px;
+	outline: none;
+	resize: none;
+	height: 80px;
+}
+
+.reply-bottom {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 5px;
+	flex-shrink: 0;
+}
+
+.reply-count {
+	color: #e7e7e7;
+	font-family: "policeConthrax", sans-serif;
+	font-size: 11px;
+}
+
+.reply-submit-btn {
+	background-color: #4caf50;
+	border: none;
+	border-radius: 50%;
+	width: 40px;
+	height: 40px;
+	font-size: 18px;
+	color: white;
+	cursor: pointer;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	transition: transform 0.2s ease;
+	line-height: 1;
+}
+
+.reply-submit-btn:hover {
+	transform: scale(1.1);
+}
+
+.review-date {
+	font-family: "policeConthrax", sans-serif;
+	color: rgba(231, 231, 231, 0.6);
+	font-size: clamp(10px, 1vw, 13px);
+	margin-left: auto;
+}
+
+.replies-list {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	margin-top: 10px;
+	padding-left: 20px;
+	border-left: 2px solid rgba(231, 231, 231, 0.3);
+}
+
+.reply-item {
+	background: rgba(0, 0, 0, 0.4);
+	border-radius: 8px;
+	padding: 8px 12px;
+}
+
+.reply-text {
+	font-family: "policeConthrax", sans-serif;
+	color: #e7e7e7;
+	font-size: clamp(11px, 1vw, 13px);
+}

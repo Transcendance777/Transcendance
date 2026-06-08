@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import NavBar from '../components/NavBar'
 import Background from '../components/Background'
 import InscriptionForm from '../components/InscriptionForm'
 

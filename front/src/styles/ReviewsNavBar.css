@@ -1,0 +1,102 @@
+.reviews-navbar {
+	position: relative;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	background-color: black;
+	padding: 25px 20px;
+}
+
+.reviews-navbar-left {
+	display: flex;
+	align-items: center;
+	flex: 1;
+}
+
+.reviews-navbar-center {
+	display: flex;
+	justify-content: center;
+	flex: 1;
+}
+
+.reviews-navbar-right {
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	flex: 1;
+	gap: clamp(10px, 3vw, 150px);
+}
+
+.reviews-navbar-title {
+	font-family: "policePS3", sans-serif;
+	color: #e7e7e7;
+	font-size: clamp(20px, 2.5vw, 40px);
+	white-space: nowrap;
+	text-decoration: none;
+	display: inline-block;
+	transition: transform 0.2s ease;
+}
+
+.reviews-navbar-title:hover {
+	transform: scale(1.05);
+}
+
+.reviews-hamburger {
+	background: none;
+	border: none;
+	color: #e7e7e7;
+	font-size: 30px;
+	cursor: pointer;
+	transition: transform 0.2s ease;
+	display: block;
+}
+
+.reviews-hamburger:hover {
+	transform: scale(1.15);
+}
+
+.reviews-dropdown {
+	position: absolute;
+	top: 80px;
+	left: 0;
+	background-color: black;
+	display: flex;
+	flex-direction: column;
+	padding: 20px;
+	gap: 15px;
+	z-index: 100;
+}
+
+.reviews-profil-link {
+	display: inline-block;
+}
+
+@media (max-width: 900px) {
+	.reviews-profil-link {
+		display: none !important;
+	}
+}
+
+@media (max-width: 600px) {
+	.search-icon {
+		font-size: 18px;
+	}
+
+	.search-input {
+		width: clamp(80px, 25vw, 150px);
+		font-size: 11px;
+		padding: 3px 10px;
+	}
+
+	.reviews-navbar-right {
+		gap: clamp(5px, 2vw, 20px);
+	}
+
+	.reviews-hamburger {
+		font-size: 20px;
+	}
+
+	.reviews-navbar-center {
+		flex: 2;
+	}
+}

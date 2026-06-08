@@ -1,9 +1,15 @@
 .GameRev {
 	font-family: "policePS3", sans-serif;
 	color: #e7e7e7;
-	z-index: 1;
 	font-size: clamp(25px, 2.5vw, 65px);
 	white-space: nowrap;
+	text-decoration: none;
+	display: inline-block;
+	transition: transform 0.2s ease;
+}
+
+.GameRev:hover {
+	transform: scale(1.05);
 }
 
 .nav-link {
@@ -11,12 +17,25 @@
 	color: #e7e7e7;
 	font-size: clamp(12px, 1.2vw, 16px);
 	text-decoration: none;
+	transition: transform 0.2s ease;
+	display: inline-block;
+}
+
+.nav-link:hover {
+	transform: scale(1.15);
 }
 
 .plus {
 	font-family: "policeConthrax", sans-serif;
 	color: #e7e7e7;
 	font-size: clamp(16px, 2vw, 40px);
+	text-decoration: none;
+	transition: transform 0.2s ease;
+	display: inline-block;
+}
+
+.profil-link {
+	display: inline-block;
 }
 
 .navbar {
@@ -60,6 +79,11 @@
 	color: #e7e7e7;
 	font-size: 30px;
 	cursor: pointer;
+	transition: transform 0.2s ease;
+}
+
+.hamburger:hover {
+	transform: scale(1.15);
 }
 
 .dropdown-menu {
@@ -72,6 +96,10 @@
 	padding: 20px;
 	gap: 15px;
 	z-index: 100;
+}
+
+.profil-link {
+	display: inline-block;
 }
 
 @media (max-width: 900px) {
@@ -91,7 +119,9 @@
 	.GameRev {
 		font-size: clamp(30px, 2.5vw, 65px);
 	}
-				
+	.profil-link {
+		display: none !important;
+	}
 }
 
 @media (max-width: 768px) {
@@ -117,6 +147,12 @@
 	color: #e7e7e7;
 	font-size: 25px;
 	cursor: pointer;
+	transition: transform 0.2s ease;
+	display: inline-block;
+}
+
+.search-icon:hover {
+	transform: scale(1.15);
 }
 
 .search-input {
