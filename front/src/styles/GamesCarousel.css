@@ -1,5 +1,6 @@
 .games-carousel-section {
 	padding: 20px 40px;
+	overflow: hidden;
 }
 
 .games-carousel-title {
@@ -14,7 +15,6 @@
 	align-items: center;
 	gap: 10px;
 	width: 100%;
-	justify-content: space-between;
 }
 
 .games-carousel-track {
@@ -22,9 +22,7 @@
 	gap: 15px;
 	overflow: visible;
 	flex: 1;
-	justify-content: center;
 }
-
 .games-carousel-btn {
 	background: none;
 	border: none;
@@ -32,6 +30,8 @@
 	font-size: 40px;
 	cursor: pointer;
 	flex-shrink: 0;
+	position: relative;
+	z-index: 2;
 }
 
 .games-carousel-btn:hover {
