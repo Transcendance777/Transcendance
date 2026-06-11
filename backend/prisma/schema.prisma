@@ -16,16 +16,18 @@ model login_test {
 
 // table des utilisateurs
 model Users {
-	id				Int		@id @default(autoincrement())
-	email			String	@unique
-	username  		String	@unique
-	passwordHash	String	@map("password_hash") //map: relier passwordHash dans le back a password_hash ds la DB (convention de nom)
-	avatarUrl     	String?	@default("default_avatar.png") @map("avatar_url") //'?': can be NULL
+	id				Int			@id @default(autoincrement())
+	email			String		@unique
+	username  		String		@unique
+	passwordHash	String		@map("password_hash") //map: relier passwordHash dans le back a password_hash ds la DB (convention de nom)
+	avatarUrl     	String?		@default("default_avatar.png") @map("avatar_url") //'?': can be NULL
 	bio				String?
+	createdAt		DateTime	@default(now()) @map("created_at")
 
 	//relations
 	reviews			Review[]
 	reviewLikes		ReviewLike[]
+	apiKey    		ApiKey?
 
 	// Self-referencing Many-to-Many for Friendships
 	friendsInitiated	Friendship[] @relation("FriendshipsInitiated")
@@ -33,6 +35,19 @@ model Users {
 
 	@@map("users")
 }
+
+model ApiKey {
+	id        Int		@id @default(autoincrement())
+	userId    Int		@unique @map("user_id")
+	key       String	@unique  // la clé elle-même (ex: "sk_abc123...")
+	isActive  Boolean	@default(true) @map("is_active")
+	createdAt DateTime	@default(now()) @map("created_at")
+
+	user      Users		@relation(fields: [userId], references: [id])
+
+	@@map("api_key")
+}
+
 
 // Table des Jeux Vidéo
 model Game {
@@ -62,8 +77,8 @@ model Review {
   updatedAt  DateTime     @default(now()) @updatedAt @map("updated_at")
 
   // Relations
-  user       Users         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  game       Game         @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  user       Users 			@relation(fields: [userId], references: [id], onDelete: Cascade)
+  game       Game			@relation(fields: [gameId], references: [id], onDelete: Cascade)
   likes      ReviewLike[]
 
   // Constraints
@@ -78,8 +93,8 @@ model ReviewLike {
   likedAt  DateTime @default(now()) @map("liked_at")
 
   // Relations
-  user   Users   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  review Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  user   Users		@relation(fields: [userId], references: [id], onDelete: Cascade)
+  review Review		@relation(fields: [reviewId], references: [id], onDelete: Cascade)
 
   // Constraints
   @@id([userId, reviewId])
