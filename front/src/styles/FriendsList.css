@@ -1,0 +1,96 @@
+.friends-list-section {
+	padding: 20px 40px;
+	position: relative;
+	z-index: 1;
+}
+
+.friends-list-wrapper {
+	background: rgba(0, 0, 0, 0.65);
+	border-radius: 15px;
+	padding: 25px;
+	display: flex;
+	align-items: center;
+	gap: 15px;
+}
+
+.friends-grid {
+	display: grid;
+	grid-template-columns: repeat(6, 1fr);
+	gap: 20px;
+	flex: 1;
+}
+
+.friend-card {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 8px;
+	cursor: pointer;
+	transition: transform 0.2s ease;
+}
+
+.friend-card:hover {
+	transform: scale(1.08);
+}
+
+.friend-avatar {
+	width: clamp(50px, 6vw, 80px);
+	height: clamp(50px, 6vw, 80px);
+	border-radius: 50%;
+	object-fit: cover;
+	border: 2px solid #e7e7e7;
+}
+
+.friend-name {
+	font-family: "policeConthrax", sans-serif;
+	color: #e7e7e7;
+	font-size: clamp(9px, 1vw, 12px);
+	text-align: center;
+}
+
+.friends-scroll-btns {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.friends-scroll-btn {
+	background: rgba(255, 255, 255, 0.1);
+	border: 2px solid rgba(231, 231, 231, 0.3);
+	color: #e7e7e7;
+	width: 35px;
+	height: 35px;
+	border-radius: 50%;
+	cursor: pointer;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	font-size: 18px;
+	transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.friends-scroll-btn:hover {
+	transform: scale(1.1);
+	background-color: rgba(255, 255, 255, 0.2);
+}
+
+@media (max-width: 768px) {
+	.friends-grid {
+		grid-template-columns: repeat(3, 1fr);
+	}
+}
+
+@media (max-width: 480px) {
+	.friends-grid {
+		grid-template-columns: repeat(3, 1fr);
+	}
+
+	.friends-list-wrapper {
+		padding: 15px;
+		gap: 10px;
+	}
+
+	.friends-scroll-btns {
+		flex-direction: column;
+	}
+}

@@ -34,8 +34,7 @@
 
 .post-bottom {
 	display: flex;
-	justify-content: space-between;
-	align-items: center;
+	justify-content: flex-end;
 	width: 100%;
 }
 
@@ -57,20 +56,6 @@
 	height: clamp(150px, 20vh, 300px);
 	width: 100%;
 	outline: none;
-}
-
-.post-add-btn {
-	background: none;
-	border: none;
-	color: #e7e7e7;
-	font-size: 40px;
-	cursor: pointer;
-	width: fit-content;
-	transition: transform 0.2s ease;
-}
-
-.post-add-btn:hover {
-	transform: scale(1.2);
 }
 
 .post-game-preview {

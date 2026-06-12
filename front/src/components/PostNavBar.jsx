@@ -1,7 +1,7 @@
 import '../styles/PostNavBar.css'
 import '../index.css'
 import { useState, useEffect } from 'react'
-import { FiSearch } from 'react-icons/fi'
+import { FiSearch, FiHome } from 'react-icons/fi'
 import { useNavigate } from 'react-router-dom'
 import { Link } from 'react-router-dom'
 
@@ -38,6 +38,9 @@ const PostNavBar = () => {
 			</div>
 
 			<div className="post-navbar-center">
+				<a onClick={() => navigate('/home')} className="nav-link home-icon-link" style={{ cursor: 'pointer' }}>
+					<FiHome />
+				</a>
 				<Link to="/post" className="post-navbar-title">Post</Link>
 			</div>
 			
@@ -51,12 +54,19 @@ const PostNavBar = () => {
 						<input className="search-input" type="text" placeholder="Rechercher un jeu..." autoFocus />
 					)}
 				</div>
-				<a onClick={() => navigate('/profile')} className="nav-link post-profil-link" style={{ cursor: 'pointer' }}>Profile</a>
+				<a onClick={() => navigate('/profile')} className="nav-link profil-avatar-link" style={{ cursor: 'pointer' }}>
+					<img src="https://placehold.co/35x35" alt="profile" className="navbar-avatar" />
+				</a>
 			</div>
 
 			{menuOpen && (
 				<div className="post-dropdown">
-					{isMobile && <a onClick={() => navigate('/profile')} className="nav-link" style={{ cursor: 'pointer' }}>Profile</a>}
+					{window.innerWidth <= 900 && (
+						<a onClick={() => navigate('/profile')} className="nav-link" style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}>
+							<img src="https://placehold.co/35x35" alt="profile" className="navbar-avatar" />
+							<span>Profile</span>
+						</a>
+					)}
 					<a onClick={() => navigate('/home')} className="nav-link" style={{ cursor: 'pointer' }}>Home</a>
 					<a onClick={() => navigate('/games')} className="nav-link" style={{ cursor: 'pointer' }}>Games</a>
 					<a onClick={() => navigate('/reviews')} className="nav-link" style={{ cursor: 'pointer' }}>Reviews</a>

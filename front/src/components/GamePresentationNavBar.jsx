@@ -1,10 +1,10 @@
-import '../styles/ProfileNavBar.css'
+import '../styles/GamePresentationNavBar.css'
 import '../index.css'
 import { useState, useEffect } from 'react'
-import { FiSearch, FiSettings, FiHome } from 'react-icons/fi'
+import { FiSearch, FiHome } from 'react-icons/fi'
 import { useNavigate, Link } from 'react-router-dom'
 
-const ProfileNavBar = () => {
+const GamePresentationNavBar = ({ gameName }) => {
 	const [menuOpen, setMenuOpen] = useState(false)
 	const [searchOpen, setSearchOpen] = useState(false)
 	const navigate = useNavigate()
@@ -24,19 +24,19 @@ const ProfileNavBar = () => {
 	}, [])
 
 	return (
-		<nav className="profile-navbar">
-			<div className="profile-navbar-left">
-				<button className="profile-hamburger" onClick={(e) => { e.stopPropagation(); setMenuOpen(!menuOpen) }}>☰</button>
+		<nav className="gamepresentation-navbar">
+			<div className="gamepresentation-navbar-left">
+				<button className="gamepresentation-hamburger" onClick={(e) => { e.stopPropagation(); setMenuOpen(!menuOpen) }}>☰</button>
 			</div>
 
-			<div className="profile-navbar-center">
+			<div className="gamepresentation-navbar-center">
 				<a onClick={() => navigate('/home')} className="nav-link home-icon-link" style={{ cursor: 'pointer' }}>
 					<FiHome />
 				</a>
-				<Link to="/profile" className="profile-navbar-title">Profile</Link>
+				<Link to="/games" className="gamepresentation-navbar-title">Games</Link>
 			</div>
 
-			<div className="profile-navbar-right">
+			<div className="gamepresentation-navbar-right">
 				<div className="search-container">
 					<button className="search-icon" onClick={() => setSearchOpen(!searchOpen)}>
 						<FiSearch />
@@ -45,13 +45,19 @@ const ProfileNavBar = () => {
 						<input className="search-input" type="text" placeholder="Rechercher un jeu..." autoFocus />
 					)}
 				</div>
-				<button className="profile-settings-btn" onClick={() => navigate('/settings')}>
-					<FiSettings />
-				</button>
+				<a onClick={() => navigate('/profile')} className="nav-link profil-avatar-link" style={{ cursor: 'pointer' }}>
+					<img src="https://placehold.co/35x35" alt="profile" className="navbar-avatar" />
+				</a>
 			</div>
 
 			{menuOpen && (
-				<div className="profile-dropdown">
+				<div className="gamepresentation-dropdown">
+					{window.innerWidth <= 900 && (
+						<a onClick={() => navigate('/profile')} className="nav-link" style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}>
+							<img src="https://placehold.co/35x35" alt="profile" className="navbar-avatar" />
+							<span>Profile</span>
+						</a>
+					)}
 					<a onClick={() => navigate('/home')} className="nav-link" style={{ cursor: 'pointer' }}>Home</a>
 					<a onClick={() => navigate('/games')} className="nav-link" style={{ cursor: 'pointer' }}>Games</a>
 					<a onClick={() => navigate('/reviews')} className="nav-link" style={{ cursor: 'pointer' }}>Reviews</a>
@@ -63,4 +69,4 @@ const ProfileNavBar = () => {
 	)
 }
 
-export default ProfileNavBar
+export default GamePresentationNavBar

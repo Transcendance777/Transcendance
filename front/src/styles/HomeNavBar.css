@@ -34,10 +34,6 @@
 	display: inline-block;
 }
 
-.profil-link {
-	display: inline-block;
-}
-
 .navbar {
 	position: relative;
 	display: flex;
@@ -98,10 +94,6 @@
 	z-index: 100;
 }
 
-.profil-link {
-	display: inline-block;
-}
-
 @media (max-width: 900px) {
 	.navbar-left {
 		display: none;
@@ -118,9 +110,6 @@
 	}
 	.GameRev {
 		font-size: clamp(30px, 2.5vw, 65px);
-	}
-	.profil-link {
-		display: none !important;
 	}
 }
 

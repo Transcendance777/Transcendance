@@ -1,0 +1,84 @@
+.gamepresentation-reviews {
+	margin-top: 40px;
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+}
+
+.gamepresentation-reviews-title {
+	font-family: "policePS3", sans-serif;
+	color: #e7e7e7;
+	font-size: clamp(16px, 2vw, 26px);
+	border-bottom: 1px solid rgba(231, 231, 231, 0.2);
+	padding-bottom: 15px;
+}
+
+.gamepresentation-review-item {
+	background: rgba(0, 0, 0, 0.5);
+	border-radius: 10px;
+	padding: 20px;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	border: 1px solid rgba(231, 231, 231, 0.1);
+}
+
+.gamepresentation-review-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.gamepresentation-review-author {
+	font-family: "policeConthrax", sans-serif;
+	color: #e7e7e7;
+	font-size: clamp(12px, 1.3vw, 16px);
+	font-weight: bold;
+}
+
+.gamepresentation-review-date {
+	font-family: "policeConthrax", sans-serif;
+	color: rgba(231, 231, 231, 0.5);
+	font-size: clamp(10px, 1vw, 13px);
+}
+
+.gamepresentation-review-text {
+	font-family: "policeConthrax", sans-serif;
+	color: #e7e7e7;
+	font-size: clamp(11px, 1.1vw, 14px);
+	line-height: 1.6;
+}
+
+.gamepresentation-review-footer {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.gamepresentation-review-actions {
+	display: flex;
+	gap: 10px;
+}
+
+.gamepresentation-review-btn {
+	background: none;
+	border: none;
+	color: #555;
+	font-size: clamp(16px, 1.8vw, 22px);
+	cursor: pointer;
+	transition: transform 0.2s ease, color 0.2s ease;
+	display: flex;
+	align-items: center;
+}
+
+.gamepresentation-review-btn:hover {
+	transform: scale(1.2);
+}
+
+.gamepresentation-review-btn.liked {
+	color: #4caf50;
+}
+
+.gamepresentation-review-btn.disliked {
+	color: #f44336;
+}

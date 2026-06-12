@@ -34,7 +34,7 @@ const HomeNavBar = () => {
 			<div className="navbar-left">
 				<a onClick={() => navigate('/games')} className="nav-link" style={{ cursor: 'pointer' }}>Games</a>
 				<a onClick={() => navigate('/reviews')} className="nav-link" style={{ cursor: 'pointer' }}>Reviews</a>
-				<a href="" className="nav-link">Friends</a>
+				<a onClick={() => navigate('/friends')} className="nav-link" style={{ cursor: 'pointer' }}>Friends</a>
 				<a onClick={() => navigate('/post')} className="nav-link plus" style={{ cursor: 'pointer' }}>+</a>
 			</div>
 
@@ -56,16 +56,23 @@ const HomeNavBar = () => {
 						/>
 					)}
 				</div>
-				<a onClick={() => navigate('/profile')} className="nav-link profil-link" style={{ cursor: 'pointer' }}>Profile</a>
+				<a onClick={() => navigate('/profile')} className="nav-link profil-avatar-link" style={{ cursor: 'pointer' }}>
+					<img src="https://placehold.co/35x35" alt="profile" className="navbar-avatar" />
+				</a>
 				<button className="hamburger" onClick={(e) => { e.stopPropagation(); setMenuOpen(!menuOpen) }}>☰</button>
 			</div>
 
 			{menuOpen && (
 				<div className="dropdown-menu">
-					<a onClick={() => navigate('/profile')} className="nav-link" style={{ cursor: 'pointer' }}>Profile</a>
+					{window.innerWidth <= 900 && (
+						<a onClick={() => navigate('/profile')} className="nav-link" style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}>
+							<img src="https://placehold.co/35x35" alt="profile" className="navbar-avatar" />
+							<span>Profile</span>
+						</a>
+					)}
 					<a onClick={() => navigate('/games')} className="nav-link" style={{ cursor: 'pointer' }}>Games</a>
 					<a onClick={() => navigate('/reviews')} className="nav-link" style={{ cursor: 'pointer' }}>Reviews</a>
-					<a href="" className="nav-link">Friends</a>
+					<a onClick={() => navigate('/friends')} className="nav-link" style={{ cursor: 'pointer' }}>Friends</a>
 					<a onClick={() => navigate('/post')} className="nav-link" style={{ cursor: 'pointer' }}>Post</a>
 					
 				</div>

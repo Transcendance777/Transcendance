@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import '../styles/PostGamePicker.css'
+import { useNavigate } from 'react-router-dom'
 
 const fakeGames = Array.from({ length: 20 }, (_, i) => ({
 	title: `Jeu ${i + 1}`,
@@ -8,7 +9,8 @@ const fakeGames = Array.from({ length: 20 }, (_, i) => ({
 
 const PostGamePicker = ({ onSelect, onClose }) => {
 	const [search, setSearch] = useState('')
-
+	const navigate = useNavigate()
+	
 	const filtered = fakeGames.filter(g =>
 		g.title.toLowerCase().includes(search.toLowerCase())
 	)

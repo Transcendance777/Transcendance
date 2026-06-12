@@ -5,6 +5,7 @@
 	min-height: 100vh;
 	display: flex;
 	background-position: center;
+	background-attachment: fixed;
 }
 
 .backgroundOverlay {

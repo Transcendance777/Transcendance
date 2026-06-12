@@ -25,22 +25,21 @@ const PostPage = () => {
 				<div className="post-content">
 
 					<div className="post-left">
-						<p className="post-label">Écris ta review :</p>
+						<p className="post-label">Write your review :</p>
 						<textarea
 							className="post-textarea"
 							value={review}
 							onChange={(e) => setReview(e.target.value)}
-							placeholder="Écris ta review ici..."
+							placeholder="Write your review here..."
 							maxLength={MAX_CHARS}
 						/>
 						<div className="post-bottom">
-							<button className="post-add-btn">+</button>
 							<p className="post-char-count">{review.length}/{MAX_CHARS}</p>
 						</div>
 					</div>
 
 					<div className="post-right">
-						<p className="post-label">Choisi un jeu :</p>
+						<p className="post-label">Choose a game :</p>
 						<div className="post-game-preview" onClick={() => setShowPicker(true)}>
 							{selectedGame ? (
 								<>
@@ -48,7 +47,7 @@ const PostPage = () => {
 									<p className="post-game-name">{selectedGame.title}</p>
 								</>
 							) : (
-								<div className="post-game-placeholder">Cliquer pour choisir</div>
+								<div className="post-game-placeholder">Click to choose</div>
 							)}
 						</div>
 						<PostStars onRate={setRating} />

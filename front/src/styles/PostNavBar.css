@@ -16,7 +16,9 @@
 .post-navbar-center {
 	display: flex;
 	justify-content: center;
+	align-items: center;
 	flex: 1;
+	gap: 10px;
 }
 
 .post-navbar-right {
@@ -68,17 +70,26 @@
 	z-index: 100;
 }
 
-.post-profil-link {
-	display: inline-block;
+.home-icon-link {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 18px;
+	width: 38px;
+	height: 38px;
+	border-radius: 50%;
+	background-color: rgba(255, 255, 255, 0.1);
+	transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.home-icon-link:hover {
+	background-color: rgba(255, 255, 255, 0.2);
+	transform: scale(1.05);
 }
 
 @media (max-width: 900px) {
 	.post-hamburger {
 		display: block;
-	}
-
-	.post-profil-link {
-		display: none !important;
 	}
 }
 

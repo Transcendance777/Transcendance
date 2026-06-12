@@ -1,0 +1,145 @@
+.gamepresentation-page {
+	min-height: 100vh;
+	background-color: black;
+	overflow-x: hidden;
+}
+
+.gamepresentation-game-name {
+	font-family: "policeConthrax", sans-serif;
+	color: #e7e7e7;
+	font-size: clamp(20px, 3vw, 45px);
+	margin-bottom: 10px;
+}
+
+.gamepresentation-content {
+	width: 100%;
+	z-index: 1;
+	position: relative;
+	padding: 40px;
+}
+
+.gamepresentation-main {
+	display: flex;
+	gap: 40px;
+	align-items: flex-start;
+}
+
+.gamepresentation-left {
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+	flex-shrink: 0;
+	width: clamp(200px, 25vw, 320px);
+}
+
+.gamepresentation-cover {
+	width: 100%;
+	border-radius: 12px;
+	object-fit: cover;
+	box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+}
+
+.gamepresentation-actions {
+	display: flex;
+	gap: 15px;
+	justify-content: center;
+}
+
+.gamepresentation-action-btn {
+	background: rgba(255, 255, 255, 0.1);
+	border: 2px solid rgba(231, 231, 231, 0.3);
+	color: #e7e7e7;
+	font-size: 22px;
+	width: 50px;
+	height: 50px;
+	border-radius: 50%;
+	cursor: pointer;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	transition: transform 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+}
+
+.gamepresentation-action-btn:hover {
+	transform: scale(1.1);
+	background-color: rgba(255, 255, 255, 0.2);
+}
+
+.gamepresentation-action-btn.active-like {
+	color: #f44336;
+	border-color: #f44336;
+	background-color: rgba(244, 67, 54, 0.1);
+}
+
+.gamepresentation-action-btn.active-playing {
+	color: #4caf50;
+	border-color: #4caf50;
+	background-color: rgba(76, 175, 80, 0.1);
+}
+
+.gamepresentation-right {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	gap: 25px;
+}
+
+.gamepresentation-info-block {
+	background: rgba(0, 0, 0, 0.6);
+	border-radius: 12px;
+	padding: 20px;
+}
+
+.gamepresentation-info-title {
+	font-family: "policeConthrax", sans-serif;
+	color: rgba(231, 231, 231, 0.6);
+	font-size: clamp(10px, 1vw, 13px);
+	text-transform: uppercase;
+	letter-spacing: 1px;
+	margin-bottom: 8px;
+}
+
+.gamepresentation-info-text {
+	font-family: "policeConthrax", sans-serif;
+	color: #e7e7e7;
+	font-size: clamp(12px, 1.2vw, 15px);
+	line-height: 1.6;
+}
+
+.gamepresentation-tags {
+	display: flex;
+	gap: 10px;
+	flex-wrap: wrap;
+}
+
+.gamepresentation-tag {
+	font-family: "policeConthrax", sans-serif;
+	color: #e7e7e7;
+	font-size: clamp(10px, 1vw, 13px);
+	background: rgba(255, 255, 255, 0.1);
+	border: 1px solid rgba(231, 231, 231, 0.3);
+	border-radius: 15px;
+	padding: 5px 15px;
+}
+
+.gamepresentation-rating {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+
+.gamepresentation-rating-number {
+	font-family: "policeConthrax", sans-serif;
+	color: #f5a623;
+	font-size: clamp(14px, 1.5vw, 18px);
+}
+
+@media (max-width: 768px) {
+	.gamepresentation-main {
+		flex-direction: column;
+	}
+
+	.gamepresentation-left {
+		width: 100%;
+	}
+}

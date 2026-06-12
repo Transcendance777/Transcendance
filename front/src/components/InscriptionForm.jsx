@@ -12,14 +12,21 @@ const InscriptionForm = () => {
 	const [username, setUsername] = useState('')
 	const navigate = useNavigate()
 	const [showPassword, setShowPassword] = useState(false)
-	
+	const [showForgotPassword, setShowForgotPassword] = useState(false)
+	const [forgotEmail, setForgotEmail] = useState('')
+	const [forgotStep, setForgotStep] = useState(1)
+	const [verifCode, setVerifCode] = useState('')
+	const [newPassword1, setNewPassword1] = useState('')
+	const [newPassword2, setNewPassword2] = useState('')
+	const [showNewPass1, setShowNewPass1] = useState(false)
+	const [showNewPass2, setShowNewPass2] = useState(false)
 
 	useEffect(() => {
 		setEmail('')
 		setPassword('')
 		setUsername('')
 	}, [isLogin])
-	
+
 	/*const handleSubmit = async (e) => {
 	  e.preventDefault()
 	  const response = await axios.post("/api/login", {
@@ -35,12 +42,11 @@ const InscriptionForm = () => {
 	}
 
 	return (
-
 		<div className="formBackground">
 
 			<div className="form-logo">
-      			<img src="/faviconGameRev.svg" alt="Game Rev" className="form-logo-img" />
-   			</div>
+				<img src="/faviconGameRev.svg" alt="Game Rev" className="form-logo-img" />
+			</div>
 
 			<div className="form-toggle">
 				<button
@@ -100,6 +106,13 @@ const InscriptionForm = () => {
 						{showPassword ? <FiEyeOff /> : <FiEye />}
 					</button>
 				</div>
+
+				{isLogin && (
+					<p className="forgot-password-link" onClick={() => { setShowForgotPassword(true); setForgotStep(1) }}>
+						Mot de passe oublié ?
+					</p>
+				)}
+
 				<br /><br />
 
 				<input
@@ -117,6 +130,84 @@ const InscriptionForm = () => {
 				<img src="https://www.google.com/favicon.ico" alt="Google" className="google-icon" />
 				Continuer avec Google
 			</button>
+
+			{showForgotPassword && (
+				<div className="forgot-modal-overlay" onClick={() => setShowForgotPassword(false)}>
+					<div className="forgot-modal" onClick={(e) => e.stopPropagation()}>
+
+						{forgotStep === 1 && (
+							<>
+								<h3 className="forgot-modal-title">Mot de passe oublié</h3>
+								<p className="forgot-modal-text">Entrez votre adresse email pour recevoir un code de vérification.</p>
+								<input
+									className="forgot-input"
+									type="email"
+									placeholder="Votre email..."
+									value={forgotEmail}
+									onChange={(e) => setForgotEmail(e.target.value)}
+								/>
+								<div className="forgot-modal-btns">
+									<button className="forgot-cancel-btn" onClick={() => setShowForgotPassword(false)}>Annuler</button>
+									<button className="forgot-submit-btn" onClick={() => setForgotStep(2)}>Envoyer</button>
+								</div>
+							</>
+						)}
+
+						{forgotStep === 2 && (
+							<>
+								<h3 className="forgot-modal-title">Code de vérification</h3>
+								<p className="forgot-modal-text">Entrez le code reçu par email.</p>
+								<input
+									className="forgot-input"
+									type="text"
+									placeholder="Code de vérification..."
+									value={verifCode}
+									onChange={(e) => setVerifCode(e.target.value)}
+								/>
+								<div className="forgot-modal-btns">
+									<button className="forgot-cancel-btn" onClick={() => setForgotStep(1)}>Retour</button>
+									<button className="forgot-submit-btn" onClick={() => setForgotStep(3)}>Vérifier</button>
+								</div>
+							</>
+						)}
+
+						{forgotStep === 3 && (
+							<>
+								<h3 className="forgot-modal-title">Nouveau mot de passe</h3>
+								<div className="forgot-password-wrapper">
+									<input
+										className="forgot-input"
+										type={showNewPass1 ? 'text' : 'password'}
+										placeholder="Nouveau mot de passe..."
+										value={newPassword1}
+										onChange={(e) => setNewPassword1(e.target.value)}
+									/>
+									<button className="forgot-eye-btn" type="button" onClick={() => setShowNewPass1(!showNewPass1)}>
+										{showNewPass1 ? <FiEyeOff /> : <FiEye />}
+									</button>
+								</div>
+								<div className="forgot-password-wrapper">
+									<input
+										className="forgot-input"
+										type={showNewPass2 ? 'text' : 'password'}
+										placeholder="Confirmer le mot de passe..."
+										value={newPassword2}
+										onChange={(e) => setNewPassword2(e.target.value)}
+									/>
+									<button className="forgot-eye-btn" type="button" onClick={() => setShowNewPass2(!showNewPass2)}>
+										{showNewPass2 ? <FiEyeOff /> : <FiEye />}
+									</button>
+								</div>
+								<div className="forgot-modal-btns">
+									<button className="forgot-cancel-btn" onClick={() => setForgotStep(2)}>Retour</button>
+									<button className="forgot-submit-btn" onClick={() => setShowForgotPassword(false)}>Confirmer</button>
+								</div>
+							</>
+						)}
+
+					</div>
+				</div>
+			)}
 
 		</div>
 	)
