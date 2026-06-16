@@ -88,11 +88,28 @@ services:
     depends_on:
       - prometheus
 
-    # postgres-exporter:
-    #   image: prometheuscommunity/postgres-exporter:v0
-    #   container_name: postgres-exporter
-    #   networks:
-    #     - gamerev
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:v0.16.0
+    container_name: postgres-exporter
+    environment:
+      DATA_SOURCE_URI: "postgres:5432/${DB_NAME}?sslmode=disable"
+      DATA_SOURCE_USER: ${DB_USER}
+      DATA_SOURCE_PASS: ${DB_PASS}
+    networks:
+      - gamerev
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  nginx-exporter:
+    image: nginx/nginx-prometheus-exporter:1.5.1
+    container_name: nginx-exporter
+    command:
+      - "--nginx.scrape-uri=http://nginx:8080/stub_status"
+    networks:
+      - gamerev
+    depends_on:
+      - nginx
 
 networks:
   gamerev:
