@@ -13,3 +13,7 @@ services:
   postgres:
     ports:
       - "5433:5432"
+
+  grafana:
+    ports:
+      = "3000:3000"

@@ -76,15 +76,15 @@ services:
   grafana:
     container_name: grafana
     image: grafana/grafana:12.4
-    ports:
-      - "3000:3000"
     env_file:
       - .env
     networks:
       - gamerev
     volumes:
       - grafana-data:/var/lib/grafana
-      - ./monitoring/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources:ro
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+
     depends_on:
       - prometheus
 
