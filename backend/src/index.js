@@ -3,7 +3,7 @@ import 'dotenv/config'; //parse env
 import express from 'express'; //import-> import tool/library
 import cors from 'cors'; // cors-> tool to comunicate safely with another service
 import { execSync } from 'child_process'; //for execSync function
-
+import gamesRouter from './routes/games.js';
 import prisma from './init/initPrisma.js'; //prisma singleton instance
 
 // port
@@ -67,6 +67,7 @@ prisma.$connect();
 const app = express(); //actual start
 app.use(cors()); //apply this tool to the server
 app.use(express.json());//translates JSON files to JS directly
+app.use('/api/games', gamesRouter);
 
 //create a POST route -> if data is received on /api/login, heres how its being processed :
 app.post('/api/login', async (req, res) => {

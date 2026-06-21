@@ -1,25 +1,50 @@
 import { useSearchParams } from 'react-router-dom'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import GamesNavBar from '../components/GamesNavBar'
 import GamesCarousel from '../components/GamesCarousel'
 import Background from '../components/Background'
 import '../styles/GamesPage.css'
 
-const fakeGames = Array.from({ length: 100 }, (_, i) => ({
-	title: `Jeu ${i + 1}`,
-	image: "https://placehold.co/180x240"
-}))
-
-const categories = [
-	{ id: "new-releases", title: "New releases", games: fakeGames },
-	{ id: "highly-praised", title: "Highly praised", games: fakeGames },
-	{ id: "multiplayer-games", title: "Multiplayer games", games: fakeGames },
-	{ id: "horror-games", title: "Horror games", games: fakeGames },
-	{ id: "action-games", title: "Action games", games: fakeGames },
-]
-
 const GamesPage = () => {
 	const [searchParams] = useSearchParams()
+	const [categories, setCategories] = useState([
+		{ id: "new-releases", title: "New releases", games: [] },
+		{ id: "highly-praised", title: "Highly praised", games: [] },
+		{ id: "popular", title: "Popular this week", games: [] },
+		{ id: "coming-soon", title: "Coming soon", games: [] },
+	])
+
+	useEffect(() => {
+		const fetchAll = async () => {
+			try {
+				const [newReleases, highlyPraised, popular, comingSoon] = await Promise.all([
+					fetch('/api/games/new-releases').then(r => r.json()),
+					fetch('/api/games/highly-praised').then(r => r.json()),
+					fetch('/api/games/popular').then(r => r.json()),
+					fetch('/api/games/coming-soon').then(r => r.json()),
+				])
+
+				const formatGames = (games) => games.map(g => ({
+					id: g.id,
+					title: g.name,
+					image: g.cover?.url
+						? `https:${g.cover.url.replace('t_thumb', 't_cover_big')}`
+						: "https://placehold.co/180x240"
+				}))
+
+				setCategories([
+					{ id: "new-releases", title: "New releases", games: formatGames(newReleases) },
+					{ id: "highly-praised", title: "Highly praised", games: formatGames(highlyPraised) },
+					{ id: "popular", title: "Popular this week", games: formatGames(popular) },
+					{ id: "coming-soon", title: "Coming soon", games: formatGames(comingSoon) },
+				])
+			} catch (err) {
+				console.error('Erreur fetch IGDB:', err)
+			}
+		}
+
+		fetchAll()
+	}, [])
 
 	useEffect(() => {
 		const category = searchParams.get('category')
@@ -27,7 +52,7 @@ const GamesPage = () => {
 			const el = document.getElementById(category)
 			if (el) el.scrollIntoView({ behavior: 'smooth' })
 		}
-	}, [searchParams])
+	}, [searchParams, categories])
 
 	return (
 		<div className="games-page">
