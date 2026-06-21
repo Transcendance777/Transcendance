@@ -61,11 +61,10 @@ const HomePage = () => {
 				])
 
 				const formatGames = (games) => games.slice(0, 4).map(g => ({
-					id: g.id,
-					title: g.name,
-					image: g.cover?.url
-						? `https:${g.cover.url.replace('t_thumb', 't_cover_big')}`
-						: "https://placehold.co/120x160"
+					id: g.idExterne || g.id,
+					title: g.title || g.name,
+					image: g.coverImageUrl ||
+						(g.cover?.url ? `https:${g.cover.url.replace('t_thumb', 't_cover_big')}` : "https://placehold.co/120x160")
 				}))
 
 				setNewReleases(formatGames(newR))

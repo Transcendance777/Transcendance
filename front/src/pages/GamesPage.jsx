@@ -25,11 +25,10 @@ const GamesPage = () => {
 				])
 
 				const formatGames = (games) => games.map(g => ({
-					id: g.id,
-					title: g.name,
-					image: g.cover?.url
-						? `https:${g.cover.url.replace('t_thumb', 't_cover_big')}`
-						: "https://placehold.co/180x240"
+					id: g.idExterne || g.id,
+					title: g.title || g.name,
+					image: g.coverImageUrl ||
+						(g.cover?.url ? `https:${g.cover.url.replace('t_thumb', 't_cover_big')}` : "https://placehold.co/180x240")
 				}))
 
 				setCategories([
