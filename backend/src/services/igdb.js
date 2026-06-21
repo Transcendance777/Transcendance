@@ -77,10 +77,10 @@ export const getGameById = async (igdbId) => {
 
 export const searchGames = async (query) => {
 	return igdbQuery('games', `
-    fields name, cover.url, summary, first_release_date, genres.name, rating;
+    fields name, cover.url, summary, first_release_date, genres.name, rating, rating_count;
     search "${query}";
-    where cover != null;
-    limit 20;
+    where cover != null & parent_game = null;
+    limit 60;
   `);
 };
 

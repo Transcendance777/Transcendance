@@ -39,7 +39,7 @@ async function getGames(clientId, accessToken)
 		fields name, summary, cover.url, genres.name, first_release_date;
 		where rating_count > 50 & cover != null & summary != null;
 		sort rating desc;
-		limit 300;
+		limit 500;
 	`;
 
 	const gamesResponse = await axios.post(igdbUrl, apicalypseQuery, {

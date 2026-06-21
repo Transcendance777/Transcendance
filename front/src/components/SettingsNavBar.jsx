@@ -3,6 +3,7 @@ import '../index.css'
 import { useState, useEffect } from 'react'
 import { FiSearch, FiHome } from 'react-icons/fi'
 import { useNavigate, Link } from 'react-router-dom'
+import SearchBar from './SearchBar'
 
 const SettingsNavBar = () => {
 	const [menuOpen, setMenuOpen] = useState(false)
@@ -37,14 +38,7 @@ const SettingsNavBar = () => {
 			</div>
 
 			<div className="settings-navbar-right">
-				<div className="search-container">
-					<button className="search-icon" onClick={() => setSearchOpen(!searchOpen)}>
-						<FiSearch />
-					</button>
-					{searchOpen && (
-						<input className="search-input" type="text" placeholder="Rechercher..." autoFocus />
-					)}
-				</div>
+				<SearchBar />
 			</div>
 
 			{menuOpen && (

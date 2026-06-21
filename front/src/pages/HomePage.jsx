@@ -60,7 +60,7 @@ const HomePage = () => {
 					fetch('/api/games/coming-soon').then(r => r.json()),
 				])
 
-				const formatGames = (games) => games.slice(0, 4).map(g => ({
+				const formatGames = (games) => games.slice(0, 8).map(g => ({
 					id: g.idExterne || g.id,
 					title: g.title || g.name,
 					image: g.coverImageUrl ||
@@ -72,7 +72,7 @@ const HomePage = () => {
 				setPopular(formatGames(pop))
 				setComingSoon(formatGames(soon))
 			} catch (err) {
-				console.error('Erreur fetch IGDB:', err)
+				console.error('Erreur fetch:', err)
 			}
 		}
 		fetchAll()
@@ -90,6 +90,37 @@ const HomePage = () => {
 			<Background style={{ alignItems: "flex-start" }}>
 				<div className="home-content">
 
+					{/* New releases + Highly praised */}
+					<div className="home-section">
+						<div className="home-highlights">
+							<div className="home-highlight-card" onClick={() => navigate('/games?category=new-releases')}>
+								<h2 className="home-section-title">New releases →</h2>
+								<div className="home-highlight-grid">
+									<div className="home-highlight-track">
+										{[...newReleases, ...newReleases].map((game, i) => (
+											<div key={i} className="home-highlight-game" onClick={(e) => { e.stopPropagation(); navigate(`/game/${game.id}`) }}>
+												<img src={game.image} alt={game.title} className="home-highlight-game-img" />
+											</div>
+										))}
+									</div>
+								</div>
+							</div>
+
+							<div className="home-highlight-card" onClick={() => navigate('/games?category=highly-praised')}>
+								<h2 className="home-section-title">Highly praised →</h2>
+								<div className="home-highlight-grid">
+									<div className="home-highlight-track">
+										{[...highlyPraised, ...highlyPraised].map((game, i) => (
+											<div key={i} className="home-highlight-game" onClick={(e) => { e.stopPropagation(); navigate(`/game/${game.id}`) }}>
+												<img src={game.image} alt={game.title} className="home-highlight-game-img" />
+											</div>
+										))}
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+
 					{/* Stats */}
 					<div className="home-section">
 						<h2 className="home-section-title">Your Stats</h2>
@@ -105,35 +136,6 @@ const HomePage = () => {
 							<div className="home-stat-card" onClick={() => setStatsModal('friends')} style={{ cursor: 'pointer' }}>
 								<span className="home-stat-number">{fakeStats.friends}</span>
 								<span className="home-stat-label">Friends</span>
-							</div>
-						</div>
-					</div>
-
-					{/* New releases + Highly praised */}
-					<div className="home-section">
-						<div className="home-highlights">
-							<div className="home-highlight-card" onClick={() => navigate('/games?category=new-releases')}>
-								<h2 className="home-section-title">New releases →</h2>
-								<div className="home-highlight-grid">
-									{newReleases.map((game, i) => (
-										<div key={i} className="home-highlight-game" onClick={(e) => { e.stopPropagation(); navigate(`/game/${game.id}`) }}>
-											<img src={game.image} alt={game.title} className="home-highlight-game-img" />
-											<p className="home-highlight-game-title">{game.title}</p>
-										</div>
-									))}
-								</div>
-							</div>
-
-							<div className="home-highlight-card" onClick={() => navigate('/games?category=highly-praised')}>
-								<h2 className="home-section-title">Highly praised →</h2>
-								<div className="home-highlight-grid">
-									{highlyPraised.map((game, i) => (
-										<div key={i} className="home-highlight-game" onClick={(e) => { e.stopPropagation(); navigate(`/game/${game.id}`) }}>
-											<img src={game.image} alt={game.title} className="home-highlight-game-img" />
-											<p className="home-highlight-game-title">{game.title}</p>
-										</div>
-									))}
-								</div>
 							</div>
 						</div>
 					</div>

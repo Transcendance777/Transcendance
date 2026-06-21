@@ -7,6 +7,7 @@ import {
 	getPopularGames,
 	getComingSoon,
 } from '../services/igdb.js';
+import prisma from '../init/initPrisma.js'
 
 const router = express.Router();
 
@@ -55,12 +56,25 @@ router.get('/search', async (req, res) => {
 	if (!q) return res.status(400).json({ error: 'Paramètre q manquant' });
 	try {
 		const games = await searchGames(q);
-		res.json(games);
+		const sorted = games.sort((a, b) => (b.rating_count || 0) - (a.rating_count || 0));
+		res.json(sorted);
 	} catch (error) {
 		console.error(error);
 		res.status(500).json({ error: 'Erreur IGDB' });
 	}
 });
+
+router.get('/all', async (req, res) => {
+	try {
+		const games = await prisma.game.findMany({
+			orderBy: { title: 'asc' },
+		})
+		res.json(games)
+	} catch (error) {
+		console.error(error)
+		res.status(500).json({ error: 'Erreur DB' })
+	}
+})
 
 router.get('/:id', async (req, res) => {
 	try {

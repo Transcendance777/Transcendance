@@ -9,170 +9,212 @@ import { MdSportsEsports } from 'react-icons/md'
 import '../styles/GamePresentationPage.css'
 
 const GamePresentationPage = () => {
-  const { id } = useParams()
-  const navigate = useNavigate()
-  const [game, setGame] = useState(null)
-  const [liked, setLiked] = useState(false)
-  const [inPlayingList, setInPlayingList] = useState(false)
-  const [loading, setLoading] = useState(true)
+	const { id } = useParams()
+	const navigate = useNavigate()
+	const [game, setGame] = useState(null)
+	const [liked, setLiked] = useState(false)
+	const [inPlayingList, setInPlayingList] = useState(false)
+	const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    const fetchGame = async () => {
-      try {
-        const response = await fetch(`/api/games/${id}`)
-        const data = await response.json()
-        setGame(data)
-      } catch (err) {
-        console.error('Erreur fetch game:', err)
-      } finally {
-        setLoading(false)
-      }
-    }
-    fetchGame()
-  }, [id])
+	useEffect(() => {
+		const fetchGame = async () => {
+			try {
+				const response = await fetch(`/api/games/${id}`)
+				const data = await response.json()
+				setGame(data)
+			} catch (err) {
+				console.error('Erreur fetch game:', err)
+			} finally {
+				setLoading(false)
+			}
+		}
+		fetchGame()
+	}, [id])
 
-  const formatCover = (game) =>
-		game.coverImageUrl ||
-		(game.cover?.url ? `https:${game.cover.url.replace('t_thumb', 't_cover_big')}` : "https://placehold.co/300x400")
-  const formatScreenshot = (url) => url ? `https:${url.replace('t_thumb', 't_screenshot_huge')}` : null
-  const formatDate = (timestamp) => timestamp ? new Date(timestamp * 1000).toLocaleDateString('fr-FR') : 'N/A'
-  const formatRating = (rating) => rating ? (rating / 10).toFixed(1) : 'N/A'
+	const getCover = (game) => {
+		if (game?.coverImageUrl) return game.coverImageUrl
+		if (game?.cover?.url) {
+			const url = game.cover.url
+			return url.startsWith('//') ? `https:${url.replace('t_thumb', 't_cover_big')}` : url
+		}
+		return "https://placehold.co/300x400"
+	}
 
-  const renderRating = (rating) => {
-    const stars = Math.round(rating / 20)
-    return [1, 2, 3, 4, 5].map((star) => (
-      <span key={star} style={{ color: stars >= star ? '#f5a623' : '#555', fontSize: '22px' }}>★</span>
-    ))
-  }
+	const formatScreenshot = (url) => {
+		if (!url) return null
+		return url.startsWith('//') ? `https:${url.replace('t_thumb', 't_screenshot_huge')}` : url
+	}
 
-  const handleWriteReview = () => {
-    navigate('/post', { state: { selectedGame: { title: game?.name, image: formatCover(game?.cover?.url), id: game?.id } } })
-  }
+	const formatDate = (value) => {
+		if (!value) return 'N/A'
+		if (typeof value === 'number') return new Date(value * 1000).toLocaleDateString('fr-FR')
+		const date = new Date(value)
+		return isNaN(date) ? 'N/A' : date.toLocaleDateString('fr-FR')
+	}
 
-  if (loading) return (
-    <div className="gamepresentation-page">
-      <GamePresentationNavBar gameName="..." />
-      <Background style={{ alignItems: "center", justifyContent: "center" }}>
-        <p style={{ color: '#e7e7e7', fontFamily: 'policeConthrax', fontSize: '20px' }}>Chargement...</p>
-      </Background>
-    </div>
-  )
+	const getGenres = (game) => {
+		if (game?.genre) return game.genre.split(', ')
+		if (game?.genres) return game.genres.map(g => g.name)
+		return []
+	}
 
-  if (!game) return (
-    <div className="gamepresentation-page">
-      <GamePresentationNavBar gameName="Jeu introuvable" />
-      <Background style={{ alignItems: "center", justifyContent: "center" }}>
-        <p style={{ color: '#e7e7e7', fontFamily: 'policeConthrax', fontSize: '20px' }}>Jeu introuvable.</p>
-      </Background>
-    </div>
-  )
+	const renderStars = (rating) => {
+		const stars = Math.round(rating / 20)
+		return [1, 2, 3, 4, 5].map((star) => (
+			<span key={star} style={{ color: stars >= star ? '#f5a623' : '#555', fontSize: '22px' }}>★</span>
+		))
+	}
 
-  const screenshots = [
-    ...(game.screenshots || []).map(s => formatScreenshot(s.url)).filter(Boolean),
-    ...(game.artworks || []).map(a => formatScreenshot(a.url)).filter(Boolean),
-  ]
+	const gameName = game?.title || game?.name || '...'
+	const developer = game?.developer || game?.involved_companies?.find(c => c.developer)?.company?.name || 'N/A'
+	const publisher = game?.involved_companies?.find(c => c.publisher)?.company?.name || 'N/A'
+	const genres = getGenres(game)
 
-  const developer = game.involved_companies?.find(c => c.developer)?.company?.name || 'N/A'
-  const publisher = game.involved_companies?.find(c => c.publisher)?.company?.name || 'N/A'
+	const handleWriteReview = () => {
+		navigate('/post', { state: { selectedGame: { title: gameName, image: getCover(game), id: game?.idExterne || game?.id } } })
+	}
 
-  return (
-    <div className="gamepresentation-page">
-      <GamePresentationNavBar gameName={game.name} />
-      <Background style={{ alignItems: "flex-start" }}>
-        <div className="gamepresentation-content">
+	if (loading) return (
+		<div className="gamepresentation-page">
+			<GamePresentationNavBar gameName="..." />
+			<Background style={{ alignItems: "center", justifyContent: "center" }}>
+				<p style={{ color: '#e7e7e7', fontFamily: 'policeConthrax', fontSize: '20px' }}>Chargement...</p>
+			</Background>
+		</div>
+	)
 
-          <div className="gamepresentation-main">
+	if (!game) return (
+		<div className="gamepresentation-page">
+			<GamePresentationNavBar gameName="Jeu introuvable" />
+			<Background style={{ alignItems: "center", justifyContent: "center" }}>
+				<p style={{ color: '#e7e7e7', fontFamily: 'policeConthrax', fontSize: '20px' }}>Jeu introuvable.</p>
+			</Background>
+		</div>
+	)
 
-            <div className="gamepresentation-left">
-              <img src={formatCover(game.cover?.url)} alt={game.name} className="gamepresentation-cover" />
+	const screenshots = [
+		...(game.screenshots || []).map(s => formatScreenshot(s.url)).filter(Boolean),
+		...(game.artworks || []).map(a => formatScreenshot(a.url)).filter(Boolean),
+	].slice(0, 6)
 
-              <div className="gamepresentation-actions">
-                <button
-                  className={`gamepresentation-action-btn ${liked ? 'active-like' : ''}`}
-                  onClick={() => setLiked(!liked)}
-                  title="Like"
-                >
-                  <FiHeart />
-                </button>
-                <button
-                  className={`gamepresentation-action-btn ${inPlayingList ? 'active-playing' : ''}`}
-                  onClick={() => setInPlayingList(!inPlayingList)}
-                  title="Add to Playing List"
-                >
-                  <MdSportsEsports />
-                </button>
-                <button
-                  className="gamepresentation-action-btn"
-                  onClick={handleWriteReview}
-                  title="Write a review"
-                >
-                  <FiEdit />
-                </button>
-              </div>
+	return (
+		<div className="gamepresentation-page">
+			<GamePresentationNavBar gameName={gameName} />
+			<Background style={{ alignItems: "flex-start" }}>
+				<div className="gamepresentation-content">
 
-              {screenshots.length > 0 && (
-                <GamePresentationScreenshots screenshots={screenshots} />
-              )}
-            </div>
+					<div className="gamepresentation-main">
 
-            <div className="gamepresentation-right">
+						<div className="gamepresentation-left">
+							<img src={getCover(game)} alt={gameName} className="gamepresentation-cover" />
 
-              <h1 className="gamepresentation-game-name">{game.name}</h1>
+							<div className="gamepresentation-actions">
+								<button
+									className={`gamepresentation-action-btn ${liked ? 'active-like' : ''}`}
+									onClick={() => setLiked(!liked)}
+									title="Like"
+								>
+									<FiHeart />
+								</button>
+								<button
+									className={`gamepresentation-action-btn ${inPlayingList ? 'active-playing' : ''}`}
+									onClick={() => setInPlayingList(!inPlayingList)}
+									title="Add to Playing List"
+								>
+									<MdSportsEsports />
+								</button>
+								<button
+									className="gamepresentation-action-btn"
+									onClick={handleWriteReview}
+									title="Write a review"
+								>
+									<FiEdit />
+								</button>
+							</div>
 
-              <div className="gamepresentation-info-block">
-                <h3 className="gamepresentation-info-title">Description</h3>
-                <p className="gamepresentation-info-text">{game.summary || 'Aucune description disponible.'}</p>
-              </div>
+							{screenshots.length > 0 && (
+								<GamePresentationScreenshots screenshots={screenshots} />
+							)}
+						</div>
 
-              <div className="gamepresentation-info-block">
-                <h3 className="gamepresentation-info-title">Developers</h3>
-                <p className="gamepresentation-info-text">{developer}</p>
-                <h3 className="gamepresentation-info-title" style={{ marginTop: '10px' }}>Publisher</h3>
-                <p className="gamepresentation-info-text">{publisher}</p>
-              </div>
+						<div className="gamepresentation-right">
 
-              <div className="gamepresentation-info-block">
-                <h3 className="gamepresentation-info-title">Release Date</h3>
-                <p className="gamepresentation-info-text">{formatDate(game.first_release_date)}</p>
-              </div>
+							<h1 className="gamepresentation-game-name">{gameName}</h1>
 
-              <div className="gamepresentation-info-block">
-                <h3 className="gamepresentation-info-title">Genres</h3>
-                <div className="gamepresentation-tags">
-                  {game.genres?.map((genre, i) => (
-                    <span key={i} className="gamepresentation-tag">{genre.name}</span>
-                  )) || <p className="gamepresentation-info-text">N/A</p>}
-                </div>
-              </div>
+							<div className="gamepresentation-info-block">
+								<h3 className="gamepresentation-info-title">Description</h3>
+								<p className="gamepresentation-info-text">{game.summary || 'Aucune description disponible.'}</p>
+							</div>
 
-              <div className="gamepresentation-info-block">
-                <h3 className="gamepresentation-info-title">Platforms</h3>
-                <div className="gamepresentation-tags">
-                  {game.platforms?.map((platform, i) => (
-                    <span key={i} className="gamepresentation-tag">{platform.name}</span>
-                  )) || <p className="gamepresentation-info-text">N/A</p>}
-                </div>
-              </div>
+							<div className="gamepresentation-info-block">
+								<h3 className="gamepresentation-info-title">Developers</h3>
+								<p className="gamepresentation-info-text">{developer}</p>
+								{publisher !== 'N/A' && (
+									<>
+										<h3 className="gamepresentation-info-title" style={{ marginTop: '10px' }}>Publisher</h3>
+										<p className="gamepresentation-info-text">{publisher}</p>
+									</>
+								)}
+							</div>
 
-              {game.rating && (
-                <div className="gamepresentation-info-block">
-                  <h3 className="gamepresentation-info-title">IGDB Rating</h3>
-                  <div className="gamepresentation-rating">
-                    {renderRating(game.rating)}
-                    <span className="gamepresentation-rating-number">{formatRating(game.rating)}/10</span>
-                  </div>
-                </div>
-              )}
+							<div className="gamepresentation-info-block">
+								<h3 className="gamepresentation-info-title">Release Date</h3>
+								<p className="gamepresentation-info-text">{formatDate(game.releaseDate || game.first_release_date)}</p>
+							</div>
 
-            </div>
-          </div>
+							{genres.length > 0 && (
+								<div className="gamepresentation-info-block">
+									<h3 className="gamepresentation-info-title">Genres</h3>
+									<div className="gamepresentation-tags">
+										{genres.map((genre, i) => (
+											<span key={i} className="gamepresentation-tag">{genre}</span>
+										))}
+									</div>
+								</div>
+							)}
 
-          <GamePresentationReviews />
+							{game.platforms && (
+								<div className="gamepresentation-info-block">
+									<h3 className="gamepresentation-info-title">Platforms</h3>
+									<div className="gamepresentation-tags">
+										{game.platforms.map((platform, i) => (
+											<span key={i} className="gamepresentation-tag">{platform.name}</span>
+										))}
+									</div>
+								</div>
+							)}
 
-        </div>
-      </Background>
-    </div>
-  )
+							{game.rating && (
+								<div className="gamepresentation-info-block">
+									<h3 className="gamepresentation-info-title">IGDB Rating</h3>
+									<div className="gamepresentation-rating">
+										{renderStars(game.rating)}
+										<span className="gamepresentation-rating-number">{(game.rating / 10).toFixed(1)}/10</span>
+									</div>
+								</div>
+							)}
+
+							{game.reviews?.length > 0 && (
+								<div className="gamepresentation-info-block">
+									<h3 className="gamepresentation-info-title">User Rating</h3>
+									<div className="gamepresentation-rating">
+										{renderStars(game.reviews.reduce((sum, r) => sum + r.rating, 0) / game.reviews.length * 20)}
+										<span className="gamepresentation-rating-number">
+											{(game.reviews.reduce((sum, r) => sum + r.rating, 0) / game.reviews.length).toFixed(1)}/5
+										</span>
+									</div>
+								</div>
+							)}
+
+						</div>
+					</div>
+
+					<GamePresentationReviews />
+
+				</div>
+			</Background>
+		</div>
+	)
 }
 
 export default GamePresentationPage
