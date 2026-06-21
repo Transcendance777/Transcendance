@@ -1,5 +1,7 @@
 let accessToken = null;
 let tokenExpiry = null;
+const cache = new Map();
+const CACHE_DURATION = 10 * 60 * 1000;
 
 const getAccessToken = async () => {
 	if (accessToken && tokenExpiry && Date.now() < tokenExpiry) {
@@ -18,6 +20,15 @@ const getAccessToken = async () => {
 };
 
 const igdbQuery = async (endpoint, query) => {
+	const cacheKey = `${endpoint}:${query}`;
+
+	if (cache.has(cacheKey)) {
+		const { data, timestamp } = cache.get(cacheKey);
+		if (Date.now() - timestamp < CACHE_DURATION) {
+			return data;
+		}
+	}
+
 	const token = await getAccessToken();
 
 	const response = await fetch(`https://api.igdb.com/v4/${endpoint}`, {
@@ -30,7 +41,9 @@ const igdbQuery = async (endpoint, query) => {
 		body: query,
 	});
 
-	return response.json();
+	const data = await response.json();
+	cache.set(cacheKey, { data, timestamp: Date.now() });
+	return data;
 };
 
 export const getNewReleases = async () => {
