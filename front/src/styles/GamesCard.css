@@ -15,7 +15,6 @@
 .games-card-img {
 	width: 100%;
 	height: clamp(160px, 16vw, 270px);
-	aspect-ratio: 3/4;
 	object-fit: cover;
 	border-radius: 10px;
 }
