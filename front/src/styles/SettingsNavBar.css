@@ -1,10 +1,14 @@
 .settings-navbar {
-	position: relative;
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	background-color: black;
-	padding: 25px 20px;
+	position: fixed;
+		top: 0;
+		left: 0;
+		right: 0;
+		z-index: 500;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		background-color: black;
+		padding: 25px 20px;
 }
 
 .settings-navbar-left {

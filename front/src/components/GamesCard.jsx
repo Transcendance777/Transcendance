@@ -8,7 +8,7 @@ const GamesCard = ({ game, visibleCount }) => {
 		<div
 			className="games-card"
 			style={{ width: `calc((100% - ${15 * (visibleCount - 1)}px) / ${visibleCount})` }}
-			onClick={() => navigate(`/game/${game.title}`)}
+			onClick={() => navigate(`/game/${game.id}`)}
 		>
 			<img src={game.image} alt={game.title} className="games-card-img" />
 			<p className="games-card-title">{game.title}</p>

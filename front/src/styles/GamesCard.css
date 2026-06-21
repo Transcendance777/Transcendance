@@ -2,7 +2,7 @@
 	flex-shrink: 0;
 	cursor: pointer;
 	transition: transform 0.2s ease;
-	overflow: visible;
+	overflow: hidden;
 	border-radius: 10px;
 	position: relative;
 }
@@ -17,6 +17,7 @@
 	height: clamp(160px, 16vw, 270px);
 	object-fit: cover;
 	border-radius: 10px;
+	display: block;
 }
 
 .games-card-title {

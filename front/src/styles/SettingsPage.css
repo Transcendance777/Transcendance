@@ -1,7 +1,8 @@
 .settings-page {
 	min-height: 100vh;
 	background-color: black;
-	overflow-x: hidden;
+	width: 100%;
+	padding-top: 90px;
 }
 
 .settings-content {

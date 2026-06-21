@@ -1,6 +1,6 @@
 .games-carousel-section {
 	padding: 20px 40px;
-	overflow: hidden;
+	overflow: visible;
 }
 
 .games-carousel-title {
@@ -20,9 +20,12 @@
 .games-carousel-track {
 	display: flex;
 	gap: 15px;
-	overflow: visible;
+	overflow: hidden;
 	flex: 1;
+	padding: 10px 5px;
+	margin: -10px -5px;
 }
+
 .games-carousel-btn {
 	background: none;
 	border: none;

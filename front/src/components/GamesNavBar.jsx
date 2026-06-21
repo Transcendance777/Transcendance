@@ -4,10 +4,13 @@ import { useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { FiSearch, FiHome } from 'react-icons/fi'
 import { Link } from 'react-router-dom'
+import SearchBar from './SearchBar'
 
 const GamesNavBar = ({ pageName }) => {
 	const [menuOpen, setMenuOpen] = useState(false)
 	const [searchOpen, setSearchOpen] = useState(false)
+	const [search, setSearch] = useState('')
+	const [results, setResults] = useState([])
 	const navigate = useNavigate()
 	const [isMobile, setIsMobile] = useState(window.innerWidth <= 900)
 
@@ -31,6 +34,39 @@ const GamesNavBar = ({ pageName }) => {
 		return () => window.removeEventListener('resize', handleResize)
 	}, [])
 
+	// Recherche dynamique avec debounce
+	useEffect(() => {
+		if (search.trim() === '') {
+			setResults([])
+			return
+		}
+
+		const timeout = setTimeout(async () => {
+			try {
+				const res = await fetch(`/api/games/search?q=${encodeURIComponent(search)}`)
+				const data = await res.json()
+				const formatted = data.map(g => ({
+					id: g.idExterne || g.id,
+					title: g.title || g.name,
+					image: g.coverImageUrl ||
+						(g.cover?.url ? `https:${g.cover.url.replace('t_thumb', 't_cover_big')}` : "https://placehold.co/40x55")
+				}))
+				setResults(formatted.slice(0, 50))
+			} catch (err) {
+				console.error('Erreur recherche:', err)
+			}
+		}, 300)
+
+		return () => clearTimeout(timeout)
+	}, [search])
+
+	const handleSelectGame = (id) => {
+		setSearch('')
+		setResults([])
+		setSearchOpen(false)
+		navigate(`/game/${id}`)
+	}
+
 	return (
 		<nav className="games-navbar">
 			<div className="games-navbar-left">
@@ -45,14 +81,7 @@ const GamesNavBar = ({ pageName }) => {
 			</div>
 
 			<div className="games-navbar-right">
-				<div className="search-container">
-					<button className="search-icon" onClick={() => setSearchOpen(!searchOpen)}>
-						<FiSearch />
-					</button>
-					{searchOpen && (
-						<input className="search-input" type="text" placeholder="Rechercher un jeu..." autoFocus />
-					)}
-				</div>
+				<SearchBar />
 				<a onClick={() => navigate('/profile')} className="nav-link profil-avatar-link" style={{ cursor: 'pointer' }}>
 					<img src="https://placehold.co/35x35" alt="profile" className="navbar-avatar" />
 				</a>
@@ -75,6 +104,5 @@ const GamesNavBar = ({ pageName }) => {
 		</nav>
 	)
 }
-
 
 export default GamesNavBar

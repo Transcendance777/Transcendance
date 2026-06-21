@@ -27,20 +27,20 @@ const InscriptionForm = () => {
 		setUsername('')
 	}, [isLogin])
 
-	/*const handleSubmit = async (e) => {
-	  e.preventDefault()
-	  const response = await axios.post("/api/login", {
-		email: email,
-		password: password
-	  })
-	  navigate('../pages/home')
-	}*/
-
 	const handleSubmit = async (e) => {
 		e.preventDefault()
+		const response = await axios.post("/api/login", {
+			email: email,
+			password: password
+		})
 		navigate('/home')
 	}
 
+	// const handleSubmit = async (e) => {
+	// 	e.preventDefault()
+	// 	navigate('/home')
+	// }
+	
 	return (
 		<div className="formBackground">
 

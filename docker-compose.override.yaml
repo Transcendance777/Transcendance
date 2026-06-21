@@ -9,7 +9,9 @@ services:
       - /app/node_modules
     ports:
       - "4000:4000"
-
+    # ! -> génère un client prisma dans le conteneur
+    command: sh -c "npx prisma generate && npm start"
+    # !
   postgres:
     ports:
       - "5433:5432"

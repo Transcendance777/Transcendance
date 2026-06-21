@@ -20,8 +20,18 @@ const GamesCarousel = ({ title, games }) => {
 		return () => window.removeEventListener('resize', updateVisible)
 	}, [])
 
-	const prev = () => setIndex(i => Math.max(i - 1, 0))
-	const next = () => setIndex(i => Math.min(i + 1, games.length - visible))
+	const prev = () => setIndex(i => (i - 1 + games.length) % games.length)
+	const next = () => setIndex(i => (i + 1) % games.length)
+
+	// Construit la liste visible en bouclant si on dépasse la fin
+	const getVisibleGames = () => {
+		if (games.length === 0) return []
+		const result = []
+		for (let i = 0; i < visible; i++) {
+			result.push(games[(index + i) % games.length])
+		}
+		return result
+	}
 
 	return (
 		<div className="games-carousel-section">
@@ -29,7 +39,7 @@ const GamesCarousel = ({ title, games }) => {
 			<div className="games-carousel-wrapper">
 				<button className="games-carousel-btn" onClick={prev}>&#8249;</button>
 				<div className="games-carousel-track">
-					{games.slice(index, index + visible).map((game, i) => (
+					{getVisibleGames().map((game, i) => (
 						<GamesCard key={i} game={game} visibleCount={visible} />
 					))}
 				</div>

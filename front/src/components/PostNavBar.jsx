@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { FiSearch, FiHome } from 'react-icons/fi'
 import { useNavigate } from 'react-router-dom'
 import { Link } from 'react-router-dom'
+import SearchBar from './SearchBar'
 
 const PostNavBar = () => {
 	const [menuOpen, setMenuOpen] = useState(false)
@@ -46,14 +47,7 @@ const PostNavBar = () => {
 			
 
 			<div className="post-navbar-right">
-				<div className="search-container">
-					<button className="search-icon" onClick={() => setSearchOpen(!searchOpen)}>
-						<FiSearch />
-					</button>
-					{searchOpen && (
-						<input className="search-input" type="text" placeholder="Rechercher un jeu..." autoFocus />
-					)}
-				</div>
+				<SearchBar />
 				<a onClick={() => navigate('/profile')} className="nav-link profil-avatar-link" style={{ cursor: 'pointer' }}>
 					<img src="https://placehold.co/35x35" alt="profile" className="navbar-avatar" />
 				</a>

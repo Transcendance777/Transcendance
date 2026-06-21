@@ -1,9 +1,9 @@
 .home-page {
 	min-height: 100vh;
 	background-color: black;
-	overflow-x: hidden;
+	width: 100%;
+	padding-top: 90px;
 }
-
 .home-content {
 	width: 100%;
 	z-index: 1;
@@ -21,6 +21,7 @@
 	display: flex;
 	flex-direction: column;
 	gap: 20px;
+	overflow: hidden;
 }
 
 .home-section-title {
@@ -73,11 +74,14 @@
 	display: flex;
 	gap: 20px;
 	flex-wrap: wrap;
+	overflow: hidden;
+	max-width: 100%;
 }
 
 .home-highlight-card {
 	flex: 1;
-	min-width: clamp(200px, 30vw, 500px);
+	min-width: 0;
+	max-width: 100%;
 	cursor: pointer;
 	display: flex;
 	flex-direction: column;
@@ -86,6 +90,7 @@
 	border-radius: 12px;
 	padding: 15px;
 	transition: background-color 0.2s ease;
+	overflow: hidden;
 }
 
 .home-highlight-card:hover {
@@ -93,17 +98,33 @@
 }
 
 .home-highlight-grid {
+	overflow: hidden;
+	width: 100%;
+	max-width: 100%;
+}
+
+.home-highlight-track {
 	display: flex;
 	gap: 12px;
+	animation: scroll-left 20s linear infinite;
+	width: max-content;
+}
+
+@keyframes scroll-left {
+	0% {
+		transform: translateX(0);
+	}
+
+	100% {
+		transform: translateX(-50%);
+	}
 }
 
 .home-highlight-game {
-	display: flex;
-	flex-direction: column;
-	gap: 6px;
+	flex-shrink: 0;
+	width: clamp(80px, 12vw, 180px);
 	cursor: pointer;
 	transition: transform 0.2s ease;
-	flex: 1;
 }
 
 .home-highlight-game:hover {
@@ -115,13 +136,6 @@
 	border-radius: 8px;
 	object-fit: cover;
 	aspect-ratio: 3/4;
-}
-
-.home-highlight-game-title {
-	font-family: "policeConthrax", sans-serif;
-	color: #e7e7e7;
-	font-size: clamp(9px, 0.9vw, 11px);
-	text-align: center;
 }
 
 /* Reviews grid */
@@ -157,6 +171,7 @@
 	flex-direction: column;
 	gap: 6px;
 	flex: 1;
+	min-width: 0;
 }
 
 .home-review-header {
@@ -231,6 +246,7 @@
 
 .home-friend-info {
 	flex: 1;
+	min-width: 0;
 	font-family: "policeConthrax", sans-serif;
 	font-size: clamp(10px, 1.1vw, 14px);
 }
@@ -273,9 +289,9 @@
 
 /* Games grid */
 .home-games-grid {
-	display: flex;
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
 	gap: 20px;
-	flex-wrap: wrap;
 }
 
 .home-game-card {
@@ -284,7 +300,7 @@
 	gap: 8px;
 	cursor: pointer;
 	transition: transform 0.2s ease;
-	width: clamp(100px, 10vw, 150px);
+	width: 100%;
 }
 
 .home-game-card:hover {
@@ -295,7 +311,7 @@
 	width: 100%;
 	border-radius: 8px;
 	object-fit: cover;
-	height: clamp(130px, 13vw, 200px);
+	aspect-ratio: 3/4;
 }
 
 .home-game-title {
@@ -461,7 +477,12 @@
 
 @media (max-width: 768px) {
 	.home-content {
-		padding: 20px;
+		padding: 15px;
+		gap: 20px;
+	}
+
+	.home-section {
+		padding: 15px;
 	}
 
 	.home-highlights {
@@ -470,5 +491,34 @@
 
 	.home-reviews-grid {
 		grid-template-columns: 1fr;
+	}
+
+	.home-highlight-game {
+		width: clamp(70px, 22vw, 120px);
+	}
+
+	.home-games-grid {
+		grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+		gap: 12px;
+	}
+
+	.home-modal {
+		width: 90vw;
+		padding: 20px;
+	}
+}
+
+@media (max-width: 480px) {
+	.home-highlight-game {
+		width: clamp(60px, 26vw, 100px);
+	}
+
+	.home-games-grid {
+		grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+		gap: 10px;
+	}
+
+	.home-stat-card {
+		padding: 15px 20px;
 	}
 }

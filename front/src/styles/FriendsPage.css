@@ -1,7 +1,7 @@
 .friends-page {
 	min-height: 100vh;
 	background-color: black;
-	overflow-x: hidden;
+	padding-top: 90px;
 }
 
 .friends-content {

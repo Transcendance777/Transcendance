@@ -1,55 +1,113 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
 import GamePresentationNavBar from '../components/GamePresentationNavBar'
 import Background from '../components/Background'
 import GamePresentationScreenshots from '../components/GamePresentationScreenshots'
 import GamePresentationReviews from '../components/GamePresentationReviews'
-import { FiHeart, FiMonitor, FiEdit } from 'react-icons/fi'
+import { FiHeart, FiEdit } from 'react-icons/fi'
 import { MdSportsEsports } from 'react-icons/md'
 import '../styles/GamePresentationPage.css'
 
-const fakeGame = {
-	name: "Elden Ring",
-	cover: "https://placehold.co/300x400",
-	description: "Elden Ring est un action-RPG développé par FromSoftware en collaboration avec George R.R. Martin. Explorez les Terres Intermédiaires, un monde vaste et mystérieux.",
-	developer: "FromSoftware",
-	publisher: "Bandai Namco",
-	releaseDate: "25 février 2022",
-	genres: ["Action", "RPG", "Open World"],
-	platforms: ["PC", "PS5", "Xbox Series X"],
-	rating: 9.5,
-	screenshots: Array.from({ length: 6 }, () => "https://placehold.co/300x170")
-}
-
 const GamePresentationPage = () => {
+	const { id } = useParams()
+	const navigate = useNavigate()
+	const [game, setGame] = useState(null)
 	const [liked, setLiked] = useState(false)
 	const [inPlayingList, setInPlayingList] = useState(false)
-	const navigate = useNavigate()
+	const [loading, setLoading] = useState(true)
 
-	const handleWriteReview = () => {
-		navigate('/post', { state: { selectedGame: { title: fakeGame.name, image: fakeGame.cover } } })
+	useEffect(() => {
+		const fetchGame = async () => {
+			try {
+				const response = await fetch(`/api/games/${id}`)
+				const data = await response.json()
+				setGame(data)
+			} catch (err) {
+				console.error('Erreur fetch game:', err)
+			} finally {
+				setLoading(false)
+			}
+		}
+		fetchGame()
+	}, [id])
+
+	const getCover = (game) => {
+		if (game?.coverImageUrl) return game.coverImageUrl
+		if (game?.cover?.url) {
+			const url = game.cover.url
+			return url.startsWith('//') ? `https:${url.replace('t_thumb', 't_cover_big')}` : url
+		}
+		return "https://placehold.co/300x400"
 	}
 
-	const renderRating = (rating) => {
-		const stars = Math.round(rating / 2)
+	const formatScreenshot = (url) => {
+		if (!url) return null
+		return url.startsWith('//') ? `https:${url.replace('t_thumb', 't_screenshot_huge')}` : url
+	}
+
+	const formatDate = (value) => {
+		if (!value) return 'N/A'
+		if (typeof value === 'number') return new Date(value * 1000).toLocaleDateString('fr-FR')
+		const date = new Date(value)
+		return isNaN(date) ? 'N/A' : date.toLocaleDateString('fr-FR')
+	}
+
+	const getGenres = (game) => {
+		if (game?.genre) return game.genre.split(', ')
+		if (game?.genres) return game.genres.map(g => g.name)
+		return []
+	}
+
+	const renderStars = (rating) => {
+		const stars = Math.round(rating / 20)
 		return [1, 2, 3, 4, 5].map((star) => (
 			<span key={star} style={{ color: stars >= star ? '#f5a623' : '#555', fontSize: '22px' }}>★</span>
 		))
 	}
 
+	const gameName = game?.title || game?.name || '...'
+	const developer = game?.developer || game?.involved_companies?.find(c => c.developer)?.company?.name || 'N/A'
+	const publisher = game?.involved_companies?.find(c => c.publisher)?.company?.name || 'N/A'
+	const genres = getGenres(game)
+
+	const handleWriteReview = () => {
+		navigate('/post', { state: { selectedGame: { title: gameName, image: getCover(game), id: game?.idExterne || game?.id } } })
+	}
+	
+	if (loading) return (
+		<div className="gamepresentation-page">
+			<GamePresentationNavBar gameName="..." />
+			<Background style={{ alignItems: "center", justifyContent: "center" }}>
+				<p style={{ color: '#e7e7e7', fontFamily: 'policeConthrax', fontSize: '20px' }}>Chargement...</p>
+			</Background>
+		</div>
+	)
+
+	if (!game) return (
+		<div className="gamepresentation-page">
+			<GamePresentationNavBar gameName="Jeu introuvable" />
+			<Background style={{ alignItems: "center", justifyContent: "center" }}>
+				<p style={{ color: '#e7e7e7', fontFamily: 'policeConthrax', fontSize: '20px' }}>Jeu introuvable.</p>
+			</Background>
+		</div>
+	)
+
+	const screenshots = [
+		...(game.screenshots || []).map(s => formatScreenshot(s.url)).filter(Boolean),
+		...(game.artworks || []).map(a => formatScreenshot(a.url)).filter(Boolean),
+	].slice(0, 6)
+
 	return (
 		<div className="gamepresentation-page">
-			<GamePresentationNavBar gameName={fakeGame.name} />
+			<GamePresentationNavBar gameName={gameName} />
 			<Background style={{ alignItems: "flex-start" }}>
 				<div className="gamepresentation-content">
 
 					<div className="gamepresentation-main">
 
-						{/* Colonne gauche */}
 						<div className="gamepresentation-left">
-							<img src={fakeGame.cover} alt={fakeGame.name} className="gamepresentation-cover" />
+							<img src={getCover(game)} alt={gameName} className="gamepresentation-cover" />
 
-							{/* Boutons actions */}
 							<div className="gamepresentation-actions">
 								<button
 									className={`gamepresentation-action-btn ${liked ? 'active-like' : ''}`}
@@ -74,56 +132,79 @@ const GamePresentationPage = () => {
 								</button>
 							</div>
 
-							<GamePresentationScreenshots screenshots={fakeGame.screenshots} />
+							{screenshots.length > 0 && (
+								<GamePresentationScreenshots screenshots={screenshots} />
+							)}
 						</div>
 
-						{/* Colonne droite */}
 						<div className="gamepresentation-right">
 
-							<h1 className="gamepresentation-game-name">{fakeGame.name}</h1>
+							<h1 className="gamepresentation-game-name">{gameName}</h1>
 
 							<div className="gamepresentation-info-block">
 								<h3 className="gamepresentation-info-title">Description</h3>
-								<p className="gamepresentation-info-text">{fakeGame.description}</p>
+								<p className="gamepresentation-info-text">{game.summary || 'Aucune description disponible.'}</p>
 							</div>
 
 							<div className="gamepresentation-info-block">
 								<h3 className="gamepresentation-info-title">Developers</h3>
-								<p className="gamepresentation-info-text">{fakeGame.developer}</p>
-								<h3 className="gamepresentation-info-title" style={{ marginTop: '10px' }}>Publisher</h3>
-								<p className="gamepresentation-info-text">{fakeGame.publisher}</p>
+								<p className="gamepresentation-info-text">{developer}</p>
+								{publisher !== 'N/A' && (
+									<>
+										<h3 className="gamepresentation-info-title" style={{ marginTop: '10px' }}>Publisher</h3>
+										<p className="gamepresentation-info-text">{publisher}</p>
+									</>
+								)}
 							</div>
 
 							<div className="gamepresentation-info-block">
 								<h3 className="gamepresentation-info-title">Release Date</h3>
-								<p className="gamepresentation-info-text">{fakeGame.releaseDate}</p>
+								<p className="gamepresentation-info-text">{formatDate(game.releaseDate || game.first_release_date)}</p>
 							</div>
 
-							<div className="gamepresentation-info-block">
-								<h3 className="gamepresentation-info-title">Genres</h3>
-								<div className="gamepresentation-tags">
-									{fakeGame.genres.map((genre, i) => (
-										<span key={i} className="gamepresentation-tag">{genre}</span>
-									))}
+							{genres.length > 0 && (
+								<div className="gamepresentation-info-block">
+									<h3 className="gamepresentation-info-title">Genres</h3>
+									<div className="gamepresentation-tags">
+										{genres.map((genre, i) => (
+											<span key={i} className="gamepresentation-tag">{genre}</span>
+										))}
+									</div>
 								</div>
-							</div>
+							)}
 
-							<div className="gamepresentation-info-block">
-								<h3 className="gamepresentation-info-title">Platforms</h3>
-								<div className="gamepresentation-tags">
-									{fakeGame.platforms.map((platform, i) => (
-										<span key={i} className="gamepresentation-tag">{platform}</span>
-									))}
+							{game.platforms && (
+								<div className="gamepresentation-info-block">
+									<h3 className="gamepresentation-info-title">Platforms</h3>
+									<div className="gamepresentation-tags">
+										{game.platforms.map((platform, i) => (
+											<span key={i} className="gamepresentation-tag">{platform.name}</span>
+										))}
+									</div>
 								</div>
-							</div>
+							)}
 
-							<div className="gamepresentation-info-block">
-								<h3 className="gamepresentation-info-title">IGDB Rating</h3>
-								<div className="gamepresentation-rating">
-									{renderRating(fakeGame.rating)}
-									<span className="gamepresentation-rating-number">{fakeGame.rating}/10</span>
+							{game.rating && (
+								<div className="gamepresentation-info-block">
+									<h3 className="gamepresentation-info-title">IGDB Rating</h3>
+									<div className="gamepresentation-rating">
+										{renderStars(game.rating)}
+										<span className="gamepresentation-rating-number">{(game.rating / 10).toFixed(1)}/10</span>
+									</div>
 								</div>
-							</div>
+							)}
+
+							{game.reviews?.length > 0 && (
+								<div className="gamepresentation-info-block">
+									<h3 className="gamepresentation-info-title">User Rating</h3>
+									<div className="gamepresentation-rating">
+										{renderStars(game.reviews.reduce((sum, r) => sum + r.rating, 0) / game.reviews.length * 20)}
+										<span className="gamepresentation-rating-number">
+											{(game.reviews.reduce((sum, r) => sum + r.rating, 0) / game.reviews.length).toFixed(1)}/5
+										</span>
+									</div>
+								</div>
+							)}
 
 						</div>
 					</div>
