@@ -1,16 +1,18 @@
 import { useNavigate } from 'react-router-dom'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import HomeNavBar from '../components/HomeNavBar'
 import Background from '../components/Background'
 import '../styles/HomePage.css'
 
-const fakeRecentReviews = Array.from({ length: 4 }, (_, i) => ({
-	author: `User ${i + 1}`,
+const fakeStats = {
+	reviews: 34,
+	liked: 87,
+	friends: 12,
+}
+
+const fakeFriends = Array.from({ length: 4 }, (_, i) => ({
+	username: `Ami ${i + 1}`,
 	avatar: "https://placehold.co/40x40",
-	gameTitle: `Jeu ${i + 1}`,
-	gameImage: "https://placehold.co/80x110",
-	text: "Super jeu, je recommande vraiment à tout le monde !",
-	rating: Math.floor(Math.random() * 5) + 1,
 }))
 
 const fakeFriendsActivity = Array.from({ length: 4 }, (_, i) => ({
@@ -19,18 +21,6 @@ const fakeFriendsActivity = Array.from({ length: 4 }, (_, i) => ({
 	action: i % 2 === 0 ? "liked" : "reviewed",
 	gameTitle: `Jeu ${i + 1}`,
 	gameImage: "https://placehold.co/80x110",
-}))
-
-const fakePopularGames = Array.from({ length: 4 }, (_, i) => ({
-	title: `Jeu ${i + 1}`,
-	image: "https://placehold.co/120x160",
-	reviews: Math.floor(Math.random() * 500) + 100,
-}))
-
-const fakeComingSoon = Array.from({ length: 4 }, (_, i) => ({
-	title: `Jeu ${i + 1}`,
-	image: "https://placehold.co/120x160",
-	releaseDate: `2026-0${i + 1}-15`,
 }))
 
 const fakePlayingList = Array.from({ length: 4 }, (_, i) => ({
@@ -43,20 +33,51 @@ const fakeLikedGames = Array.from({ length: 4 }, (_, i) => ({
 	image: "https://placehold.co/120x160",
 }))
 
-const fakeFriends = Array.from({ length: 4 }, (_, i) => ({
-	username: `Ami ${i + 1}`,
+const fakeRecentReviews = Array.from({ length: 4 }, (_, i) => ({
+	author: `User ${i + 1}`,
 	avatar: "https://placehold.co/40x40",
+	gameTitle: `Jeu ${i + 1}`,
+	gameImage: "https://placehold.co/80x110",
+	text: "Super jeu, je recommande vraiment à tout le monde !",
+	rating: Math.floor(Math.random() * 5) + 1,
 }))
-
-const fakeStats = {
-	reviews: 34,
-	liked: 87,
-	friends: 12,
-}
 
 const HomePage = () => {
 	const navigate = useNavigate()
 	const [statsModal, setStatsModal] = useState(null)
+	const [newReleases, setNewReleases] = useState([])
+	const [highlyPraised, setHighlyPraised] = useState([])
+	const [popular, setPopular] = useState([])
+	const [comingSoon, setComingSoon] = useState([])
+
+	useEffect(() => {
+		const fetchAll = async () => {
+			try {
+				const [newR, highP, pop, soon] = await Promise.all([
+					fetch('/api/games/new-releases').then(r => r.json()),
+					fetch('/api/games/highly-praised').then(r => r.json()),
+					fetch('/api/games/popular').then(r => r.json()),
+					fetch('/api/games/coming-soon').then(r => r.json()),
+				])
+
+				const formatGames = (games) => games.slice(0, 4).map(g => ({
+					id: g.id,
+					title: g.name,
+					image: g.cover?.url
+						? `https:${g.cover.url.replace('t_thumb', 't_cover_big')}`
+						: "https://placehold.co/120x160"
+				}))
+
+				setNewReleases(formatGames(newR))
+				setHighlyPraised(formatGames(highP))
+				setPopular(formatGames(pop))
+				setComingSoon(formatGames(soon))
+			} catch (err) {
+				console.error('Erreur fetch IGDB:', err)
+			}
+		}
+		fetchAll()
+	}, [])
 
 	const renderStars = (rating) => {
 		return [1, 2, 3, 4, 5].map((star) => (
@@ -95,10 +116,10 @@ const HomePage = () => {
 							<div className="home-highlight-card" onClick={() => navigate('/games?category=new-releases')}>
 								<h2 className="home-section-title">New releases →</h2>
 								<div className="home-highlight-grid">
-									{Array.from({ length: 4 }, (_, i) => (
-										<div key={i} className="home-highlight-game" onClick={(e) => { e.stopPropagation(); navigate(`/game/Jeu${i + 1}`) }}>
-											<img src="https://placehold.co/120x160" alt={`Jeu ${i + 1}`} className="home-highlight-game-img" />
-											<p className="home-highlight-game-title">Jeu {i + 1}</p>
+									{newReleases.map((game, i) => (
+										<div key={i} className="home-highlight-game" onClick={(e) => { e.stopPropagation(); navigate(`/game/${game.id}`) }}>
+											<img src={game.image} alt={game.title} className="home-highlight-game-img" />
+											<p className="home-highlight-game-title">{game.title}</p>
 										</div>
 									))}
 								</div>
@@ -107,10 +128,10 @@ const HomePage = () => {
 							<div className="home-highlight-card" onClick={() => navigate('/games?category=highly-praised')}>
 								<h2 className="home-section-title">Highly praised →</h2>
 								<div className="home-highlight-grid">
-									{Array.from({ length: 4 }, (_, i) => (
-										<div key={i} className="home-highlight-game" onClick={(e) => { e.stopPropagation(); navigate(`/game/Jeu${i + 5}`) }}>
-											<img src="https://placehold.co/120x160" alt={`Jeu ${i + 5}`} className="home-highlight-game-img" />
-											<p className="home-highlight-game-title">Jeu {i + 5}</p>
+									{highlyPraised.map((game, i) => (
+										<div key={i} className="home-highlight-game" onClick={(e) => { e.stopPropagation(); navigate(`/game/${game.id}`) }}>
+											<img src={game.image} alt={game.title} className="home-highlight-game-img" />
+											<p className="home-highlight-game-title">{game.title}</p>
 										</div>
 									))}
 								</div>
@@ -163,11 +184,10 @@ const HomePage = () => {
 					<div className="home-section">
 						<h2 className="home-section-title">Popular this week</h2>
 						<div className="home-games-grid">
-							{fakePopularGames.map((game, i) => (
-								<div key={i} className="home-game-card" onClick={() => navigate(`/game/${game.title}`)}>
+							{popular.map((game, i) => (
+								<div key={i} className="home-game-card" onClick={() => navigate(`/game/${game.id}`)}>
 									<img src={game.image} alt={game.title} className="home-game-img" />
 									<p className="home-game-title">{game.title}</p>
-									<p className="home-game-meta">{game.reviews} reviews</p>
 								</div>
 							))}
 						</div>
@@ -177,11 +197,10 @@ const HomePage = () => {
 					<div className="home-section">
 						<h2 className="home-section-title">Coming soon</h2>
 						<div className="home-games-grid">
-							{fakeComingSoon.map((game, i) => (
-								<div key={i} className="home-game-card" onClick={() => navigate(`/game/${game.title}`)}>
+							{comingSoon.map((game, i) => (
+								<div key={i} className="home-game-card" onClick={() => navigate(`/game/${game.id}`)}>
 									<img src={game.image} alt={game.title} className="home-game-img" />
 									<p className="home-game-title">{game.title}</p>
-									<p className="home-game-meta">{game.releaseDate}</p>
 								</div>
 							))}
 						</div>
