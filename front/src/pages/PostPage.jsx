@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
 import PostNavBar from '../components/PostNavBar'
 import Background from '../components/Background'
 import PostStars from '../components/PostStars'
@@ -8,14 +9,21 @@ import '../styles/PostPage.css'
 const MAX_CHARS = 500
 
 const PostPage = () => {
+	const location = useLocation()
 	const [review, setReview] = useState('')
 	const [rating, setRating] = useState(null)
 	const [selectedGame, setSelectedGame] = useState(null)
 	const [showPicker, setShowPicker] = useState(false)
 
+	// Récupère le jeu passé depuis la page de présentation
+	useEffect(() => {
+		if (location.state?.selectedGame) {
+			setSelectedGame(location.state.selectedGame)
+		}
+	}, [location.state])
+
 	const handleSubmit = () => {
 		console.log({ review, rating, selectedGame })
-		// appel API ici plus tard
 	}
 
 	return (

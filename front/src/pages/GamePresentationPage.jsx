@@ -73,7 +73,7 @@ const GamePresentationPage = () => {
 	const handleWriteReview = () => {
 		navigate('/post', { state: { selectedGame: { title: gameName, image: getCover(game), id: game?.idExterne || game?.id } } })
 	}
-
+	
 	if (loading) return (
 		<div className="gamepresentation-page">
 			<GamePresentationNavBar gameName="..." />

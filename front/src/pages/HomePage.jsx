@@ -55,12 +55,12 @@ const HomePage = () => {
 			try {
 				const [newR, highP, pop, soon] = await Promise.all([
 					fetch('/api/games/new-releases').then(r => r.json()),
-					fetch('/api/games/highly-praised').then(r => r.json()),
+					fetch('/api/games/recent-acclaimed').then(r => r.json()),
 					fetch('/api/games/popular').then(r => r.json()),
 					fetch('/api/games/coming-soon').then(r => r.json()),
 				])
 
-				const formatGames = (games) => games.slice(0, 8).map(g => ({
+				const formatGames = (games) => (Array.isArray(games) ? games : []).slice(0, 8).map(g => ({
 					id: g.idExterne || g.id,
 					title: g.title || g.name,
 					image: g.coverImageUrl ||
@@ -106,8 +106,8 @@ const HomePage = () => {
 								</div>
 							</div>
 
-							<div className="home-highlight-card" onClick={() => navigate('/games?category=highly-praised')}>
-								<h2 className="home-section-title">Highly praised →</h2>
+							<div className="home-highlight-card" onClick={() => navigate('/games?category=recent-acclaimed')}>
+								<h2 className="home-section-title">Recent hits →</h2>
 								<div className="home-highlight-grid">
 									<div className="home-highlight-track">
 										{[...highlyPraised, ...highlyPraised].map((game, i) => (

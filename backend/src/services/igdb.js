@@ -104,3 +104,30 @@ export const getComingSoon = async () => {
     limit 20;
   `);
 };
+
+export const getByGenre = async (genreId) => {
+	return igdbQuery('games', `
+    fields name, cover.url, summary, first_release_date, genres.name, rating, rating_count;
+    where genres = (${genreId}) & cover != null & rating != null & rating_count >= 15 & parent_game = null;
+    sort rating desc;
+    limit 50;
+  `);
+};
+
+export const getByTheme = async (themeId) => {
+	return igdbQuery('games', `
+    fields name, cover.url, summary, first_release_date, genres.name, rating, rating_count;
+    where themes = (${themeId}) & cover != null & rating != null & rating_count >= 15 & parent_game = null;
+    sort rating desc;
+    limit 50;
+  `);
+};
+
+export const getByGameMode = async (modeId) => {
+	return igdbQuery('games', `
+    fields name, cover.url, summary, first_release_date, genres.name, rating, rating_count;
+    where game_modes = (${modeId}) & cover != null & rating != null & rating_count >= 15 & parent_game = null;
+    sort rating desc;
+    limit 50;
+  `);
+};

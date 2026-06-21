@@ -1,9 +1,9 @@
 .home-page {
 	min-height: 100vh;
 	background-color: black;
-	overflow-x: hidden;
+	width: 100%;
+	padding-top: 90px;
 }
-
 .home-content {
 	width: 100%;
 	z-index: 1;

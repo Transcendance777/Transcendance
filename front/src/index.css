@@ -94,6 +94,11 @@ a {
 	font-size: 12px;
 }
 
+html,
+body {
+	overflow-x: hidden;
+}
+
 @media (max-width: 900px) {
 	.profil-avatar-link {
 		display: none !important;

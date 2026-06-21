@@ -1,6 +1,8 @@
 .reviews-page {
 	min-height: 100vh;
 	background-color: black;
+	width: 100%;
+	padding-top: 90px;
 }
 
 .reviews-content {
