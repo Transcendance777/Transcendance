@@ -1,20 +1,118 @@
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider = "prisma-client-js"
+//   output   = "../generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
 }
 
+// table de test pour la communication back-front
 model login_test {
   id       Int    @id @default(autoincrement())
   email    String @db.VarChar(100)
   password String @db.VarChar(255)
 }
 
-model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  password      String
+// table des utilisateurs
+model Users {
+	id				Int			@id @default(autoincrement())
+	email			String		@unique
+	username  		String		@unique
+	passwordHash	String		@map("password_hash") //map: relier passwordHash dans le back a password_hash ds la DB (convention de nom)
+	avatarUrl     	String?		@default("default_avatar.png") @map("avatar_url") //'?': can be NULL
+	bio				String?
+	createdAt		DateTime	@default(now()) @map("created_at")
+
+	//relations
+	reviews			Review[]
+	reviewLikes		ReviewLike[]
+	apiKey    		ApiKey?
+
+	// Self-referencing Many-to-Many for Friendships
+	friendsInitiated	Friendship[] @relation("FriendshipsInitiated")
+	friendsReceived		Friendship[] @relation("FriendshipsReceived")
+
+	@@map("users")
+}
+
+model ApiKey {
+	id        Int		@id @default(autoincrement())
+	userId    Int		@unique @map("user_id")
+	key       String	@unique  // la clé elle-même (ex: "sk_abc123...")
+	isActive  Boolean	@default(true) @map("is_active")
+	createdAt DateTime	@default(now()) @map("created_at")
+
+	user      Users		@relation(fields: [userId], references: [id])
+
+	@@map("api_key")
+}
+
+
+// Table des Jeux Vidéo
+model Game {
+  id            Int       @id @default(autoincrement())
+  idExterne     String    @unique @map("id_externe")
+  title         String    @db.VarChar(150)
+  summary       String?
+  releaseDate   DateTime? @map("release_date") @db.Date
+  coverImageUrl String?   @map("cover_image_url")
+  developer     String?   @db.VarChar(100)
+  genre         String?   @db.VarChar(255)
+  
+  // Relations
+  reviews       Review[]
+
+  @@map("games")
+}
+
+// 3. Table des Critiques et Notes (Reviews)
+model Review {
+  id         Int          @id @default(autoincrement())
+  userId     Int          @map("user_id")
+  gameId     Int          @map("game_id")
+  rating     Int // Note: Prisma handles application-level validation, or you can validate 1-5 in your backend code.
+  reviewText String?      @map("review_text")
+  createdAt  DateTime     @default(now()) @map("created_at")
+  updatedAt  DateTime     @default(now()) @updatedAt @map("updated_at")
+
+  // Relations
+  user       Users 			@relation(fields: [userId], references: [id], onDelete: Cascade)
+  game       Game			@relation(fields: [gameId], references: [id], onDelete: Cascade)
+  likes      ReviewLike[]
+
+  // Constraints
+  @@unique([userId, gameId], name: "unique_user_game_review")
+  @@map("reviews")
+}
+
+// Table des Likes sur les Critiques
+model ReviewLike {
+  userId   Int      @map("user_id")
+  reviewId Int      @map("review_id")
+  likedAt  DateTime @default(now()) @map("liked_at")
+
+  // Relations
+  user   Users		@relation(fields: [userId], references: [id], onDelete: Cascade)
+  review Review		@relation(fields: [reviewId], references: [id], onDelete: Cascade)
+
+  // Constraints
+  @@id([userId, reviewId])
+  @@map("review_likes")
+}
+
+// Table du Système d'Amis (Relation réflexive explicite)
+model Friendship {
+  userId1   Int      @map("user_id_1")
+  userId2   Int      @map("user_id_2")
+  status    String   @default("pending") @db.VarChar(20) // 'pending', 'accepted', 'blocked'
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  user1 Users @relation("FriendshipsInitiated", fields: [userId1], references: [id], onDelete: Cascade)
+  user2 Users @relation("FriendshipsReceived", fields: [userId2], references: [id], onDelete: Cascade)
+
+  // Constraints
+  @@id([userId1, userId2])
+  @@map("friendships")
 }

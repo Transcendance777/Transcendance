@@ -1,57 +1,95 @@
-// console.log("hiiiiii");
+//libraries and includes
+import 'dotenv/config'; //parse env
+import express from 'express'; //import-> import tool/library
+import cors from 'cors'; // cors-> tool to comunicate safely with another service
+import { execSync } from 'child_process'; //for execSync function
 
-//libraries
-require('dotenv').config();
-const express = require('express'); //require-> import tool/library
-const { Pool } = require('pg'); // {} -> import only the tool Pool from pg(postgres) library
-const cors = require('cors'); // cors-> tool to comunicate safely with another service
+import prisma from './init/initPrisma.js'; //prisma singleton instance
+
+// port
+const PORT = process.env.PORT_BACK || 4000;
+
+/**
+ * checks if DB schema has been changed, if so, update the DB
+ */
+function syncDatabaseSchema() {
+  console.log('🔄 Checking for database schema changes...');
+  try {
+    // execSync runs the command and blocks execution until it finishes successfully
+    execSync('npx prisma db push', { stdio: 'inherit' });
+    console.log('✅ Database schema is up to date!');
+  } catch (error) {
+    console.error('❌ Failed to sync database schema:', error);
+    console.log('🔄 Wiping and resetting database for a clean start...');
+
+    try {
+      // If a normal push fails, force a clean reset of the local DB
+      execSync('npx prisma db push --force-reset', { stdio: 'inherit' });
+      console.log('✨ Database reset and schema applied cleanly!');
+    } catch (resetError) {
+      console.error('❌ Critical failure updating database schema:', resetError);
+      process.exit(1); 
+    }
+  }
+}
+
+/**
+ * if the database is empty, it feels it with a few games and basic users
+ * @returns nothing
+ */
+async function seedDatabase() {
+  console.log('🌱 Checking database for seeding...');
+
+  try {
+    const gameCount = await prisma.game.count();
+
+    if (gameCount > 0) {
+      console.log(`Database already contains ${gameCount} games. Skipping seed script.`);
+      return;
+    }
+
+    // This triggers Prisma's seeding mechanism
+    execSync('npx prisma db seed', { stdio: 'inherit' });
+    console.log('✅ Database seeding completed!');
+  } catch (error) {
+    console.error('❌ Failed to seed database:', error);
+    // Optional: decide if you want to crash the app if seeding fails
+  }
+}
+
+syncDatabaseSchema();
+await seedDatabase();
+
+// connect prisma client
+prisma.$connect();
 
 //starting the app
 const app = express(); //actual start
 app.use(cors()); //apply this tool to the server
 app.use(express.json());//translates JSON files to JS directly
 
-//connexion PostgreSQL
-const pool = new Pool ({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASS,
-    database: process.env.DB_NAME,
-    port: 5432,
-});
-
-//function to create a table
-const initDb = async () => { 
-    try {
-        await pool.query(`
-        CREATE TABLE IF NOT EXISTS login_test (
-          id SERIAL PRIMARY KEY,
-          email VARCHAR(100) NOT NULL,
-          password VARCHAR(255) NOT NULL
-        );
-      `);
-    } catch (err) {
-        console.error("Error init DB: ", err);
-    }
-};
-initDb(); //call the function
-
-//create a POST route
+//create a POST route -> if data is received on /api/login, heres how its being processed :
 app.post('/api/login', async (req, res) => {
-    const { email, password } = req.body; // Validation obligatoire requise par le sujet plus tard
+    const { email, password } = req.body; 
   
     try {
-      // Note : Pour votre vrai module sécurité, il faudra obligatoirement hasher le mot de passe ici !
-      const queryText = 'INSERT INTO login_test(email, password) VALUES($1, $2) RETURNING id, email';
-      const values = [email, password];
-      
-      const result = await pool.query(queryText, values);
-      console.log("DATABASE INSERTION SUCCESS:", result.rows[0]);      res.status(201).json({ message: "Utilisateur créé !", email: result.rows[0] });
+	// insert user in DB with prisma (for login test, remove later)
+		const newUser = await prisma.login_test.create({
+			data: {
+				email: email,
+				password: password,
+			},
+			select: { //to return those values so we can print them
+				id: true,
+				email: true,
+			}
+		});
+		console.log("DATABASE INSERTION SUCCESS:", newUser);
+		res.status(201).json({ message: "Utilisateur créé !", email: newUser });
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: "Erreur lors de l'insertion en base." });
     }
   });
-  
-  const PORT = process.env.PORT || 4000;
-  app.listen(PORT, () => console.log(`Backend actif sur le port ${PORT}`));
+
+app.listen(PORT, () => console.log(`Backend actif sur le port ${PORT}`));
