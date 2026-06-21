@@ -17,6 +17,7 @@
 	height: clamp(160px, 16vw, 270px);
 	object-fit: cover;
 	border-radius: 10px;
+	display: block;
 }
 
 .games-card-title {
