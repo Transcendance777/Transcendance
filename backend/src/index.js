@@ -42,10 +42,13 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-// test API publique
+// API publique
 import reviewsRouter from './routes/reviews.js';
+import gamesRouter from './routes/apiGames.js';
 import apiKeyAuth from './middlewares/apiKeyAuth.js';
-app.use('/api', apiKeyAuth, reviewsRouter);
+import apiLimiter from './middlewares/rateLimiter.js';
+app.use('/api', apiLimiter, apiKeyAuth, gamesRouter);
+app.use('/api', apiLimiter, apiKeyAuth, reviewsRouter);
 
 //infinite loop that listens to connection arriving on the backend port
 app.listen(PORT, () => console.log(`Backend actif sur le port ${PORT}`));

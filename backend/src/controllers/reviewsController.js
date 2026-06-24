@@ -1,7 +1,9 @@
 import prisma from '../init/initPrisma.js';
+import { validationResult } from 'express-validator';
+import sanitizeHtml from 'sanitize-html';
 
 /**
- * ROUTE 1 : GET/api/reviews (get all the reviews)
+ * ROUTE GET/api/reviews (get all the reviews)
  * @param {*} req requete recue
  * @param {*} res reponse renvoyee
  */
@@ -38,7 +40,50 @@ const getAllReviews = async (req, res) => {
 };
 
 /**
- * ROUTE 2 : GET/api/reviews/:id (get reviews by id)
+ * ROUTE GET/api/reviews/:gameId (get reviews by game)
+ * @param {*} req requete recue
+ * @param {*} res reponse renvoyee
+ */
+const getReviewsByGame = async (req, res) => {
+    try {
+        // On récupère les paramètres de pagination depuis l'URL
+		// Ex: /api/reviews?page=2&limit=10
+		const page = parseInt(req.query.page) || 1;
+		const limit = parseInt(req.query.limit) || 10;
+		const skip = (page - 1) * limit; // Combien d'éléments sauter
+		const id = parseInt(req.params.id);
+
+		const reviews = await prisma.review.findMany({
+		where: { gameId: id },
+		skip: skip,
+		take: limit,
+		orderBy: { createdAt: 'desc' }, // Les plus récentes en premier
+		});
+
+		if (!reviews) {
+			return res.status(404).json({ error: 'No reviews for this game' });
+		}
+
+		// On compte le total pour calculer le nombre de pages
+		const total = await prisma.review.count();
+
+		res.status(200).json({
+		data: reviews,
+		pagination: {
+			total,
+			page,
+			limit,
+			totalPages: Math.ceil(total / limit),
+		},
+		});
+    }
+    catch (error) {
+		res.status(500).json({ error: 'Server error', details: error.message });
+    }
+};
+
+/**
+ * ROUTE GET/api/reviews/:id (get reviews by id)
  * @param {*} req requete recue
  * @param {*} res reponse renvoyee
  */
@@ -63,43 +108,54 @@ const getReviewById = async (req, res) => {
 };
 
 /**
- * ROUTE 3 : POST /api/reviews (post a review)
+ * ROUTE POST /api/reviews (post a review)
  * @param {*} req requete recue
  * @param {*} res reponse renvoyee
  */
 const createReview = async (req, res) => {
+	//checks if validation middleware has caught any errors beforehand
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		return res.status(400).json({ errors: errors.array() });
+	}
+
 	try {
 		// On extrait les champs envoyés dans le body JSON
-		const { reviewText, rating, gameId, userId } = req.body;
-
-		// Validation basique : ces champs sont obligatoires
-		if (!rating || !gameId || !userId) {
-			return res.status(400).json({ error: 'Missing fields : rating, userId, gameId are required' });
-		}
+		const { reviewText, rating, gameId } = req.body;
+		const userId = parseInt(req.user.id);
 
 		//checks if user exists
-		const parsedId = parseInt(userId);
-		const existingUser = await prisma.users.findUnique({ where: { parsedId } });
+		const existingUser = await prisma.users.findUnique({ where: { id:userId } });
 		if (!existingUser) {
 			return res.status(404).json({ error: 'User not found' });
 		}
 
-		// checks rights
-		if (req.scope !== 'admin' && existingUser.id !== req.user.id) {
-			return res.status(403).json({ error: 'Unauthorised action' });
-		}
+		//check if review has already been made
+		const alreadyReviewed = await prisma.review.findFirst({
+            where: {
+                userId: userId,
+                gameId: gameId
+            }
+        });
+        if (alreadyReviewed) {
+            return res.status(400).json({ 
+                error: 'You have already submitted a review for this game. You can update or delete your existing review instead.' 
+            });
+        }
 
-		if (rating < 1 || rating > 5) {
-			return res.status(400).json({ error: 'Rate must be between 1 and 5' });
-		}
+		// clean review text before inserting
+		const safeReviewText = reviewText
+		? sanitizeHtml(reviewText, { allowedTags: ['b', 'i', 'em', 'strong'], allowedAttributes: {} })
+		: null;
 
+		//insert into DB
 		const newReview = await prisma.review.create({
 			data: {
-				reviewText,
-				rating: parseInt(rating),
+				reviewText: safeReviewText,
+				rating: rating,
 				// On connecte les relations via les IDs
-				userId: parseInt(userId),
-				gameId: parseInt(gameId)
+				userId: userId,
+				gameId: gameId
 			},
 		});
 
@@ -112,11 +168,17 @@ const createReview = async (req, res) => {
 };
 
 /**
- * ROUTE 4 : PUT /api/reviews/:id (modify a review)
+ * ROUTE PUT /api/reviews/:id (modify a review)
  * @param {*} req requete recue
  * @param {*} res reponse renvoyee
  */
 const updateReview = async (req, res) => {
+	//checks if validation middleware has caught any errors beforehand
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		return res.status(400).json({ errors: errors.array() });
+	}
+
 	try {
 		const id = parseInt(req.params.id);
 		const { reviewText, rating } = req.body;
@@ -131,17 +193,22 @@ const updateReview = async (req, res) => {
 		if (req.scope !== 'admin' && existing.userId !== req.user.id) {
 			return res.status(403).json({ error: 'Unauthorised action' });
 		}
+
+		// clean review text before inserting
+		const safeReviewText = reviewText
+		? sanitizeHtml(reviewText, { allowedTags: ['b', 'i', 'em', 'strong'], allowedAttributes: {} })
+		: null;
 		
 		const updatedReview = await prisma.review.update({
 			where: { id: id },
 			data: {
 			// On ne met à jour que les champs fournis (les autres restent inchangés)
-			...(reviewText && { reviewText }),
+			...(reviewText && { safeReviewText }),
 			...(rating && { rating }),
 			},
 		});
 
-	res.status(200).json(updatedReview);
+		res.status(200).json(updatedReview);
 	}
 	catch (error) {
 		res.status(500).json({ error: 'Server error', details: error.message });
@@ -149,7 +216,7 @@ const updateReview = async (req, res) => {
 };
 
 /**
- * ROUTE 5 : DELETE /api/reviews/:id (delete a review)
+ * ROUTE DELETE /api/reviews/:id (delete a review)
  * @param {*} req requete recue
  * @param {*} res reponse renvoyee
  */
@@ -179,4 +246,4 @@ const deleteReview = async (req, res) => {
 	}
 };
 
-export default { getAllReviews, getReviewById, createReview, updateReview, deleteReview };
+export default { getAllReviews, getReviewsByGame, getReviewById, createReview, updateReview, deleteReview };
