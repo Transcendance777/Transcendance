@@ -57,22 +57,7 @@ services:
       - "9090:9090"
     networks:
       - gamerev
-    # depends_on:
-    #   - cadvisor
 
-  # cadvisor: incompatible avec Podman rootless (nécessite socket Docker + /var/lib/docker)
-  # cadvisor:
-  #   image: gcr.io/cadvisor/cadvisor:v0.52.1
-  #   container_name: cadvisor
-  #   ports:
-  #     - "9091:8080"
-  #   volumes:
-  #     - /:/rootfs:ro
-  #     - /var/run:/var/run:rw
-  #     - /sys:/sys:ro
-  #     - /var/lib/docker/:/var/lib/docker:ro
-  #   networks:
-  #     - gamerev
 
   grafana:
     container_name: grafana
