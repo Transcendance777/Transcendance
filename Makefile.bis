@@ -1,31 +1,30 @@
-COMPOSE = docker compose
-COMPOSE_FILE = docker-compose.yaml
+COMPOSE = podman compose
 ENV_FILE = .env
 
 all: up
 
-up: $(ENV_FILE)
-	$(COMPOSE) -f $(COMPOSE_FILE) up --build -d
+up:
+	$(COMPOSE) up -d --build
 
 down:
-	$(COMPOSE) -f $(COMPOSE_FILE) down
+	$(COMPOSE) down
 
 re: down up
 
 logs:
-	$(COMPOSE) -f $(COMPOSE_FILE) logs -f
+	$(COMPOSE) logs -f
 
 ps:
-	$(COMPOSE) -f $(COMPOSE_FILE) ps
+	$(COMPOSE) ps
 
 # Attention, nettoyage des conteneurs et des volumes (efface la db)
 clean:
-	$(COMPOSE) -f $(COMPOSE_FILE) down -v
+	$(COMPOSE) down -v
 
 # Nettoyage complet + images construites + réseaux orphelins
 fclean: clean
-	$(COMPOSE) -f $(COMPOSE_FILE) down --rmi all --remove-orphans
-	docker system prune -f
+	$(COMPOSE) down --rmi all --remove-orphans
+	podman system prune -f
 
 # Garde fou
 $(ENV_FILE):
