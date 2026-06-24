@@ -33,7 +33,7 @@ const getAllReviews = async (req, res) => {
 		});
     }
     catch (error) {
-		res.status(500).json({ error: 'Erreur serveur', details: error.message });
+		res.status(500).json({ error: 'Server error', details: error.message });
     }
 };
 
@@ -52,13 +52,13 @@ const getReviewById = async (req, res) => {
 
 		// Si l'ID n'existe pas dans la DB → 404
 		if (!review) {
-			return res.status(404).json({ error: 'Critique introuvable' });
+			return res.status(404).json({ error: 'Review not found' });
 		}
 
 		res.status(200).json(review);
 	}
 	catch (error) {
-		res.status(500).json({ error: 'Erreur serveur', details: error.message });
+		res.status(500).json({ error: 'Server error', details: error.message });
 	}
 };
 
@@ -75,6 +75,18 @@ const createReview = async (req, res) => {
 		// Validation basique : ces champs sont obligatoires
 		if (!rating || !gameId || !userId) {
 			return res.status(400).json({ error: 'Missing fields : rating, userId, gameId are required' });
+		}
+
+		//checks if user exists
+		const parsedId = parseInt(userId);
+		const existingUser = await prisma.users.findUnique({ where: { parsedId } });
+		if (!existingUser) {
+			return res.status(404).json({ error: 'User not found' });
+		}
+
+		// checks rights
+		if (req.scope !== 'admin' && existingUser.id !== req.user.id) {
+			return res.status(403).json({ error: 'Unauthorised action' });
 		}
 
 		if (rating < 1 || rating > 5) {
@@ -95,7 +107,7 @@ const createReview = async (req, res) => {
 		res.status(201).json(newReview);
 	}
 	catch (error) {
-		res.status(500).json({ error: 'Erreur serveur', details: error.message });
+		res.status(500).json({ error: 'Server error', details: error.message });
 	}
 };
 
@@ -112,9 +124,14 @@ const updateReview = async (req, res) => {
 		// Vérifier que la review existe avant de tenter la mise à jour
 		const existing = await prisma.review.findUnique({ where: { id } });
 		if (!existing) {
-			return res.status(404).json({ error: 'Critique introuvable' });
+			return res.status(404).json({ error: 'Review not found' });
 		}
 
+		// checks rights
+		if (req.scope !== 'admin' && existing.userId !== req.user.id) {
+			return res.status(403).json({ error: 'Unauthorised action' });
+		}
+		
 		const updatedReview = await prisma.review.update({
 			where: { id: id },
 			data: {
@@ -127,7 +144,7 @@ const updateReview = async (req, res) => {
 	res.status(200).json(updatedReview);
 	}
 	catch (error) {
-		res.status(500).json({ error: 'Erreur serveur', details: error.message });
+		res.status(500).json({ error: 'Server error', details: error.message });
 	}
 };
 
@@ -142,7 +159,12 @@ const deleteReview = async (req, res) => {
 
 		const existing = await prisma.review.findUnique({ where: { id } });
 		if (!existing) {
-			return res.status(404).json({ error: 'Critique introuvable' });
+			return res.status(404).json({ error: 'Review not found' });
+		}
+
+		// checks rights
+		if (req.scope !== 'admin' && existing.userId !== req.user.id) {
+			return res.status(403).json({ error: 'Unauthorised action' });
 		}
 
 		await prisma.review.delete({
@@ -153,7 +175,7 @@ const deleteReview = async (req, res) => {
 		res.status(204).send();
 	}
 	catch (error) {
-		res.status(500).json({ error: 'Erreur serveur', details: error.message });
+		res.status(500).json({ error: 'Server error', details: error.message });
 	}
 };
 

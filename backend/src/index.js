@@ -40,11 +40,12 @@ app.post('/api/login', async (req, res) => {
       console.error(error);
       res.status(500).json({ error: "Erreur lors de l'insertion en base." });
     }
-  });
+});
 
 // test API publique
 import reviewsRouter from './routes/reviews.js';
-app.use('/api', reviewsRouter);
+import apiKeyAuth from './middlewares/apiKeyAuth.js';
+app.use('/api', apiKeyAuth, reviewsRouter);
 
 //infinite loop that listens to connection arriving on the backend port
 app.listen(PORT, () => console.log(`Backend actif sur le port ${PORT}`));
