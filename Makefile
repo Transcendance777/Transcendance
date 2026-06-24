@@ -4,13 +4,19 @@ ENV_FILE = .env
 
 all: up
 
-up: $(ENV_FILE)
-	$(COMPOSE) -f $(COMPOSE_FILE) up --build -d
+up: $(ENV_FILE) certs
+	$(COMPOSE) -f $(COMPOSE_FILE) up -d
+
+certs:
+	@if [ ! -f nginx/certs/cert.crt ]; then \
+		bash scripts/generate_certs.sh; \
+	fi
 
 down:
 	$(COMPOSE) -f $(COMPOSE_FILE) down
 
-re: down up
+re: down
+	$(COMPOSE) -f $(COMPOSE_FILE) up -d --build
 
 logs:
 	$(COMPOSE) -f $(COMPOSE_FILE) logs -f
