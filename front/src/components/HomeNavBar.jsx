@@ -5,26 +5,21 @@ import { useState, useEffect } from 'react'
 import { FiSearch } from 'react-icons/fi'
 import { Link } from 'react-router-dom'
 import SearchBar from './SearchBar'
-
+import NavAvatar from './NavAvatar'
 
 const HomeNavBar = () => {
 	const [menuOpen, setMenuOpen] = useState(false)
-	const [searchOpen, setSearchOpen] = useState(false)
 	const navigate = useNavigate()
 
 	useEffect(() => {
 		const handleClick = () => setMenuOpen(false)
-		if (menuOpen) {
-			document.addEventListener('click', handleClick)
-		}
+		if (menuOpen) document.addEventListener('click', handleClick)
 		return () => document.removeEventListener('click', handleClick)
 	}, [menuOpen])
 
 	useEffect(() => {
 		const handleResize = () => {
-			if (window.innerWidth > 900) {
-				setMenuOpen(false)
-			}
+			if (window.innerWidth > 900) setMenuOpen(false)
 		}
 		window.addEventListener('resize', handleResize)
 		return () => window.removeEventListener('resize', handleResize)
@@ -33,10 +28,11 @@ const HomeNavBar = () => {
 	return (
 		<nav className="navbar">
 			<div className="navbar-left">
-				<a onClick={() => navigate('/games')} className="nav-link" style={{ cursor: 'pointer' }}>Games</a>
-				<a onClick={() => navigate('/reviews')} className="nav-link" style={{ cursor: 'pointer' }}>Reviews</a>
-				<a onClick={() => navigate('/friends')} className="nav-link" style={{ cursor: 'pointer' }}>Friends</a>
-				<a onClick={() => navigate('/post')} className="nav-link plus" style={{ cursor: 'pointer' }}>+</a>
+				<button className="hamburger" onClick={(e) => { e.stopPropagation(); setMenuOpen(!menuOpen) }}>☰</button>
+				<a onClick={() => navigate('/games')} className="nav-link nav-link-desktop" style={{ cursor: 'pointer' }}>Games</a>
+				<a onClick={() => navigate('/reviews')} className="nav-link nav-link-desktop" style={{ cursor: 'pointer' }}>Reviews</a>
+				<a onClick={() => navigate('/friends')} className="nav-link nav-link-desktop" style={{ cursor: 'pointer' }}>Friends</a>
+				<a onClick={() => navigate('/post')} className="nav-link plus nav-link-desktop" style={{ cursor: 'pointer' }}>+</a>
 			</div>
 
 			<div className="navbar-center">
@@ -45,25 +41,16 @@ const HomeNavBar = () => {
 
 			<div className="navbar-right">
 				<SearchBar />
-				<a onClick={() => navigate('/profile')} className="nav-link profil-avatar-link" style={{ cursor: 'pointer' }}>
-					<img src="https://placehold.co/35x35" alt="profile" className="navbar-avatar" />
-				</a>
-				<button className="hamburger" onClick={(e) => { e.stopPropagation(); setMenuOpen(!menuOpen) }}>☰</button>
+				<NavAvatar size={35} />
 			</div>
 
 			{menuOpen && (
 				<div className="dropdown-menu">
-					{window.innerWidth <= 900 && (
-						<a onClick={() => navigate('/profile')} className="nav-link" style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}>
-							<img src="https://placehold.co/35x35" alt="profile" className="navbar-avatar" />
-							<span>Profile</span>
-						</a>
-					)}
+					{window.innerWidth <= 900 && <NavAvatar size={35} showLabel={true} />}
 					<a onClick={() => navigate('/games')} className="nav-link" style={{ cursor: 'pointer' }}>Games</a>
 					<a onClick={() => navigate('/reviews')} className="nav-link" style={{ cursor: 'pointer' }}>Reviews</a>
 					<a onClick={() => navigate('/friends')} className="nav-link" style={{ cursor: 'pointer' }}>Friends</a>
 					<a onClick={() => navigate('/post')} className="nav-link" style={{ cursor: 'pointer' }}>Post</a>
-					
 				</div>
 			)}
 		</nav>

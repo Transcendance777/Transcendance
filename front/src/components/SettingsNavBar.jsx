@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { FiSearch, FiHome } from 'react-icons/fi'
 import { useNavigate, Link } from 'react-router-dom'
 import SearchBar from './SearchBar'
+import NavAvatar from './NavAvatar'
 
 const SettingsNavBar = () => {
 	const [menuOpen, setMenuOpen] = useState(false)
@@ -44,10 +45,7 @@ const SettingsNavBar = () => {
 			{menuOpen && (
 				<div className="settings-dropdown">
 
-					<a onClick={() => navigate('/profile')} className="nav-link" style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}>
-						<img src="https://placehold.co/35x35" alt="profile" className="navbar-avatar" />
-						<span>Profile</span>
-					</a>
+					<NavAvatar size={35} showLabel={true} />
 					<a onClick={() => navigate('/home')} className="nav-link" style={{ cursor: 'pointer' }}>Home</a>
 					<a onClick={() => navigate('/games')} className="nav-link" style={{ cursor: 'pointer' }}>Games</a>
 					<a onClick={() => navigate('/reviews')} className="nav-link" style={{ cursor: 'pointer' }}>Reviews</a>

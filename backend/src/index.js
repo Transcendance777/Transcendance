@@ -5,6 +5,8 @@ import cors from 'cors'; // cors-> tool to comunicate safely with another servic
 import { execSync } from 'child_process'; //for execSync function
 import gamesRouter from './routes/games.js';
 import prisma from './init/initPrisma.js'; //prisma singleton instance
+import authRouter from './routes/auth.js';
+import userRouter from './routes/user.js';
 
 // port
 const PORT = process.env.PORT_BACK || 4000;
@@ -66,8 +68,10 @@ prisma.$connect();
 //starting the app
 const app = express(); //actual start
 app.use(cors()); //apply this tool to the server
-app.use(express.json());//translates JSON files to JS directly
+app.use(express.json({ limit: '5mb' }));//translates JSON files to JS directly
 app.use('/api/games', gamesRouter);
+app.use('/api/auth', authRouter);
+app.use('/api/user', userRouter);
 
 //create a POST route -> if data is received on /api/login, heres how its being processed :
 app.post('/api/login', async (req, res) => {

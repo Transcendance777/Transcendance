@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { FiSearch, FiSettings, FiHome } from 'react-icons/fi'
 import { useNavigate, Link } from 'react-router-dom'
 import SearchBar from './SearchBar'
+import NavAvatar from './NavAvatar'
 
 const ProfileNavBar = () => {
 	const [menuOpen, setMenuOpen] = useState(false)

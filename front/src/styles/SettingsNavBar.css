@@ -73,3 +73,27 @@
 	z-index: 100;
 }
 
+
+@media (max-width: 600px) {
+	.search-icon {
+		font-size: 18px;
+	}
+
+	.search-input {
+		width: clamp(80px, 25vw, 150px);
+		font-size: 11px;
+		padding: 3px 10px;
+	}
+
+	.settings-navbar-right {
+		gap: clamp(5px, 2vw, 20px);
+	}
+
+	.settings-hamburger {
+		font-size: 20px;
+	}
+
+	.settings-navbar-center {
+		flex: 2;
+	}
+}

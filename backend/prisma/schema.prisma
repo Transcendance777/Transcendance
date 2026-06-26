@@ -20,7 +20,7 @@ model Users {
 	email			String		@unique
 	username  		String		@unique
 	passwordHash	String		@map("password_hash") //map: relier passwordHash dans le back a password_hash ds la DB (convention de nom)
-	avatarUrl     	String?		@default("default_avatar.png") @map("avatar_url") //'?': can be NULL
+	avatarUrl     	String?		@default("default_avatar.png") @map("avatar_url") @db.Text
 	bio				String?
 	createdAt		DateTime	@default(now()) @map("created_at")
 
@@ -28,6 +28,8 @@ model Users {
 	reviews			Review[]
 	reviewLikes		ReviewLike[]
 	apiKey    		ApiKey?
+	likedGames		LikedGame[]
+	playingList		PlayingList[]
 
 	// Self-referencing Many-to-Many for Friendships
 	friendsInitiated	Friendship[] @relation("FriendshipsInitiated")
@@ -66,6 +68,8 @@ model Game {
   
   // Relations
   reviews       Review[]
+  likedBy       LikedGame[]
+  inPlayingList PlayingList[]
 
   @@map("games")
 }
@@ -103,6 +107,36 @@ model ReviewLike {
   // Constraints
   @@id([userId, reviewId])
   @@map("review_likes")
+}
+
+// Table des Jeux Likés par les utilisateurs
+model LikedGame {
+  userId   Int      @map("user_id")
+  gameId   Int      @map("game_id")
+  likedAt  DateTime @default(now()) @map("liked_at")
+
+  // Relations
+  user Users @relation(fields: [userId], references: [id], onDelete: Cascade)
+  game Game  @relation(fields: [gameId], references: [id], onDelete: Cascade)
+
+  // Constraints
+  @@id([userId, gameId])
+  @@map("liked_games")
+}
+
+// Table de la Playing List (jeux en cours) des utilisateurs
+model PlayingList {
+  userId   Int      @map("user_id")
+  gameId   Int      @map("game_id")
+  addedAt  DateTime @default(now()) @map("added_at")
+
+  // Relations
+  user Users @relation(fields: [userId], references: [id], onDelete: Cascade)
+  game Game  @relation(fields: [gameId], references: [id], onDelete: Cascade)
+
+  // Constraints
+  @@id([userId, gameId])
+  @@map("playing_list")
 }
 
 // Table du Système d'Amis (Relation réflexive explicite)

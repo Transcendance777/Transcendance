@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react'
 import { FiSearch, FiHome } from 'react-icons/fi'
 import { Link } from 'react-router-dom'
 import SearchBar from './SearchBar'
+import NavAvatar from './NavAvatar'
 
 const GamesNavBar = ({ pageName }) => {
 	const [menuOpen, setMenuOpen] = useState(false)
@@ -13,6 +14,7 @@ const GamesNavBar = ({ pageName }) => {
 	const [results, setResults] = useState([])
 	const navigate = useNavigate()
 	const [isMobile, setIsMobile] = useState(window.innerWidth <= 900)
+	const user = JSON.parse(localStorage.getItem('user') || '{}')
 
 	useEffect(() => {
 		const handleClick = () => setMenuOpen(false)
@@ -82,19 +84,12 @@ const GamesNavBar = ({ pageName }) => {
 
 			<div className="games-navbar-right">
 				<SearchBar />
-				<a onClick={() => navigate('/profile')} className="nav-link profil-avatar-link" style={{ cursor: 'pointer' }}>
-					<img src="https://placehold.co/35x35" alt="profile" className="navbar-avatar" />
-				</a>
+				<NavAvatar size={35} />
 			</div>
 
 			{menuOpen && (
 				<div className="games-dropdown">
-					{window.innerWidth <= 900 && (
-						<a onClick={() => navigate('/profile')} className="nav-link" style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}>
-							<img src="https://placehold.co/35x35" alt="profile" className="navbar-avatar" />
-							<span>Profile</span>
-						</a>
-					)}
+					{window.innerWidth <= 900 && <NavAvatar size={35} showLabel={true} />}
 					<a onClick={() => navigate('/home')} className="nav-link" style={{ cursor: 'pointer' }}>Home</a>
 					<a onClick={() => navigate('/reviews')} className="nav-link" style={{ cursor: 'pointer' }}>Reviews</a>
 					<a onClick={() => navigate('/friends')} className="nav-link" style={{ cursor: 'pointer' }}>Friends</a>
