@@ -5,6 +5,7 @@ import GamesPage from './pages/GamesPage'
 import PostPage from './pages/PostPage'
 import ReviewsPage from './pages/ReviewsPage'
 import ProfilePage from './pages/ProfilePage'
+import OtherProfilePage from './pages/OtherProfilePage'
 import SettingsPage from './pages/SettingsPage'
 import GamePresentationPage from './pages/GamePresentationPage'
 import FriendsPage from './pages/FriendsPage'
@@ -18,6 +19,7 @@ const App = () => {
 			<Route path="/post" element={<PostPage />} />
 			<Route path="/reviews" element={<ReviewsPage />} />
 			<Route path="/profile" element={<ProfilePage />} />
+			<Route path="/profile/:userId" element={<OtherProfilePage />} />
 			<Route path="/settings" element={<SettingsPage />} />
 			<Route path="/game/:id" element={<GamePresentationPage />} />
 			<Route path="/friends" element={<FriendsPage />} />

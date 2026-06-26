@@ -3,6 +3,8 @@ import '../index.css'
 import { useState, useEffect } from 'react'
 import { FiSearch, FiHome } from 'react-icons/fi'
 import { useNavigate, Link } from 'react-router-dom'
+import SearchBar from './SearchBar'
+import NavAvatar from './NavAvatar'
 
 const GamePresentationNavBar = ({ gameName }) => {
 	const [menuOpen, setMenuOpen] = useState(false)
@@ -37,27 +39,13 @@ const GamePresentationNavBar = ({ gameName }) => {
 			</div>
 
 			<div className="gamepresentation-navbar-right">
-				<div className="search-container">
-					<button className="search-icon" onClick={() => setSearchOpen(!searchOpen)}>
-						<FiSearch />
-					</button>
-					{searchOpen && (
-						<input className="search-input" type="text" placeholder="Rechercher un jeu..." autoFocus />
-					)}
-				</div>
-				<a onClick={() => navigate('/profile')} className="nav-link profil-avatar-link" style={{ cursor: 'pointer' }}>
-					<img src="https://placehold.co/35x35" alt="profile" className="navbar-avatar" />
-				</a>
+				<SearchBar />
+				<NavAvatar size={35} />
 			</div>
 
 			{menuOpen && (
 				<div className="gamepresentation-dropdown">
-					{window.innerWidth <= 900 && (
-						<a onClick={() => navigate('/profile')} className="nav-link" style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}>
-							<img src="https://placehold.co/35x35" alt="profile" className="navbar-avatar" />
-							<span>Profile</span>
-						</a>
-					)}
+					{window.innerWidth <= 900 && <NavAvatar size={35} showLabel={true} />}
 					<a onClick={() => navigate('/home')} className="nav-link" style={{ cursor: 'pointer' }}>Home</a>
 					<a onClick={() => navigate('/games')} className="nav-link" style={{ cursor: 'pointer' }}>Games</a>
 					<a onClick={() => navigate('/reviews')} className="nav-link" style={{ cursor: 'pointer' }}>Reviews</a>

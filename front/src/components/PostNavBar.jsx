@@ -5,6 +5,7 @@ import { FiSearch, FiHome } from 'react-icons/fi'
 import { useNavigate } from 'react-router-dom'
 import { Link } from 'react-router-dom'
 import SearchBar from './SearchBar'
+import NavAvatar from './NavAvatar'
 
 const PostNavBar = () => {
 	const [menuOpen, setMenuOpen] = useState(false)
@@ -48,19 +49,12 @@ const PostNavBar = () => {
 
 			<div className="post-navbar-right">
 				<SearchBar />
-				<a onClick={() => navigate('/profile')} className="nav-link profil-avatar-link" style={{ cursor: 'pointer' }}>
-					<img src="https://placehold.co/35x35" alt="profile" className="navbar-avatar" />
-				</a>
+				<NavAvatar size={35} />
 			</div>
 
 			{menuOpen && (
 				<div className="post-dropdown">
-					{window.innerWidth <= 900 && (
-						<a onClick={() => navigate('/profile')} className="nav-link" style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}>
-							<img src="https://placehold.co/35x35" alt="profile" className="navbar-avatar" />
-							<span>Profile</span>
-						</a>
-					)}
+					{window.innerWidth <= 900 && <NavAvatar size={35} showLabel={true} />}
 					<a onClick={() => navigate('/home')} className="nav-link" style={{ cursor: 'pointer' }}>Home</a>
 					<a onClick={() => navigate('/games')} className="nav-link" style={{ cursor: 'pointer' }}>Games</a>
 					<a onClick={() => navigate('/reviews')} className="nav-link" style={{ cursor: 'pointer' }}>Reviews</a>

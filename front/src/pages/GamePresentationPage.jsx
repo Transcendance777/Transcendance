@@ -31,6 +31,70 @@ const GamePresentationPage = () => {
 		fetchGame()
 	}, [id])
 
+	// Récupère le statut liked / playing pour ce jeu
+	useEffect(() => {
+		const fetchStatus = async () => {
+			const token = localStorage.getItem('token')
+			if (!token) return // pas connecté, on laisse les boutons inactifs
+
+			try {
+				const res = await fetch(`/api/user/status/${id}`, {
+					headers: { Authorization: `Bearer ${token}` }
+				})
+				if (res.ok) {
+					const data = await res.json()
+					setLiked(data.liked)
+					setInPlayingList(data.inPlayingList)
+				}
+			} catch (err) {
+				console.error('Erreur statut:', err)
+			}
+		}
+		fetchStatus()
+	}, [id])
+
+	// Toggle like
+	const handleLike = async () => {
+		const token = localStorage.getItem('token')
+		if (!token) {
+			navigate('/') // pas connecté -> page login
+			return
+		}
+		try {
+			const res = await fetch(`/api/user/like/${id}`, {
+				method: 'POST',
+				headers: { Authorization: `Bearer ${token}` }
+			})
+			if (res.ok) {
+				const data = await res.json()
+				setLiked(data.liked)
+			}
+		} catch (err) {
+			console.error('Erreur like:', err)
+		}
+	}
+
+	// Toggle playing list
+	const handlePlaying = async () => {
+		const token = localStorage.getItem('token')
+		if (!token) {
+			navigate('/')
+			return
+		}
+		try {
+			const res = await fetch(`/api/user/playing/${id}`, {
+				method: 'POST',
+				headers: { Authorization: `Bearer ${token}` }
+			})
+			if (res.ok) {
+				const data = await res.json()
+				setInPlayingList(data.inList)
+			}
+		} catch (err) {
+			console.error('Erreur playing:', err)
+		}
+	}
+
 	const getCover = (game) => {
 		if (game?.coverImageUrl) return game.coverImageUrl
 		if (game?.cover?.url) {
@@ -73,7 +137,7 @@ const GamePresentationPage = () => {
 	const handleWriteReview = () => {
 		navigate('/post', { state: { selectedGame: { title: gameName, image: getCover(game), id: game?.idExterne || game?.id } } })
 	}
-	
+
 	if (loading) return (
 		<div className="gamepresentation-page">
 			<GamePresentationNavBar gameName="..." />
@@ -111,14 +175,14 @@ const GamePresentationPage = () => {
 							<div className="gamepresentation-actions">
 								<button
 									className={`gamepresentation-action-btn ${liked ? 'active-like' : ''}`}
-									onClick={() => setLiked(!liked)}
+									onClick={handleLike}
 									title="Like"
 								>
 									<FiHeart />
 								</button>
 								<button
 									className={`gamepresentation-action-btn ${inPlayingList ? 'active-playing' : ''}`}
-									onClick={() => setInPlayingList(!inPlayingList)}
+									onClick={handlePlaying}
 									title="Add to Playing List"
 								>
 									<MdSportsEsports />

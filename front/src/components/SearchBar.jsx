@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { FiSearch } from 'react-icons/fi'
+import '../styles/SearchBar.css'
 
 const SearchBar = () => {
 	const [searchOpen, setSearchOpen] = useState(false)

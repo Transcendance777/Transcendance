@@ -10,6 +10,7 @@ const InscriptionForm = () => {
 	const [email, setEmail] = useState('')
 	const [password, setPassword] = useState('')
 	const [username, setUsername] = useState('')
+	const [errorMsg, setErrorMsg] = useState('')
 	const navigate = useNavigate()
 	const [showPassword, setShowPassword] = useState(false)
 	const [showForgotPassword, setShowForgotPassword] = useState(false)
@@ -25,22 +26,44 @@ const InscriptionForm = () => {
 		setEmail('')
 		setPassword('')
 		setUsername('')
+		setErrorMsg('')
 	}, [isLogin])
 
 	const handleSubmit = async (e) => {
 		e.preventDefault()
-		const response = await axios.post("/api/login", {
-			email: email,
-			password: password
-		})
-		navigate('/home')
+		setErrorMsg('')
+
+		try {
+			if (isLogin) {
+				const response = await axios.post('/api/auth/login', {
+					identifier: email, // le champ "email" sert pour email ou pseudo
+					password: password
+				})
+				// Stocke le token et l'utilisateur
+				localStorage.setItem('token', response.data.token)
+				localStorage.setItem('user', JSON.stringify(response.data.user))
+				navigate('/home')
+			} else {
+				if (!username || !email || !password) {
+					setErrorMsg('Tous les champs sont requis.')
+					return
+				}
+				const response = await axios.post('/api/auth/register', {
+					email: email,
+					username: username,
+					password: password
+				})
+				// Connexion automatique après inscription
+				localStorage.setItem('token', response.data.token)
+				localStorage.setItem('user', JSON.stringify(response.data.user))
+				navigate('/home')
+			}
+		} catch (error) {
+			const msg = error.response?.data?.error || 'Une erreur est survenue.'
+			setErrorMsg(msg)
+		}
 	}
 
-	// const handleSubmit = async (e) => {
-	// 	e.preventDefault()
-	// 	navigate('/home')
-	// }
-	
 	return (
 		<div className="formBackground">
 
@@ -71,6 +94,7 @@ const InscriptionForm = () => {
 							className="emailArea"
 							type="text"
 							placeholder="Exemple: xX_DarkWolf_Xx"
+							value={username}
 							onChange={(e) => setUsername(e.target.value)}
 						/>
 						<br />
@@ -110,6 +134,12 @@ const InscriptionForm = () => {
 				{isLogin && (
 					<p className="forgot-password-link" onClick={() => { setShowForgotPassword(true); setForgotStep(1) }}>
 						Mot de passe oublié ?
+					</p>
+				)}
+
+				{errorMsg && (
+					<p style={{ color: '#f44336', fontFamily: 'policeConthrax', fontSize: '13px', marginTop: '10px', textAlign: 'center' }}>
+						{errorMsg}
 					</p>
 				)}
 
