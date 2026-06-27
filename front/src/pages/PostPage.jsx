@@ -14,16 +14,51 @@ const PostPage = () => {
 	const [rating, setRating] = useState(null)
 	const [selectedGame, setSelectedGame] = useState(null)
 	const [showPicker, setShowPicker] = useState(false)
+	const [submitMsg, setSubmitMsg] = useState('')
+	const [submitting, setSubmitting] = useState(false)
+	const [submitted, setSubmitted] = useState(false)
+	const [starsKey, setStarsKey] = useState(0)
 
-	// Récupère le jeu passé depuis la page de présentation
 	useEffect(() => {
 		if (location.state?.selectedGame) {
 			setSelectedGame(location.state.selectedGame)
 		}
 	}, [location.state])
 
-	const handleSubmit = () => {
-		console.log({ review, rating, selectedGame })
+	const handleSubmit = async () => {
+		if (!selectedGame) return setSubmitMsg('Choisis un jeu.')
+		if (!rating) return setSubmitMsg('Donne une note.')
+
+		const token = localStorage.getItem('token')
+		setSubmitting(true)
+		setSubmitMsg('')
+		try {
+			const res = await fetch('/api/user/review', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					Authorization: `Bearer ${token}`
+				},
+				body: JSON.stringify({
+					gameId: selectedGame.id,
+					rating,
+					reviewText: review
+				})
+			})
+			const data = await res.json()
+			if (!res.ok) return setSubmitMsg(data.error)
+
+			setReview('')
+			setRating(null)
+			setSelectedGame(null)
+			setStarsKey(k => k + 1)
+			setSubmitted(true)
+			setTimeout(() => setSubmitted(false), 2000)
+		} catch (err) {
+			setSubmitMsg('Erreur serveur.')
+		} finally {
+			setSubmitting(false)
+		}
 	}
 
 	return (
@@ -58,12 +93,18 @@ const PostPage = () => {
 								<div className="post-game-placeholder">Click to choose</div>
 							)}
 						</div>
-						<PostStars onRate={setRating} />
+						<PostStars key={starsKey} onRate={setRating} />
 					</div>
 
 				</div>
 
-				<button className="post-submit-btn" onClick={handleSubmit}>➜</button>
+				<button
+					className={`post-submit-btn ${submitted ? 'submitted' : ''}`}
+					onClick={handleSubmit}
+					disabled={submitting || submitted}
+				>
+					{submitted ? '✓' : '➜'}
+				</button>
 
 				{showPicker && (
 					<PostGamePicker
@@ -72,6 +113,20 @@ const PostPage = () => {
 					/>
 				)}
 			</Background>
+
+			{submitMsg && (
+				<p style={{
+					position: 'fixed',
+					bottom: '120px',
+					right: '40px',
+					color: '#f44336',
+					fontFamily: '"policeConthrax", sans-serif',
+					fontSize: '13px',
+					zIndex: 100
+				}}>
+					{submitMsg}
+				</p>
+			)}
 		</div>
 	)
 }

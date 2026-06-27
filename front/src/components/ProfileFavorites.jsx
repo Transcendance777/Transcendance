@@ -1,21 +1,169 @@
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { FiPlus, FiX } from 'react-icons/fi'
 import '../styles/ProfileFavorites.css'
 
-const ProfileFavorites = ({ games }) => {
+const MAX_FAVORITES = 4
+
+const ProfileFavorites = ({ editable = false, externalFavorites = null }) => {
 	const navigate = useNavigate()
+	const [favorites, setFavorites] = useState([])
+	const [showModal, setShowModal] = useState(false)
+	const [search, setSearch] = useState('')
+	const [results, setResults] = useState([])
+	const [searchMsg, setSearchMsg] = useState('')
+
+	const displayFavorites = externalFavorites !== null ? externalFavorites : favorites
+
+	useEffect(() => {
+		if (externalFavorites !== null) return // pas besoin de fetch si données externes
+		const token = localStorage.getItem('token')
+		if (!token) return
+		fetch('/api/user/favorites', {
+			headers: { Authorization: `Bearer ${token}` }
+		})
+			.then(res => res.ok ? res.json() : [])
+			.then(data => setFavorites(data))
+			.catch(err => console.error('Erreur favorites:', err))
+	}, [externalFavorites])
+
+	const handleSearch = async (value) => {
+		setSearch(value)
+		setSearchMsg('')
+		if (value.trim() === '') return setResults([])
+
+		try {
+			const res = await fetch(`/api/games/search?q=${encodeURIComponent(value)}`)
+			const data = await res.json()
+			const formatted = data
+				.filter(g => g.id || g.idExterne)
+				.map(g => ({
+					id: g.idExterne || g.id?.toString(),
+					title: g.title || g.name,
+					cover: g.coverImageUrl ||
+						(g.cover?.url ? `https:${g.cover.url.replace('t_thumb', 't_cover_big')}` : null)
+				}))
+				.filter(g => g.cover)
+
+			setResults(formatted.slice(0, 8))
+			setSearchMsg(formatted.length === 0 ? 'No games found.' : '')
+		} catch (err) {
+			console.error('Erreur search:', err)
+		}
+	}
+
+	const handleAddFavorite = async (game) => {
+		const token = localStorage.getItem('token')
+		try {
+			const res = await fetch(`/api/user/favorites/${game.id}`, {
+				method: 'POST',
+				headers: { Authorization: `Bearer ${token}` }
+			})
+			const data = await res.json()
+			if (!res.ok) return console.error(data.error)
+			setFavorites(prev => [...prev, data].sort((a, b) => a.position - b.position))
+			setShowModal(false)
+			setSearch('')
+			setResults([])
+		} catch (err) {
+			console.error('Erreur add favorite:', err)
+		}
+	}
+
+	const handleRemoveFavorite = async (e, game) => {
+		e.stopPropagation()
+		const token = localStorage.getItem('token')
+		try {
+			const res = await fetch(`/api/user/favorites/${game.idExterne}`, {
+				method: 'DELETE',
+				headers: { Authorization: `Bearer ${token}` }
+			})
+			if (!res.ok) return
+			setFavorites(prev => prev.filter(f => f.id !== game.id))
+		} catch (err) {
+			console.error('Erreur remove favorite:', err)
+		}
+	}
+
+	const handleClose = () => {
+		setShowModal(false)
+		setSearch('')
+		setResults([])
+		setSearchMsg('')
+	}
+
+	const slots = Array.from({ length: MAX_FAVORITES }, (_, i) => {
+		return displayFavorites.find(f => f.position === i + 1) || null
+	})
 
 	return (
-		<div className="profile-favorites">
-			<h2 className="profile-section-title">Favorite Games</h2>
-			<div className="favorites-grid">
-				{games.map((game, i) => (
-					<div key={i} className="favorite-card" onClick={() => navigate(`/game/${game.title}`)}>
-						<img src={game.image} alt={game.title} className="favorite-img" />
-						<p className="favorite-title">{game.title}</p>
+		<>
+			<div className="profile-favorites">
+				<h2 className="profile-section-title">Favorite Games</h2>
+
+				{/* Message si pas de favoris en mode lecture */}
+				{!editable && displayFavorites.length === 0 ? (
+					<p style={{ color: 'rgba(231,231,231,0.5)', fontFamily: '"policeConthrax", sans-serif', fontSize: '13px' }}>
+						No favorite games yet.
+					</p>
+				) : (
+					<div className="favorites-grid">
+						{slots.map((game, i) => (
+							game ? (
+								<div key={i} className="favorite-card" onClick={() => navigate(`/game/${game.idExterne}`)}>
+									{editable && (
+										<button className="favorite-remove-btn" onClick={(e) => handleRemoveFavorite(e, game)}>
+											<FiX size={14} />
+										</button>
+									)}
+									<img src={game.coverImageUrl || "https://placehold.co/160x220"} alt={game.title} className="favorite-img" />
+									<p className="favorite-title">{game.title}</p>
+								</div>
+							) : (
+								editable ? (
+									<div key={i} className="favorite-card favorite-empty" onClick={() => setShowModal(true)}>
+										<div className="favorite-add-placeholder">
+											<FiPlus size={28} />
+										</div>
+									</div>
+								) : null
+							)
+						))}
 					</div>
-				))}
+				)}
 			</div>
-		</div>
+
+			{/* Modale ajout favori */}
+			{showModal && (
+				<div className="favorite-modal-overlay" onClick={handleClose}>
+					<div className="favorite-modal" onClick={(e) => e.stopPropagation()}>
+						<div className="favorite-modal-header">
+							<h3 className="favorite-modal-title">Add a Favorite Game</h3>
+							<button className="favorite-modal-close" onClick={handleClose}>
+								<FiX size={20} />
+							</button>
+						</div>
+						<input
+							className="favorite-modal-input"
+							type="text"
+							placeholder="Search a game..."
+							value={search}
+							onChange={(e) => handleSearch(e.target.value)}
+							autoFocus
+						/>
+						<div className="favorite-modal-results">
+							{searchMsg && <p className="favorite-modal-msg">{searchMsg}</p>}
+							{results.map((game) => (
+								<div key={game.id} className="favorite-modal-result-item" onClick={() => handleAddFavorite(game)}>
+									<img src={game.cover} alt={game.title} className="favorite-modal-result-img" />
+									<span className="favorite-modal-result-title">{game.title}</span>
+								</div>
+							))}
+						</div>
+					</div>
+				</div>
+			)}
+		</>
 	)
 }
 

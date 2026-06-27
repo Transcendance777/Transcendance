@@ -30,6 +30,7 @@ model Users {
 	apiKey    		ApiKey?
 	likedGames		LikedGame[]
 	playingList		PlayingList[]
+	favoriteGames FavoriteGame[]
 
 	// Self-referencing Many-to-Many for Friendships
 	friendsInitiated	Friendship[] @relation("FriendshipsInitiated")
@@ -70,6 +71,7 @@ model Game {
   reviews       Review[]
   likedBy       LikedGame[]
   inPlayingList PlayingList[]
+  favoritedBy FavoriteGame[]
 
   @@map("games")
 }
@@ -153,4 +155,18 @@ model Friendship {
   // Constraints
   @@id([userId1, userId2])
   @@map("friendships")
+}
+
+model FavoriteGame {
+  userId    Int      @map("user_id")
+  gameId    Int      @map("game_id")
+  position  Int      // 1, 2, 3 ou 4
+  addedAt   DateTime @default(now()) @map("added_at")
+
+  user Users @relation(fields: [userId], references: [id], onDelete: Cascade)
+  game Game  @relation(fields: [gameId], references: [id], onDelete: Cascade)
+
+  @@id([userId, gameId])
+  @@unique([userId, position])
+  @@map("favorite_games")
 }

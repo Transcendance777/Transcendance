@@ -4,12 +4,8 @@ import ProfileNavBar from '../components/ProfileNavBar'
 import Background from '../components/Background'
 import ProfileModal from '../components/ProfileModal'
 import ProfileFavorites from '../components/ProfileFavorites'
+import ReviewsCard from '../components/ReviewsCard'
 import '../styles/ProfilePage.css'
-
-const fakeFavorites = Array.from({ length: 4 }, (_, i) => ({
-	title: `Jeu ${i + 1}`,
-	image: "https://placehold.co/160x220"
-}))
 
 const fakeActivity = [
 	{ type: "Commented", text: "Super review !", date: "04/25/26" },
@@ -25,10 +21,12 @@ const OtherProfilePage = () => {
 	const [following, setFollowing] = useState([])
 	const [likedGames, setLikedGames] = useState([])
 	const [playingList, setPlayingList] = useState([])
+	const [reviews, setReviews] = useState([])
 	const [modal, setModal] = useState(null)
 	const [statsModal, setStatsModal] = useState(null)
 	const [showAvatar, setShowAvatar] = useState(false)
 	const [loading, setLoading] = useState(true)
+	const [favoriteGames, setFavoriteGames] = useState([])
 
 	useEffect(() => {
 		const token = localStorage.getItem('token')
@@ -47,6 +45,8 @@ const OtherProfilePage = () => {
 				setFollowing(data.following)
 				setLikedGames(data.likedGames || [])
 				setPlayingList(data.playingList || [])
+				setFavoriteGames(data.favoriteGames || [])
+				setReviews(data.reviews || [])
 				setLoading(false)
 			})
 			.catch(err => {
@@ -55,10 +55,9 @@ const OtherProfilePage = () => {
 			})
 	}, [userId, navigate])
 
-	const renderStars = (rating) => {
-		return [1, 2, 3, 4, 5].map((star) => (
-			<span key={star} style={{ color: rating >= star ? '#f5a623' : '#555', fontSize: '16px' }}>★</span>
-		))
+	const formatDate = (dateStr) => {
+		const d = new Date(dateStr)
+		return `${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}/${String(d.getFullYear()).slice(2)}`
 	}
 
 	const avatarUrl = (profileUser?.avatarUrl && profileUser.avatarUrl !== 'default_avatar.png')
@@ -93,7 +92,7 @@ const OtherProfilePage = () => {
 									<span className="stat-label">Following</span>
 								</div>
 								<div className="profile-stat">
-									<span className="stat-number">0</span>
+									<span className="stat-number">{reviews.length}</span>
 									<span className="stat-label">Posts</span>
 								</div>
 							</div>
@@ -101,14 +100,36 @@ const OtherProfilePage = () => {
 					</div>
 
 					{/* Jeux favoris */}
-					<ProfileFavorites games={fakeFavorites} />
+					<ProfileFavorites editable={false} externalFavorites={favoriteGames} />
 
 					{/* Reviews */}
 					<div className="profile-reviews-section">
 						<h2 className="profile-section-title">Reviews</h2>
-						<p style={{ color: 'rgba(231,231,231,0.5)', fontFamily: '"policeConthrax", sans-serif', fontSize: '13px' }}>
-							Aucune review pour l'instant.
-						</p>
+						{reviews.length === 0 ? (
+							<p style={{ color: 'rgba(231,231,231,0.5)', fontFamily: '"policeConthrax", sans-serif', fontSize: '13px' }}>
+								No reviews yet.
+							</p>
+						) : (
+							<>
+								{reviews.slice(0, 2).map((review) => (
+									<ReviewsCard key={review.id} review={{
+										id: review.id,
+										author: profileUser.username,
+										authorId: profileUser.id,
+										authorAvatar: profileUser.avatarUrl,
+										gameTitle: review.game.title,
+										gameImage: review.game.coverImageUrl || "https://placehold.co/160x220",
+										gameId: review.game.idExterne,
+										text: review.reviewText || '',
+										rating: review.rating / 2,
+										date: formatDate(review.createdAt)
+									}} />
+								))}
+								{reviews.length > 2 && (
+									<button className="profile-see-more-btn" onClick={() => setModal('reviews')}>See more</button>
+								)}
+							</>
+						)}
 					</div>
 
 					{/* Boutons onglets */}
@@ -126,6 +147,26 @@ const OtherProfilePage = () => {
 				<div className="avatar-modal-overlay" onClick={() => setShowAvatar(false)}>
 					<img src={avatarUrl} alt="avatar" className="avatar-modal-img" />
 				</div>
+			)}
+
+			{/* Modal reviews */}
+			{modal === 'reviews' && (
+				<ProfileModal title="Reviews" onClose={() => setModal(null)}>
+					{reviews.map((review) => (
+						<ReviewsCard key={review.id} review={{
+							id: review.id,
+							author: profileUser.username,
+							authorId: profileUser.id,
+							authorAvatar: profileUser.avatarUrl,
+							gameTitle: review.game.title,
+							gameImage: review.game.coverImageUrl || "https://placehold.co/160x220",
+							gameId: review.game.idExterne,
+							text: review.reviewText || '',
+							rating: review.rating / 2,
+							date: formatDate(review.createdAt)
+						}} />
+					))}
+				</ProfileModal>
 			)}
 
 			{/* Modal activity */}
@@ -146,7 +187,7 @@ const OtherProfilePage = () => {
 				<ProfileModal title="Liked Games" onClose={() => setModal(null)}>
 					<div className="modal-games-grid">
 						{likedGames.length === 0 ? (
-							<p style={{ color: '#e7e7e7' }}>Aucun jeu liké pour l'instant.</p>
+							<p style={{ color: '#e7e7e7' }}>No game has been liked yet.</p>
 						) : (
 							likedGames.map((game) => (
 								<div key={game.id} className="modal-game-card" onClick={() => navigate(`/game/${game.idExterne}`)}>
@@ -164,7 +205,7 @@ const OtherProfilePage = () => {
 				<ProfileModal title="Playing List" onClose={() => setModal(null)}>
 					<div className="modal-games-grid">
 						{playingList.length === 0 ? (
-							<p style={{ color: '#e7e7e7' }}>Aucun jeu en cours.</p>
+							<p style={{ color: '#e7e7e7' }}>No game in progress.</p>
 						) : (
 							playingList.map((game) => (
 								<div key={game.id} className="modal-game-card" onClick={() => navigate(`/game/${game.idExterne}`)}>
@@ -182,7 +223,7 @@ const OtherProfilePage = () => {
 				<ProfileModal title="Followers" onClose={() => setStatsModal(null)}>
 					<div className="stats-users-list">
 						{followers.length === 0 ? (
-							<p style={{ color: '#e7e7e7' }}>Aucun follower.</p>
+							<p style={{ color: '#e7e7e7' }}>No follower.</p>
 						) : (
 							followers.map((u) => (
 								<div key={u.id} className="stats-user-item" onClick={() => navigate(`/profile/${u.id}`)}>
@@ -204,7 +245,7 @@ const OtherProfilePage = () => {
 				<ProfileModal title="Following" onClose={() => setStatsModal(null)}>
 					<div className="stats-users-list">
 						{following.length === 0 ? (
-							<p style={{ color: '#e7e7e7' }}>Ne suit personne.</p>
+							<p style={{ color: '#e7e7e7' }}>Follows nobody.</p>
 						) : (
 							following.map((u) => (
 								<div key={u.id} className="stats-user-item" onClick={() => navigate(`/profile/${u.id}`)}>

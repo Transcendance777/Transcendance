@@ -1,10 +1,12 @@
 import '../styles/ReviewsCard.css'
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { FiCornerDownRight, FiThumbsUp, FiThumbsDown } from 'react-icons/fi'
 
 const MAX_REPLY = 200
 
 const ReviewsCard = ({ review }) => {
+	const navigate = useNavigate()
 	const [liked, setLiked] = useState(false)
 	const [disliked, setDisliked] = useState(false)
 	const [showReply, setShowReply] = useState(false)
@@ -29,20 +31,37 @@ const ReviewsCard = ({ review }) => {
 	}
 
 	const renderStars = (rating) => {
-		return [1, 2, 3, 4, 5].map((star) => (
-			<span key={star} className={`review-star ${rating >= star ? 'active' : ''}`}>★</span>
-		))
+		return [1, 2, 3, 4, 5].map((star) => {
+			const full = rating >= star
+			const half = !full && rating >= star - 0.5
+			return (
+				<span key={star} className={`review-star ${full ? 'active' : ''}`} style={{
+					background: half
+						? 'linear-gradient(90deg, #f5a623 50%, #555 50%)'
+						: 'none',
+					WebkitBackgroundClip: half ? 'text' : 'none',
+					WebkitTextFillColor: half ? 'transparent' : (full ? '#f5a623' : '#555'),
+					color: full ? '#f5a623' : '#555'
+				}}>★</span>
+			)
+		})
 	}
 
 	return (
 		<div className="review-card">
-			<div className="review-card-left">
+			<div className="review-card-left" onClick={() => navigate(`/game/${review.gameId}`)} style={{ cursor: 'pointer' }}>
 				<img src={review.gameImage} alt={review.gameTitle} className="review-game-img" />
 				<p className="review-game-title">{review.gameTitle}</p>
 			</div>
 
 			<div className="review-card-right">
-				<p className="review-author">{review.author} commented :</p>
+				<p
+					className="review-author"
+					onClick={() => navigate(`/profile/${review.authorId}`)}
+					style={{ cursor: 'pointer' }}
+				>
+					{review.author} commented :
+				</p>
 				<p className="review-text">{review.text}</p>
 
 				<div className="review-footer">
@@ -79,7 +98,7 @@ const ReviewsCard = ({ review }) => {
 						<button className="reply-emoji-btn">+</button>
 						<textarea
 							className="reply-textarea"
-							placeholder="Écris ta réponse..."
+							placeholder="Write your reply..."
 							value={reply}
 							onChange={(e) => setReply(e.target.value)}
 							maxLength={MAX_REPLY}
