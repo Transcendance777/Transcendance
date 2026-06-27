@@ -6,18 +6,10 @@ const router = express.Router();
 
 // ─── AVATAR ───
 
-// Met à jour l'avatar de l'utilisateur connecté
 router.put('/avatar', authMiddleware, async (req, res) => {
-	const { avatar } = req.body; // image en base64
-
-	if (!avatar) {
-		return res.status(400).json({ error: 'Aucune image fournie.' });
-	}
-
-	if (avatar.length > 3_000_000) {
-		return res.status(413).json({ error: 'Image trop lourde (max ~2MB).' });
-	}
-
+	const { avatar } = req.body;
+	if (!avatar) return res.status(400).json({ error: 'Aucune image fournie.' });
+	if (avatar.length > 3_000_000) return res.status(413).json({ error: 'Image trop lourde (max ~2MB).' });
 	try {
 		const updated = await prisma.users.update({
 			where: { id: req.user.id },
@@ -48,29 +40,16 @@ router.get('/me', authMiddleware, async (req, res) => {
 
 // ─── JEUX LIKÉS ───
 
-// Like / unlike un jeu (toggle) — gameId = idExterne IGDB
 router.post('/like/:gameId', authMiddleware, async (req, res) => {
 	try {
-		// Trouve le jeu en DB par son idExterne
-		const game = await prisma.game.findUnique({
-			where: { idExterne: req.params.gameId.toString() }
-		});
+		const game = await prisma.game.findUnique({ where: { idExterne: req.params.gameId.toString() } });
 		if (!game) return res.status(404).json({ error: 'Jeu introuvable.' });
-
-		const existing = await prisma.likedGame.findUnique({
-			where: { userId_gameId: { userId: req.user.id, gameId: game.id } }
-		});
-
+		const existing = await prisma.likedGame.findUnique({ where: { userId_gameId: { userId: req.user.id, gameId: game.id } } });
 		if (existing) {
-			await prisma.likedGame.delete({
-				where: { userId_gameId: { userId: req.user.id, gameId: game.id } }
-			});
+			await prisma.likedGame.delete({ where: { userId_gameId: { userId: req.user.id, gameId: game.id } } });
 			return res.json({ liked: false });
 		}
-
-		await prisma.likedGame.create({
-			data: { userId: req.user.id, gameId: game.id }
-		});
+		await prisma.likedGame.create({ data: { userId: req.user.id, gameId: game.id } });
 		res.json({ liked: true });
 	} catch (error) {
 		console.error('Erreur like:', error);
@@ -78,7 +57,6 @@ router.post('/like/:gameId', authMiddleware, async (req, res) => {
 	}
 });
 
-// Récupère les jeux likés de l'utilisateur connecté
 router.get('/liked', authMiddleware, async (req, res) => {
 	try {
 		const liked = await prisma.likedGame.findMany({
@@ -95,28 +73,16 @@ router.get('/liked', authMiddleware, async (req, res) => {
 
 // ─── PLAYING LIST ───
 
-// Ajoute / retire un jeu de la playing list (toggle) — gameId = idExterne IGDB
 router.post('/playing/:gameId', authMiddleware, async (req, res) => {
 	try {
-		const game = await prisma.game.findUnique({
-			where: { idExterne: req.params.gameId.toString() }
-		});
+		const game = await prisma.game.findUnique({ where: { idExterne: req.params.gameId.toString() } });
 		if (!game) return res.status(404).json({ error: 'Jeu introuvable.' });
-
-		const existing = await prisma.playingList.findUnique({
-			where: { userId_gameId: { userId: req.user.id, gameId: game.id } }
-		});
-
+		const existing = await prisma.playingList.findUnique({ where: { userId_gameId: { userId: req.user.id, gameId: game.id } } });
 		if (existing) {
-			await prisma.playingList.delete({
-				where: { userId_gameId: { userId: req.user.id, gameId: game.id } }
-			});
+			await prisma.playingList.delete({ where: { userId_gameId: { userId: req.user.id, gameId: game.id } } });
 			return res.json({ inList: false });
 		}
-
-		await prisma.playingList.create({
-			data: { userId: req.user.id, gameId: game.id }
-		});
+		await prisma.playingList.create({ data: { userId: req.user.id, gameId: game.id } });
 		res.json({ inList: true });
 	} catch (error) {
 		console.error('Erreur playing:', error);
@@ -124,7 +90,6 @@ router.post('/playing/:gameId', authMiddleware, async (req, res) => {
 	}
 });
 
-// Récupère la playing list de l'utilisateur connecté
 router.get('/playing', authMiddleware, async (req, res) => {
 	try {
 		const list = await prisma.playingList.findMany({
@@ -139,14 +104,77 @@ router.get('/playing', authMiddleware, async (req, res) => {
 	}
 });
 
-// Vérifie le statut (liké ? dans la playing list ?) d'un jeu — gameId = idExterne IGDB
+// ─── FAVORITE GAMES ───
+
+router.get('/favorites', authMiddleware, async (req, res) => {
+	try {
+		const favorites = await prisma.favoriteGame.findMany({
+			where: { userId: req.user.id },
+			include: { game: true },
+			orderBy: { position: 'asc' }
+		})
+		res.json(favorites.map(f => ({ ...f.game, position: f.position })))
+	} catch (error) {
+		console.error('Erreur favorites:', error)
+		res.status(500).json({ error: 'Erreur serveur.' })
+	}
+})
+
+router.post('/favorites/:gameId', authMiddleware, async (req, res) => {
+	try {
+		const idExterne = req.params.gameId.toString()
+		let game = await prisma.game.findUnique({ where: { idExterne } })
+		if (!game) {
+			const { getGameById } = await import('../services/igdb.js')
+			const igdbData = await getGameById(idExterne)
+			if (!igdbData || igdbData.length === 0) return res.status(404).json({ error: 'Jeu introuvable sur IGDB.' })
+			const g = igdbData[0]
+			game = await prisma.game.create({
+				data: {
+					idExterne,
+					title: g.name,
+					summary: g.summary || null,
+					releaseDate: g.first_release_date ? new Date(g.first_release_date * 1000) : null,
+					coverImageUrl: g.cover?.url ? `https:${g.cover.url.replace('t_thumb', 't_cover_big')}` : null,
+					developer: g.involved_companies?.[0]?.company?.name || null,
+				}
+			})
+		}
+		const existing = await prisma.favoriteGame.findFirst({ where: { userId: req.user.id, gameId: game.id } })
+		if (existing) return res.status(409).json({ error: 'Déjà en favori.' })
+		const taken = await prisma.favoriteGame.findMany({ where: { userId: req.user.id }, select: { position: true } })
+		const takenPositions = taken.map(f => f.position)
+		if (takenPositions.length >= 4) return res.status(400).json({ error: 'Maximum 4 favoris.' })
+		const position = [1, 2, 3, 4].find(p => !takenPositions.includes(p))
+		const favorite = await prisma.favoriteGame.create({
+			data: { userId: req.user.id, gameId: game.id, position },
+			include: { game: true }
+		})
+		res.json({ ...favorite.game, position: favorite.position })
+	} catch (error) {
+		console.error('Erreur add favorite:', error)
+		res.status(500).json({ error: 'Erreur serveur.' })
+	}
+})
+
+router.delete('/favorites/:gameId', authMiddleware, async (req, res) => {
+	try {
+		const game = await prisma.game.findUnique({ where: { idExterne: req.params.gameId.toString() } })
+		if (!game) return res.status(404).json({ error: 'Jeu introuvable.' })
+		await prisma.favoriteGame.delete({ where: { userId_gameId: { userId: req.user.id, gameId: game.id } } })
+		res.json({ message: 'Favori supprimé.' })
+	} catch (error) {
+		console.error('Erreur delete favorite:', error)
+		res.status(500).json({ error: 'Erreur serveur.' })
+	}
+})
+
+// ─── STATUS ───
+
 router.get('/status/:gameId', authMiddleware, async (req, res) => {
 	try {
-		const game = await prisma.game.findUnique({
-			where: { idExterne: req.params.gameId.toString() }
-		});
+		const game = await prisma.game.findUnique({ where: { idExterne: req.params.gameId.toString() } });
 		if (!game) return res.json({ liked: false, inPlayingList: false });
-
 		const [liked, playing] = await Promise.all([
 			prisma.likedGame.findUnique({ where: { userId_gameId: { userId: req.user.id, gameId: game.id } } }),
 			prisma.playingList.findUnique({ where: { userId_gameId: { userId: req.user.id, gameId: game.id } } }),
@@ -162,25 +190,15 @@ router.get('/status/:gameId', authMiddleware, async (req, res) => {
 
 router.put('/username', authMiddleware, async (req, res) => {
 	const { username } = req.body
-
-	if (!username || username.trim() === '') {
-		return res.status(400).json({ error: 'Username invalide.' })
-	}
-
+	if (!username || username.trim() === '') return res.status(400).json({ error: 'Username invalide.' })
 	try {
-		const existing = await prisma.users.findUnique({
-			where: { username: username.trim() }
-		})
-		if (existing) {
-			return res.status(409).json({ error: 'Ce username est déjà pris.' })
-		}
-
+		const existing = await prisma.users.findUnique({ where: { username: username.trim() } })
+		if (existing) return res.status(409).json({ error: 'Ce username est déjà pris.' })
 		const updated = await prisma.users.update({
 			where: { id: req.user.id },
 			data: { username: username.trim() },
 			select: { id: true, username: true, email: true, avatarUrl: true }
 		})
-
 		res.json({ message: 'Username mis à jour !', user: updated })
 	} catch (error) {
 		console.error('Erreur update username:', error)
@@ -192,29 +210,16 @@ router.put('/username', authMiddleware, async (req, res) => {
 
 router.put('/password', authMiddleware, async (req, res) => {
 	const { currentPassword, newPassword } = req.body
-
-	if (!currentPassword || !newPassword) {
-		return res.status(400).json({ error: 'Champs manquants.' })
-	}
-
-	if (newPassword.length < 6) {
-		return res.status(400).json({ error: 'Le nouveau mot de passe doit faire au moins 6 caractères.' })
-	}
-
+	if (!currentPassword || !newPassword) return res.status(400).json({ error: 'Champs manquants.' })
+	if (newPassword.length < 6) return res.status(400).json({ error: 'Le nouveau mot de passe doit faire au moins 6 caractères.' })
 	try {
 		const user = await prisma.users.findUnique({ where: { id: req.user.id } })
 		if (!user) return res.status(404).json({ error: 'Utilisateur introuvable.' })
-
 		const bcrypt = await import('bcrypt')
 		const valid = await bcrypt.default.compare(currentPassword, user.passwordHash)
 		if (!valid) return res.status(401).json({ error: 'Mot de passe actuel incorrect.' })
-
 		const hashed = await bcrypt.default.hash(newPassword, 10)
-		await prisma.users.update({
-			where: { id: req.user.id },
-			data: { passwordHash: hashed }
-		})
-
+		await prisma.users.update({ where: { id: req.user.id }, data: { passwordHash: hashed } })
 		res.json({ message: 'Mot de passe mis à jour !' })
 	} catch (error) {
 		console.error('Erreur update password:', error)
@@ -226,9 +231,7 @@ router.put('/password', authMiddleware, async (req, res) => {
 
 router.delete('/delete', authMiddleware, async (req, res) => {
 	try {
-		// ApiKey n'a pas de onDelete: Cascade → suppression manuelle
 		await prisma.apiKey.deleteMany({ where: { userId: req.user.id } })
-		// Le reste (likes, playingList, reviews, friendships) → Cascade automatique
 		await prisma.users.delete({ where: { id: req.user.id } })
 		res.json({ message: 'Compte supprimé.' })
 	} catch (error) {
@@ -239,17 +242,12 @@ router.delete('/delete', authMiddleware, async (req, res) => {
 
 // ─── AMIS ───
 
-// Rechercher un utilisateur par username
 router.get('/search', authMiddleware, async (req, res) => {
 	const { q } = req.query
 	if (!q || q.trim() === '') return res.status(400).json({ error: 'Requête vide.' })
-
 	try {
 		const users = await prisma.users.findMany({
-			where: {
-				username: { contains: q.trim(), mode: 'insensitive' },
-				NOT: { id: req.user.id } // exclut soi-même
-			},
+			where: { username: { contains: q.trim(), mode: 'insensitive' }, NOT: { id: req.user.id } },
 			select: { id: true, username: true, avatarUrl: true },
 			take: 10
 		})
@@ -260,24 +258,13 @@ router.get('/search', authMiddleware, async (req, res) => {
 	}
 })
 
-// Envoyer une demande d'ami
 router.post('/friend-request/:userId', authMiddleware, async (req, res) => {
 	const targetId = parseInt(req.params.userId)
 	if (targetId === req.user.id) return res.status(400).json({ error: 'Tu ne peux pas t\'ajouter toi-même.' })
-
 	try {
-		// Vérifie si une relation existe déjà
-		const existing = await prisma.friendship.findFirst({
-			where: {
-				userId1: req.user.id,
-				userId2: targetId
-			}
-		})
+		const existing = await prisma.friendship.findFirst({ where: { userId1: req.user.id, userId2: targetId } })
 		if (existing) return res.status(409).json({ error: 'Demande déjà envoyée ou déjà amis.' })
-
-		await prisma.friendship.create({
-			data: { userId1: req.user.id, userId2: targetId, status: 'accepted' }
-		})
+		await prisma.friendship.create({ data: { userId1: req.user.id, userId2: targetId, status: 'accepted' } })
 		res.json({ message: 'Demande envoyée !' })
 	} catch (error) {
 		console.error('Erreur friend request:', error)
@@ -287,14 +274,11 @@ router.post('/friend-request/:userId', authMiddleware, async (req, res) => {
 
 // ─── FOLLOW ───
 
-// Récupère les abonnements (qui je suis)
 router.get('/following', authMiddleware, async (req, res) => {
 	try {
 		const following = await prisma.friendship.findMany({
 			where: { userId1: req.user.id, status: 'accepted' },
-			include: {
-				user2: { select: { id: true, username: true, avatarUrl: true } }
-			}
+			include: { user2: { select: { id: true, username: true, avatarUrl: true } } }
 		})
 		res.json(following.map(f => f.user2))
 	} catch (error) {
@@ -303,14 +287,11 @@ router.get('/following', authMiddleware, async (req, res) => {
 	}
 })
 
-// Récupère les abonnés (qui me suit)
 router.get('/followers', authMiddleware, async (req, res) => {
 	try {
 		const followers = await prisma.friendship.findMany({
 			where: { userId2: req.user.id, status: 'accepted' },
-			include: {
-				user1: { select: { id: true, username: true, avatarUrl: true } }
-			}
+			include: { user1: { select: { id: true, username: true, avatarUrl: true } } }
 		})
 		res.json(followers.map(f => f.user1))
 	} catch (error) {
@@ -319,7 +300,8 @@ router.get('/followers', authMiddleware, async (req, res) => {
 	}
 })
 
-// Profil public d'un user par son id
+// ─── PROFIL PUBLIC ───
+
 router.get('/profile/:userId', authMiddleware, async (req, res) => {
 	const userId = parseInt(req.params.userId)
 	try {
@@ -329,7 +311,7 @@ router.get('/profile/:userId', authMiddleware, async (req, res) => {
 		})
 		if (!user) return res.status(404).json({ error: 'Utilisateur introuvable.' })
 
-		const [followers, following, likedGames, playingList] = await Promise.all([
+		const [followers, following, likedGames, playingList, favoriteGames, reviews] = await Promise.all([
 			prisma.friendship.findMany({
 				where: { userId2: userId, status: 'accepted' },
 				include: { user1: { select: { id: true, username: true, avatarUrl: true } } }
@@ -347,6 +329,16 @@ router.get('/profile/:userId', authMiddleware, async (req, res) => {
 				where: { userId },
 				include: { game: true },
 				orderBy: { addedAt: 'desc' }
+			}),
+			prisma.favoriteGame.findMany({
+				where: { userId },
+				include: { game: true },
+				orderBy: { position: 'asc' }
+			}),
+			prisma.review.findMany({
+				where: { userId },
+				include: { game: true },
+				orderBy: { createdAt: 'desc' }
 			})
 		])
 
@@ -355,10 +347,168 @@ router.get('/profile/:userId', authMiddleware, async (req, res) => {
 			followers: followers.map(f => f.user1),
 			following: following.map(f => f.user2),
 			likedGames: likedGames.map(l => l.game),
-			playingList: playingList.map(p => p.game)
+			playingList: playingList.map(p => p.game),
+			favoriteGames: favoriteGames.map(f => ({ ...f.game, position: f.position })),
+			reviews
 		})
 	} catch (error) {
 		console.error('Erreur profil public:', error)
+		res.status(500).json({ error: 'Erreur serveur.' })
+	}
+})
+
+// ─── ACTIVITÉ AMIS ───
+
+router.get('/friends-activity', authMiddleware, async (req, res) => {
+	try {
+		const following = await prisma.friendship.findMany({
+			where: { userId1: req.user.id, status: 'accepted' },
+			select: { userId2: true }
+		})
+		const followingIds = following.map(f => f.userId2)
+		if (followingIds.length === 0) return res.json([])
+
+		const recentLikes = await prisma.likedGame.findMany({
+			where: { userId: { in: followingIds } },
+			include: {
+				user: { select: { id: true, username: true, avatarUrl: true } },
+				game: { select: { title: true, idExterne: true } }
+			},
+			orderBy: { likedAt: 'desc' },
+			take: 20
+		})
+
+		const activities = recentLikes.map(l => ({
+			userId: l.user.id,
+			username: l.user.username,
+			avatarUrl: l.user.avatarUrl,
+			action: 'liked',
+			target: l.game.title,
+			targetId: l.game.idExterne,
+			targetType: 'game',
+			date: l.likedAt
+		}))
+
+		res.json(activities)
+	} catch (error) {
+		console.error('Erreur friends activity:', error)
+		res.status(500).json({ error: 'Erreur serveur.' })
+	}
+})
+
+// ─── REVIEWS ───
+
+router.post('/review', authMiddleware, async (req, res) => {
+	const { gameId, rating, reviewText } = req.body
+	if (!gameId || !rating) return res.status(400).json({ error: 'Jeu et note obligatoires.' })
+	if (rating < 0.5 || rating > 5) return res.status(400).json({ error: 'Note invalide (0.5 à 5).' })
+
+	try {
+		let game = await prisma.game.findUnique({ where: { idExterne: gameId.toString() } })
+		if (!game) {
+			const { getGameById } = await import('../services/igdb.js')
+			const igdbData = await getGameById(gameId.toString())
+			if (!igdbData || igdbData.length === 0) return res.status(404).json({ error: 'Jeu introuvable.' })
+			const g = igdbData[0]
+			game = await prisma.game.create({
+				data: {
+					idExterne: gameId.toString(),
+					title: g.name,
+					summary: g.summary || null,
+					releaseDate: g.first_release_date ? new Date(g.first_release_date * 1000) : null,
+					coverImageUrl: g.cover?.url ? `https:${g.cover.url.replace('t_thumb', 't_cover_big')}` : null,
+					developer: g.involved_companies?.[0]?.company?.name || null,
+				}
+			})
+		}
+
+		const existing = await prisma.review.findUnique({
+			where: { unique_user_game_review: { userId: req.user.id, gameId: game.id } }
+		})
+		if (existing) return res.status(409).json({ error: 'Tu as déjà posté une review pour ce jeu.' })
+
+		const ratingInt = Math.round(rating * 2)
+		const review = await prisma.review.create({
+			data: { userId: req.user.id, gameId: game.id, rating: ratingInt, reviewText: reviewText?.trim() || null },
+			include: { game: true }
+		})
+		res.json({ message: 'Review publiée !', review })
+	} catch (error) {
+		console.error('Erreur post review:', error)
+		res.status(500).json({ error: 'Erreur serveur.' })
+	}
+})
+
+router.get('/reviews', authMiddleware, async (req, res) => {
+	try {
+		const reviews = await prisma.review.findMany({
+			where: { userId: req.user.id },
+			include: { game: true },
+			orderBy: { createdAt: 'desc' }
+		})
+		res.json(reviews)
+	} catch (error) {
+		console.error('Erreur reviews:', error)
+		res.status(500).json({ error: 'Erreur serveur.' })
+	}
+})
+
+router.get('/reviews/all', authMiddleware, async (req, res) => {
+	try {
+		const reviews = await prisma.review.findMany({
+			where: { userId: { not: req.user.id } },
+			include: {
+				game: true,
+				user: { select: { id: true, username: true, avatarUrl: true } }
+			},
+			orderBy: { createdAt: 'desc' }
+		})
+		res.json(reviews)
+	} catch (error) {
+		console.error('Erreur reviews all:', error)
+		res.status(500).json({ error: 'Erreur serveur.' })
+	}
+})
+
+// Modifier une review
+router.put('/review/:reviewId', authMiddleware, async (req, res) => {
+	const { rating, reviewText } = req.body
+	const reviewId = parseInt(req.params.reviewId)
+
+	try {
+		const review = await prisma.review.findUnique({ where: { id: reviewId } })
+		if (!review) return res.status(404).json({ error: 'Review introuvable.' })
+		if (review.userId !== req.user.id) return res.status(403).json({ error: 'Non autorisé.' })
+
+		const ratingInt = rating ? Math.round(rating * 2) : review.rating
+
+		const updated = await prisma.review.update({
+			where: { id: reviewId },
+			data: {
+				rating: ratingInt,
+				reviewText: reviewText?.trim() ?? review.reviewText
+			},
+			include: { game: true }
+		})
+		res.json({ message: 'Review modifiée !', review: updated })
+	} catch (error) {
+		console.error('Erreur update review:', error)
+		res.status(500).json({ error: 'Erreur serveur.' })
+	}
+})
+
+// Supprimer une review
+router.delete('/review/:reviewId', authMiddleware, async (req, res) => {
+	const reviewId = parseInt(req.params.reviewId)
+	try {
+		const review = await prisma.review.findUnique({ where: { id: reviewId } })
+		if (!review) return res.status(404).json({ error: 'Review introuvable.' })
+		if (review.userId !== req.user.id) return res.status(403).json({ error: 'Non autorisé.' })
+
+		await prisma.review.delete({ where: { id: reviewId } })
+		res.json({ message: 'Review supprimée.' })
+	} catch (error) {
+		console.error('Erreur delete review:', error)
 		res.status(500).json({ error: 'Erreur serveur.' })
 	}
 })

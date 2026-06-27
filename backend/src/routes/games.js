@@ -97,15 +97,39 @@ router.get('/coming-soon', async (req, res) => {
 router.get('/search', async (req, res) => {
 	const { q } = req.query;
 	if (!q) return res.status(400).json({ error: 'Paramètre q manquant' });
+
 	try {
-		const games = await searchGames(q);
-		const sorted = games.sort((a, b) => (b.rating_count || 0) - (a.rating_count || 0));
-		res.json(sorted);
+		// 1. Cherche d'abord dans la DB (résultats instantanés)
+		const dbGames = await prisma.game.findMany({
+			where: {
+				title: { contains: q, mode: 'insensitive' }
+			},
+			orderBy: { ratingCount: 'desc' },
+			take: 10,
+		})
+
+		// 2. Si assez de résultats en DB, on renvoie direct
+		if (dbGames.length >= 5) {
+			return res.json(dbGames)
+		}
+
+		// 3. Sinon, complète avec IGDB
+		const igdbGames = await searchGames(q)
+		const sorted = igdbGames.sort((a, b) => (b.rating_count || 0) - (a.rating_count || 0))
+
+		// 4. Fusionne en évitant les doublons (par idExterne)
+		const dbIdExternes = new Set(dbGames.map(g => g.idExterne))
+		const igdbFiltered = sorted
+			.filter(g => !dbIdExternes.has(g.id?.toString()))
+			.slice(0, 20)
+
+		// 5. Renvoie DB en premier (format DB), puis IGDB (format brut)
+		res.json([...dbGames, ...igdbFiltered])
 	} catch (error) {
-		console.error(error);
-		res.status(500).json({ error: 'Erreur IGDB' });
+		console.error(error)
+		res.status(500).json({ error: 'Erreur recherche' })
 	}
-});
+})
 
 router.get('/all', async (req, res) => {
 	try {
