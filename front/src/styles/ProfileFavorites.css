@@ -59,11 +59,18 @@
 	justify-content: center;
 	cursor: pointer;
 	z-index: 2;
-	transition: background 0.2s ease;
+	transition: background 0.2s ease, opacity 0.2s ease;
+	opacity: 0;
+	/* caché par défaut */
 }
 
 .favorite-remove-btn:hover {
 	background: #f44336;
+}
+
+.favorite-card:hover .favorite-remove-btn {
+	opacity: 1;
+	/* visible au hover de la carte */
 }
 
 /* Slot vide cliquable (editable) */

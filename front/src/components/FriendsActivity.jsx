@@ -1,29 +1,31 @@
 import '../styles/FriendsActivity.css'
 import { useNavigate } from 'react-router-dom'
-import { useState, useEffect } from 'react'
 
-const FriendsActivity = () => {
+const getAvatar = (avatarUrl, username) => {
+	if (avatarUrl && avatarUrl !== 'default_avatar.png') return avatarUrl
+	return `https://ui-avatars.com/api/?name=${encodeURIComponent(username || 'U')}&background=f5a623&color=fff&size=128&bold=true`
+}
+
+const FriendsActivity = ({ activities, loading }) => {
 	const navigate = useNavigate()
-	const [activities, setActivities] = useState([])
-	const [loading, setLoading] = useState(true)
 
-	useEffect(() => {
-		const token = localStorage.getItem('token')
-		if (!token) return
+	const handleClick = (activity) => {
+		if (activity.type === 'reviewed' && activity.reviewId) {
+			navigate('/reviews', { state: { tab: 'friends', reviewId: activity.reviewId } })
+		} else if (activity.targetType === 'user') {
+			navigate(`/profile/${activity.targetId}`)
+		} else {
+			navigate(`/game/${activity.targetId}`)
+		}
+	}
 
-		fetch('/api/user/friends-activity', {
-			headers: { Authorization: `Bearer ${token}` }
-		})
-			.then(res => res.ok ? res.json() : [])
-			.then(data => {
-				setActivities(data)
-				setLoading(false)
-			})
-			.catch(err => {
-				console.error('Erreur activity:', err)
-				setLoading(false)
-			})
-	}, [])
+	const getEmoji = (type) => {
+		if (type === 'liked') return '❤️'
+		if (type === 'reviewed') return '⭐'
+		if (type === 'playing') return '🎮'
+		if (type === 'followed') return '👤'
+		return '•'
+	}
 
 	if (loading) return null
 
@@ -36,31 +38,22 @@ const FriendsActivity = () => {
 				</p>
 			) : (
 				activities.map((activity, i) => (
-					<div key={i} className="friends-activity-item">
+					<div key={i} className="friends-activity-item" onClick={() => handleClick(activity)} style={{ cursor: 'pointer' }}>
 						<img
-							src={activity.avatarUrl && activity.avatarUrl !== 'default_avatar.png'
-								? activity.avatarUrl
-								: "https://placehold.co/40x40"}
+							src={getAvatar(activity.avatarUrl, activity.username)}
 							alt={activity.username}
 							className="friends-activity-avatar"
-							onClick={() => navigate(`/profile/${activity.userId}`)}
-							style={{ cursor: 'pointer' }}
+							onClick={(e) => { e.stopPropagation(); navigate(`/profile/${activity.userId}`) }}
 						/>
 						<p className="friends-activity-text">
-							<span
-								className="friends-activity-username"
-								onClick={() => navigate(`/profile/${activity.userId}`)}
-								style={{ cursor: 'pointer' }}
-							>
+							<span className="friends-activity-username"
+								onClick={(e) => { e.stopPropagation(); navigate(`/profile/${activity.userId}`) }}
+								style={{ cursor: 'pointer' }}>
 								{activity.username}
 							</span>
-							{' '}liked{' '}
-							<span
-								className="friends-activity-target"
-								onClick={() => navigate(`/game/${activity.targetId}`)}
-								style={{ cursor: 'pointer' }}
-							>
-								{activity.target}
+							{' '}{activity.action}{' '}
+							<span className="friends-activity-target">
+								{getEmoji(activity.type)} {activity.target}
 							</span>
 						</p>
 					</div>

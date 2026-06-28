@@ -298,3 +298,15 @@
 	display: flex;
 	gap: 15px;
 }
+
+.settings-eye-btn {
+	position: absolute;
+	right: 12px;
+	background: none;
+	border: none;
+	color: #e7e7e7;
+	cursor: pointer;
+	padding: 0;
+	display: flex;
+	align-items: center;
+}

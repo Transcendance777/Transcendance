@@ -4,6 +4,12 @@ import { FiEye, FiEyeOff } from 'react-icons/fi'
 import SettingsNavBar from '../components/SettingsNavBar'
 import Background from '../components/Background'
 import '../styles/SettingsPage.css'
+import Footer from '../components/Footer'
+
+const getAvatar = (avatarUrl, username) => {
+	if (avatarUrl && avatarUrl !== 'default_avatar.png') return avatarUrl
+	return `https://ui-avatars.com/api/?name=${encodeURIComponent(username || 'U')}&background=f5a623&color=fff&size=128&bold=true`
+}
 
 const SettingsPage = () => {
 	const [username, setUsername] = useState('')
@@ -13,23 +19,32 @@ const SettingsPage = () => {
 	const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 	const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
 	const [showAvatarModal, setShowAvatarModal] = useState(false)
-	const [avatarSrc, setAvatarSrc] = useState("https://placehold.co/80x80")
-	const [previewSrc, setPreviewSrc] = useState("https://placehold.co/80x80")
+	const [avatarSrc, setAvatarSrc] = useState('')
+	const [previewSrc, setPreviewSrc] = useState('')
 	const [usernameMsg, setUsernameMsg] = useState('')
 	const [passwordMsg, setPasswordMsg] = useState('')
 	const [showCurrentPassword, setShowCurrentPassword] = useState(false)
 	const [showNewPassword, setShowNewPassword] = useState(false)
 	const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+	const [deletePassword, setDeletePassword] = useState('')
+	const [deletePasswordMsg, setDeletePasswordMsg] = useState('')
+	const [showDeletePassword, setShowDeletePassword] = useState(false)
+	const [isGoogleAccount, setIsGoogleAccount] = useState(false)
+	const [hasCustomAvatar, setHasCustomAvatar] = useState(false)
+	const [apiKey, setApiKey] = useState(null)
+	const [apiKeyMsg, setApiKeyMsg] = useState('')
+	const [showApiKey, setShowApiKey] = useState(false)
 	const navigate = useNavigate()
 
 	useEffect(() => {
 		const stored = localStorage.getItem('user')
 		if (stored) {
 			const user = JSON.parse(stored)
-			if (user.avatarUrl && user.avatarUrl !== 'default_avatar.png') {
-				setAvatarSrc(user.avatarUrl)
-				setPreviewSrc(user.avatarUrl)
-			}
+			const avatar = getAvatar(user.avatarUrl, user.username)
+			setAvatarSrc(avatar)
+			setPreviewSrc(avatar)
+			if (user.isGoogle) setIsGoogleAccount(true)
+			if (user.avatarUrl && user.avatarUrl !== 'default_avatar.png') setHasCustomAvatar(true)
 		}
 	}, [])
 
@@ -49,14 +64,36 @@ const SettingsPage = () => {
 				headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
 				body: JSON.stringify({ avatar: previewSrc })
 			})
-			if (!res.ok) throw new Error('Upload échoué')
+			if (!res.ok) throw new Error('Upload failed')
 			const user = JSON.parse(localStorage.getItem('user'))
 			user.avatarUrl = previewSrc
 			localStorage.setItem('user', JSON.stringify(user))
 			setAvatarSrc(previewSrc)
+			setHasCustomAvatar(true)
 			setShowAvatarModal(false)
 		} catch (err) {
 			console.error('Erreur avatar:', err)
+		}
+	}
+
+	const handleRemoveAvatar = async () => {
+		const token = localStorage.getItem('token')
+		try {
+			const res = await fetch('/api/user/avatar', {
+				method: 'PUT',
+				headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+				body: JSON.stringify({ avatar: 'default_avatar.png' })
+			})
+			if (!res.ok) throw new Error('Failed')
+			const user = JSON.parse(localStorage.getItem('user'))
+			user.avatarUrl = 'default_avatar.png'
+			localStorage.setItem('user', JSON.stringify(user))
+			const defaultAvatar = getAvatar('default_avatar.png', user.username)
+			setAvatarSrc(defaultAvatar)
+			setPreviewSrc(defaultAvatar)
+			setHasCustomAvatar(false)
+		} catch (err) {
+			console.error('Erreur remove avatar:', err)
 		}
 	}
 
@@ -66,9 +103,8 @@ const SettingsPage = () => {
 		navigate('/')
 	}
 
-	// ─── USERNAME ───
 	const handleSaveUsername = async () => {
-		if (!username.trim()) return setUsernameMsg('Saisis un username.')
+		if (!username.trim()) return setUsernameMsg('Please enter a username.')
 		const token = localStorage.getItem('token')
 		try {
 			const res = await fetch('/api/user/username', {
@@ -81,22 +117,20 @@ const SettingsPage = () => {
 			const user = JSON.parse(localStorage.getItem('user'))
 			user.username = data.user.username
 			localStorage.setItem('user', JSON.stringify(user))
-			setUsernameMsg('Username mis à jour ✓')
+			setUsernameMsg('Username updated ✓')
 			setUsername('')
 		} catch (err) {
-			setUsernameMsg('Erreur serveur.')
+			setUsernameMsg('Server error.')
 		}
 	}
 
-	// ─── MOT DE PASSE ───
 	const handleUpdatePassword = async () => {
 		if (!currentPassword || !newPassword || !confirmPassword)
-			return setPasswordMsg('Remplis tous les champs.')
+			return setPasswordMsg('Please fill in all fields.')
 		if (newPassword !== confirmPassword)
-			return setPasswordMsg('Les mots de passe ne correspondent pas.')
+			return setPasswordMsg('Passwords do not match.')
 		if (newPassword.length < 6)
-			return setPasswordMsg('Le mot de passe doit faire au moins 6 caractères.')
-
+			return setPasswordMsg('Password must be at least 6 characters.')
 		const token = localStorage.getItem('token')
 		try {
 			const res = await fetch('/api/user/password', {
@@ -106,42 +140,75 @@ const SettingsPage = () => {
 			})
 			const data = await res.json()
 			if (!res.ok) return setPasswordMsg(data.error)
-			setPasswordMsg('Mot de passe mis à jour ✓')
+			setPasswordMsg('Password updated ✓')
 			setCurrentPassword('')
 			setNewPassword('')
 			setConfirmPassword('')
 		} catch (err) {
-			setPasswordMsg('Erreur serveur.')
+			setPasswordMsg('Server error.')
 		}
 	}
 
-	// ─── SUPPRESSION COMPTE ───
 	const handleDeleteAccount = async () => {
+		// Compte Google — pas besoin de mot de passe
+		if (!isGoogleAccount && !deletePassword) {
+			return setDeletePasswordMsg('Please enter your password.')
+		}
 		const token = localStorage.getItem('token')
 		try {
 			const res = await fetch('/api/user/delete', {
 				method: 'DELETE',
-				headers: { Authorization: `Bearer ${token}` }
+				headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+				body: JSON.stringify({ password: deletePassword })
 			})
-			if (!res.ok) throw new Error('Erreur suppression')
+			const data = await res.json()
+			if (!res.ok) return setDeletePasswordMsg(data.error)
 			localStorage.removeItem('token')
 			localStorage.removeItem('user')
 			navigate('/')
 		} catch (err) {
-			console.error('Erreur delete:', err)
+			setDeletePasswordMsg('Server error.')
 		}
 	}
 
-	const eyeStyle = {
-		position: 'absolute',
-		right: '12px',
-		background: 'none',
-		border: 'none',
-		color: '#e7e7e7',
-		cursor: 'pointer',
-		padding: 0,
-		display: 'flex',
-		alignItems: 'center'
+	const handleGenerateApiKey = async () => {
+		const token = localStorage.getItem('token')
+		try {
+			const res = await fetch('/api/apikey', {
+				method: 'POST',
+				headers: { Authorization: `Bearer ${token}` }
+			})
+			const data = await res.json()
+			if (!res.ok) return setApiKeyMsg(data.error)
+			setApiKey(data.key)
+			setShowApiKey(true)
+			setApiKeyMsg('API key generated ✓')
+		} catch (err) {
+			setApiKeyMsg('Server error.')
+		}
+	}
+
+	const handleRevokeApiKey = async () => {
+		const token = localStorage.getItem('token')
+		try {
+			const res = await fetch('/api/apikey', {
+				method: 'DELETE',
+				headers: { Authorization: `Bearer ${token}` }
+			})
+			if (!res.ok) return setApiKeyMsg('Server error.')
+			setApiKey(null)
+			setShowApiKey(false)
+			setApiKeyMsg('API key revoked.')
+		} catch (err) {
+			setApiKeyMsg('Server error.')
+		}
+	}
+
+	const closeDeleteModal = () => {
+		setShowDeleteConfirm(false)
+		setDeletePassword('')
+		setDeletePasswordMsg('')
+		setShowDeletePassword(false)
 	}
 
 	return (
@@ -183,71 +250,130 @@ const SettingsPage = () => {
 									onClick={() => { setPreviewSrc(avatarSrc); setShowAvatarModal(true) }}
 									style={{ cursor: 'pointer' }}
 								/>
-								<p className="settings-danger-desc">Click on the picture to change it</p>
+								<div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+									<p className="settings-danger-desc">Click on the picture to change it</p>
+									{hasCustomAvatar && (
+										<button
+											className="settings-danger-btn"
+											style={{ fontSize: '11px', padding: '6px 14px' }}
+											onClick={handleRemoveAvatar}
+										>
+											Remove picture
+										</button>
+									)}
+								</div>
 							</div>
 						</div>
 					</div>
 
-					{/* Section Sécurité */}
-					<div className="settings-section">
-						<h2 className="settings-section-title">Security & Privacy</h2>
+					{/* Section Sécurité — masquée pour les comptes Google */}
+					{!isGoogleAccount && (
+						<div className="settings-section">
+							<h2 className="settings-section-title">Security & Privacy</h2>
 
-						<div className="settings-item">
-							<p className="settings-label">Change password</p>
-							<div className="settings-password-form">
+							<div className="settings-item">
+								<p className="settings-label">Change password</p>
+								<div className="settings-password-form">
 
-								{/* Current password (pas de toggle, inutile) */}
-								<div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-									<input
-										className="settings-input"
-										type={showCurrentPassword ? 'text' : 'password'}
-										placeholder="Current password..."
-										value={currentPassword}
-										onChange={(e) => setCurrentPassword(e.target.value)}
-										style={{ paddingRight: '40px', width: '100%' }}
-									/>
-									<button type="button" style={eyeStyle} onClick={() => setShowCurrentPassword(!showCurrentPassword)}>
-										{showCurrentPassword ? <FiEyeOff size={18} /> : <FiEye size={18} />}
-									</button>
+									<div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+										<input
+											className="settings-input"
+											type={showCurrentPassword ? 'text' : 'password'}
+											placeholder="Current password..."
+											value={currentPassword}
+											onChange={(e) => setCurrentPassword(e.target.value)}
+											style={{ paddingRight: '40px', width: '100%' }}
+										/>
+										<button type="button" className="settings-eye-btn" onClick={() => setShowCurrentPassword(!showCurrentPassword)}>
+											{showCurrentPassword ? <FiEyeOff size={18} /> : <FiEye size={18} />}
+										</button>
+									</div>
+
+									<div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+										<input
+											className="settings-input"
+											type={showNewPassword ? 'text' : 'password'}
+											placeholder="New password..."
+											value={newPassword}
+											onChange={(e) => setNewPassword(e.target.value)}
+											style={{ paddingRight: '40px', width: '100%' }}
+										/>
+										<button type="button" className="settings-eye-btn" onClick={() => setShowNewPassword(!showNewPassword)}>
+											{showNewPassword ? <FiEyeOff size={18} /> : <FiEye size={18} />}
+										</button>
+									</div>
+
+									<div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+										<input
+											className="settings-input"
+											type={showConfirmPassword ? 'text' : 'password'}
+											placeholder="Confirm new password..."
+											value={confirmPassword}
+											onChange={(e) => setConfirmPassword(e.target.value)}
+											style={{ paddingRight: '40px', width: '100%' }}
+										/>
+										<button type="button" className="settings-eye-btn" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
+											{showConfirmPassword ? <FiEyeOff size={18} /> : <FiEye size={18} />}
+										</button>
+									</div>
+
+									<button className="settings-save-btn" onClick={handleUpdatePassword}>Update password</button>
 								</div>
-
-								{/* New password avec toggle */}
-								<div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-									<input
-										className="settings-input"
-										type={showNewPassword ? 'text' : 'password'}
-										placeholder="New password..."
-										value={newPassword}
-										onChange={(e) => setNewPassword(e.target.value)}
-										style={{ paddingRight: '40px', width: '100%' }}
-									/>
-									<button type="button" style={eyeStyle} onClick={() => setShowNewPassword(!showNewPassword)}>
-										{showNewPassword ? <FiEyeOff size={18} /> : <FiEye size={18} />}
-									</button>
-								</div>
-
-								{/* Confirm password avec toggle */}
-								<div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-									<input
-										className="settings-input"
-										type={showConfirmPassword ? 'text' : 'password'}
-										placeholder="Confirm new password..."
-										value={confirmPassword}
-										onChange={(e) => setConfirmPassword(e.target.value)}
-										style={{ paddingRight: '40px', width: '100%' }}
-									/>
-									<button type="button" style={eyeStyle} onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
-										{showConfirmPassword ? <FiEyeOff size={18} /> : <FiEye size={18} />}
-									</button>
-								</div>
-
-								<button className="settings-save-btn" onClick={handleUpdatePassword}>Update password</button>
+								{passwordMsg && (
+									<p style={{ color: passwordMsg.includes('✓') ? '#4caf50' : '#f44336', fontSize: '13px', fontFamily: '"policeConthrax", sans-serif' }}>
+										{passwordMsg}
+									</p>
+								)}
 							</div>
-							{passwordMsg && (
-								<p style={{ color: passwordMsg.includes('✓') ? '#4caf50' : '#f44336', fontSize: '13px', fontFamily: '"policeConthrax", sans-serif' }}>
-									{passwordMsg}
+						</div>
+					)}
+
+					{/* Section API Key */}
+					<div className="settings-section">
+						<h2 className="settings-section-title">API Key</h2>
+						<div className="settings-item">
+							<p className="settings-label">External API access</p>
+							<p className="settings-danger-desc">Generate a key to access the GameRev public API.</p>
+
+							{apiKey && (
+								<div style={{ position: 'relative', display: 'flex', alignItems: 'center', marginTop: '10px' }}>
+									<input
+										className="settings-input"
+										type={showApiKey ? 'text' : 'password'}
+										value={apiKey}
+										readOnly
+										style={{ paddingRight: '40px', width: '100%', cursor: 'text' }}
+									/>
+									<button type="button" className="settings-eye-btn" onClick={() => setShowApiKey(!showApiKey)}>
+										{showApiKey ? <FiEyeOff size={18} /> : <FiEye size={18} />}
+									</button>
+								</div>
+							)}
+
+							{apiKeyMsg && (
+								<p style={{ color: apiKeyMsg.includes('✓') ? '#4caf50' : apiKeyMsg.includes('revoked') ? '#f5a623' : '#f44336', fontSize: '13px', fontFamily: '"policeConthrax", sans-serif', marginTop: '8px' }}>
+									{apiKeyMsg}
 								</p>
 							)}
+
+							<div style={{ display: 'flex', gap: '15px', marginTop: '15px', flexWrap: 'wrap' }}>
+								<button className="settings-save-btn" onClick={handleGenerateApiKey}>
+									Generate key
+								</button>
+								{apiKey && (
+									<>
+										<button
+											className="settings-save-btn"
+											onClick={() => { navigator.clipboard.writeText(apiKey); setApiKeyMsg('Copied ✓') }}
+										>
+											Copy
+										</button>
+										<button className="settings-danger-btn" onClick={handleRevokeApiKey}>
+											Revoke
+										</button>
+									</>
+								)}
+							</div>
 						</div>
 					</div>
 
@@ -297,14 +423,40 @@ const SettingsPage = () => {
 				</div>
 			)}
 
-			{/* Modal suppression */}
+			{/* Modal suppression avec confirmation mot de passe */}
 			{showDeleteConfirm && (
-				<div className="settings-modal-overlay" onClick={() => setShowDeleteConfirm(false)}>
+				<div className="settings-modal-overlay" onClick={closeDeleteModal}>
 					<div className="settings-modal" onClick={(e) => e.stopPropagation()}>
 						<h3 className="settings-modal-title">Delete account ?</h3>
-						<p className="settings-modal-text">This action is irreversible. Are you sure ?</p>
+						<p className="settings-modal-text">
+							{isGoogleAccount
+								? 'This action is irreversible. Are you sure ?'
+								: 'This action is irreversible. Enter your password to confirm.'
+							}
+						</p>
+						{/* Input mot de passe uniquement pour les comptes non-Google */}
+						{!isGoogleAccount && (
+							<div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+								<input
+									className="settings-input"
+									type={showDeletePassword ? 'text' : 'password'}
+									placeholder="Your password..."
+									value={deletePassword}
+									onChange={(e) => setDeletePassword(e.target.value)}
+									style={{ paddingRight: '40px', width: '100%' }}
+								/>
+								<button type="button" className="settings-eye-btn" onClick={() => setShowDeletePassword(!showDeletePassword)}>
+									{showDeletePassword ? <FiEyeOff size={18} /> : <FiEye size={18} />}
+								</button>
+							</div>
+						)}
+						{deletePasswordMsg && (
+							<p style={{ color: '#f44336', fontSize: '13px', fontFamily: '"policeConthrax", sans-serif' }}>
+								{deletePasswordMsg}
+							</p>
+						)}
 						<div className="settings-modal-btns">
-							<button className="settings-cancel-btn" onClick={() => setShowDeleteConfirm(false)}>Cancel</button>
+							<button className="settings-cancel-btn" onClick={closeDeleteModal}>Cancel</button>
 							<button className="settings-confirm-danger-btn" onClick={handleDeleteAccount}>Delete</button>
 						</div>
 					</div>
@@ -338,6 +490,7 @@ const SettingsPage = () => {
 					</div>
 				</div>
 			)}
+			<Footer />
 		</div>
 	)
 }

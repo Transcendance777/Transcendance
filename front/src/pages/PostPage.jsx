@@ -5,6 +5,7 @@ import Background from '../components/Background'
 import PostStars from '../components/PostStars'
 import PostGamePicker from '../components/PostGamePicker'
 import '../styles/PostPage.css'
+import Footer from '../components/Footer'
 
 const MAX_CHARS = 500
 
@@ -94,17 +95,16 @@ const PostPage = () => {
 							)}
 						</div>
 						<PostStars key={starsKey} onRate={setRating} />
+						<button
+							className={`post-submit-btn ${submitted ? 'submitted' : ''}`}
+							onClick={handleSubmit}
+							disabled={submitting || submitted}
+						>
+							{submitted ? '✓' : '➜'}
+						</button>
 					</div>
 
 				</div>
-
-				<button
-					className={`post-submit-btn ${submitted ? 'submitted' : ''}`}
-					onClick={handleSubmit}
-					disabled={submitting || submitted}
-				>
-					{submitted ? '✓' : '➜'}
-				</button>
 
 				{showPicker && (
 					<PostGamePicker
@@ -127,6 +127,7 @@ const PostPage = () => {
 					{submitMsg}
 				</p>
 			)}
+			<Footer />
 		</div>
 	)
 }

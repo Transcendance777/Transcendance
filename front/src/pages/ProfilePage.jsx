@@ -1,20 +1,20 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import ProfileNavBar from '../components/ProfileNavBar'
 import Background from '../components/Background'
 import ProfileFavorites from '../components/ProfileFavorites'
 import ProfileModal from '../components/ProfileModal'
 import PostStars from '../components/PostStars'
 import '../styles/ProfilePage.css'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { FiEdit2, FiTrash2, FiX } from 'react-icons/fi'
-
-const fakeActivity = [
-	{ type: "Commented", text: "Super review !", date: "04/25/26" },
-	{ type: "Followed", text: "Brimbrim patapim", date: "04/24/26" },
-	{ type: "Liked", text: "Review de Tuntung sahur", date: "04/23/26" },
-]
+import Footer from '../components/Footer'
 
 const MAX_CHARS = 500
+
+const getAvatar = (avatarUrl, username) => {
+	if (avatarUrl && avatarUrl !== 'default_avatar.png') return avatarUrl
+	return `https://ui-avatars.com/api/?name=${encodeURIComponent(username || 'U')}&background=f5a623&color=fff&size=128&bold=true`
+}
 
 const ProfilePage = () => {
 	const [modal, setModal] = useState(null)
@@ -27,23 +27,20 @@ const ProfilePage = () => {
 	const [followers, setFollowers] = useState([])
 	const [following, setFollowing] = useState([])
 	const [reviews, setReviews] = useState([])
-
-	// Edit modal
+	const [activity, setActivity] = useState([])
 	const [editReview, setEditReview] = useState(null)
 	const [editText, setEditText] = useState('')
 	const [editRating, setEditRating] = useState(null)
 	const [editStarsKey, setEditStarsKey] = useState(0)
-
-	// Delete confirm
 	const [deleteReviewId, setDeleteReviewId] = useState(null)
+	const reviewsSectionRef = useRef(null)
+	const reviewItemRefs = useRef({})
+	const location = useLocation()
 
 	useEffect(() => {
 		const stored = localStorage.getItem('user')
-		if (stored) {
-			setUser(JSON.parse(stored))
-		} else {
-			navigate('/')
-		}
+		if (stored) setUser(JSON.parse(stored))
+		else navigate('/')
 	}, [navigate])
 
 	useEffect(() => {
@@ -56,19 +53,41 @@ const ProfilePage = () => {
 		fetch('/api/user/followers', { headers }).then(res => res.ok ? res.json() : []).then(data => setFollowers(data)).catch(err => console.error(err))
 		fetch('/api/user/following', { headers }).then(res => res.ok ? res.json() : []).then(data => setFollowing(data)).catch(err => console.error(err))
 		fetch('/api/user/reviews', { headers }).then(res => res.ok ? res.json() : []).then(data => setReviews(data)).catch(err => console.error(err))
+		fetch('/api/user/activity/' + JSON.parse(localStorage.getItem('user') || '{}').id, { headers })
+			.then(res => res.ok ? res.json() : [])
+			.then(data => setActivity(data))
+			.catch(err => console.error(err))
 	}, [])
 
+	useEffect(() => {
+		if (location.state?.openModal) {
+			setModal(location.state.openModal)
+		}
+	}, [location.state])
+
+	const handleReviewClick = (reviewId) => {
+		setModal(null)
+		setStatsModal(null)
+		setTimeout(() => {
+			reviewsSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+			const el = reviewItemRefs.current[reviewId]
+			if (el) {
+				el.style.outline = '2px solid #f5a623'
+				el.style.borderRadius = '8px'
+				setTimeout(() => { el.style.outline = 'none' }, 2000)
+			}
+		}, 100)
+	}
+
 	const renderStars = (ratingInt) => {
-		const rating = ratingInt / 2 // ex: 7 → 3.5
+		const rating = ratingInt / 2
 		return [1, 2, 3, 4, 5].map((star) => {
 			const full = rating >= star
 			const half = !full && rating >= star - 0.5
 			return (
 				<span key={star} style={{
 					fontSize: '16px',
-					background: half
-						? 'linear-gradient(90deg, #f5a623 50%, #555 50%)'
-						: 'none',
+					background: half ? 'linear-gradient(90deg, #f5a623 50%, #555 50%)' : 'none',
 					WebkitBackgroundClip: half ? 'text' : 'none',
 					WebkitTextFillColor: half ? 'transparent' : (full ? '#f5a623' : '#555'),
 					color: full ? '#f5a623' : '#555'
@@ -76,7 +95,7 @@ const ProfilePage = () => {
 			)
 		})
 	}
-	
+
 	const formatDate = (dateStr) => {
 		const d = new Date(dateStr)
 		return `${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}/${String(d.getFullYear()).slice(2)}`
@@ -124,16 +143,16 @@ const ProfilePage = () => {
 	}
 
 	const ReviewItem = ({ review, showActions = true }) => (
-		<div className="modal-review-item" style={{ position: 'relative' }}>
+		<div className="modal-review-item" style={{ position: 'relative', cursor: 'pointer' }} onClick={() => handleReviewClick(review.id)}>
 			<img
 				src={review.game.coverImageUrl || "https://placehold.co/80x110"}
 				alt={review.game.title}
 				className="modal-review-img"
-				onClick={() => navigate(`/game/${review.game.idExterne}`)}
+				onClick={(e) => { e.stopPropagation(); navigate(`/game/${review.game.idExterne}`) }}
 				style={{ cursor: 'pointer' }}
 			/>
 			<div style={{ flex: 1 }}>
-				<p className="modal-review-game" onClick={() => navigate(`/game/${review.game.idExterne}`)} style={{ cursor: 'pointer' }}>{review.game.title}</p>
+				<p className="modal-review-game">{review.game.title}</p>
 				<p className="modal-review-text">{review.reviewText || ''}</p>
 				<div>{renderStars(review.rating)}</div>
 				<p style={{ color: 'rgba(231,231,231,0.5)', fontSize: '11px', fontFamily: '"policeConthrax", sans-serif', marginTop: '4px' }}>
@@ -142,10 +161,14 @@ const ProfilePage = () => {
 			</div>
 			{showActions && (
 				<div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginLeft: '10px' }}>
-					<button onClick={(e) => openEdit(review, e)} style={{ background: 'none', border: 'none', color: '#e7e7e7', cursor: 'pointer', transition: 'transform 0.2s ease' }} onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.2)'} onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}>
+					<button onClick={(e) => openEdit(review, e)} style={{ background: 'none', border: 'none', color: '#e7e7e7', cursor: 'pointer', transition: 'transform 0.2s ease' }}
+						onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.2)'}
+						onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}>
 						<FiEdit2 size={16} />
 					</button>
-					<button onClick={(e) => { e.stopPropagation(); setDeleteReviewId(review.id) }} style={{ background: 'none', border: 'none', color: '#f44336', cursor: 'pointer', transition: 'transform 0.2s ease' }} onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.2)'} onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}>
+					<button onClick={(e) => { e.stopPropagation(); setDeleteReviewId(review.id) }} style={{ background: 'none', border: 'none', color: '#f44336', cursor: 'pointer', transition: 'transform 0.2s ease' }}
+						onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.2)'}
+						onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}>
 						<FiTrash2 size={16} />
 					</button>
 				</div>
@@ -153,9 +176,7 @@ const ProfilePage = () => {
 		</div>
 	)
 
-	const avatarUrl = (user?.avatarUrl && user.avatarUrl !== 'default_avatar.png')
-		? user.avatarUrl
-		: "https://placehold.co/100x100"
+	const avatarUrl = getAvatar(user?.avatarUrl, user?.username)
 
 	if (!user) return null
 
@@ -178,7 +199,9 @@ const ProfilePage = () => {
 									<span className="stat-number">{following.length}</span>
 									<span className="stat-label">Following</span>
 								</div>
-								<div className="profile-stat" onClick={() => setStatsModal('posts')} style={{ cursor: 'pointer' }}>
+								<div className="profile-stat" onClick={() => {
+									reviewsSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+								}} style={{ cursor: 'pointer' }}>
 									<span className="stat-number">{reviews.length}</span>
 									<span className="stat-label">Posts</span>
 								</div>
@@ -188,14 +211,16 @@ const ProfilePage = () => {
 
 					<ProfileFavorites editable={true} />
 
-					<div className="profile-reviews-section">
+					{/* Section reviews avec ref */}
+					<div className="profile-reviews-section" ref={reviewsSectionRef}>
 						<h2 className="profile-section-title">Reviews</h2>
 						{reviews.length === 0 ? (
 							<p style={{ color: 'rgba(231,231,231,0.5)', fontFamily: '"policeConthrax", sans-serif', fontSize: '13px' }}>No reviews yet.</p>
 						) : (
 							reviews.slice(0, 2).map((review) => (
-								<div key={review.id} className="profile-review-item" style={{ position: 'relative' }}>
-									<img src={review.game.coverImageUrl || "https://placehold.co/80x110"} alt={review.game.title} className="profile-review-img" onClick={() => navigate(`/game/${review.game.idExterne}`)} style={{ cursor: 'pointer' }} />
+								<div key={review.id} ref={el => reviewItemRefs.current[review.id] = el} className="profile-review-item" style={{ position: 'relative' }}>
+									<img src={review.game.coverImageUrl || "https://placehold.co/80x110"} alt={review.game.title} className="profile-review-img"
+										onClick={() => navigate(`/game/${review.game.idExterne}`)} style={{ cursor: 'pointer' }} />
 									<div className="profile-review-info">
 										<p className="profile-review-game">{review.game.title}</p>
 										<p className="profile-review-text">{review.reviewText || ''}</p>
@@ -232,27 +257,45 @@ const ProfilePage = () => {
 				</div>
 			)}
 
-			{/* Modal reviews */}
 			{modal === 'reviews' && (
 				<ProfileModal title="My Reviews" onClose={() => setModal(null)}>
 					{reviews.map((review) => <ReviewItem key={review.id} review={review} />)}
 				</ProfileModal>
 			)}
 
-			{/* Modal activity */}
 			{modal === 'activity' && (
 				<ProfileModal title="Last Activity" onClose={() => setModal(null)}>
-					{fakeActivity.map((activity, i) => (
-						<div key={i} className="modal-activity-item">
-							<span className="modal-activity-type">{activity.type}</span>
-							<span className="modal-activity-text">{activity.text}</span>
-							<span className="modal-activity-date">{activity.date}</span>
-						</div>
-					))}
+					{activity.length === 0 ? (
+						<p style={{ color: 'rgba(231,231,231,0.5)', fontFamily: '"policeConthrax", sans-serif', fontSize: '13px' }}>
+							No activity yet.
+						</p>
+					) : (
+						activity.map((a, i) => (
+							<div key={i} className="modal-activity-item" style={{ cursor: 'pointer' }}
+								onClick={() => {
+									if (a.type === 'reviewed' && a.reviewId) {
+										navigate('/reviews', { state: { tab: 'mine', reviewId: a.reviewId } })
+										setModal(null)
+									} else if (a.type === 'liked' || a.type === 'playing') {
+										navigate(`/game/${a.targetId}`)
+										setModal(null)
+									} else if (a.type === 'followed') {
+										navigate(`/profile/${a.targetId}`)
+										setModal(null)
+									}
+								}}
+							>
+								<span className="modal-activity-type">
+									{a.type === 'liked' ? '❤️' : a.type === 'reviewed' ? '⭐' : a.type === 'playing' ? '🎮' : '👤'}
+								</span>
+								<span className="modal-activity-text">{a.action} <strong>{a.target}</strong></span>
+								<span className="modal-activity-date">{new Date(a.date).toLocaleDateString('en-US')}</span>
+							</div>
+						))
+					)}
 				</ProfileModal>
 			)}
 
-			{/* Modal likes */}
 			{modal === 'likes' && (
 				<ProfileModal title="Liked Games" onClose={() => setModal(null)}>
 					<div className="modal-games-grid">
@@ -270,7 +313,6 @@ const ProfilePage = () => {
 				</ProfileModal>
 			)}
 
-			{/* Modal playing list */}
 			{modal === 'playinglist' && (
 				<ProfileModal title="Playing List" onClose={() => setModal(null)}>
 					<div className="modal-games-grid">
@@ -288,7 +330,6 @@ const ProfilePage = () => {
 				</ProfileModal>
 			)}
 
-			{/* Modal followers */}
 			{statsModal === 'followers' && (
 				<ProfileModal title="Followers" onClose={() => setStatsModal(null)}>
 					<div className="stats-users-list">
@@ -296,9 +337,21 @@ const ProfilePage = () => {
 							<p style={{ color: '#e7e7e7' }}>No follower yet.</p>
 						) : (
 							followers.map((u) => (
-								<div key={u.id} className="stats-user-item" onClick={() => navigate(`/profile/${u.id}`)}>
-									<img src={u.avatarUrl && u.avatarUrl !== 'default_avatar.png' ? u.avatarUrl : "https://placehold.co/50x50"} alt={u.username} className="stats-user-avatar" />
-									<span className="stats-user-name">{u.username}</span>
+								<div key={u.id} className="stats-user-item" style={{ justifyContent: 'space-between' }}>
+									<div style={{ display: 'flex', alignItems: 'center', gap: '15px' }} onClick={() => navigate(`/profile/${u.id}`)}>
+										<img src={getAvatar(u.avatarUrl, u.username)} alt={u.username} className="stats-user-avatar" />
+										<span className="stats-user-name">{u.username}</span>
+									</div>
+									<button
+										onClick={async () => {
+											const token = localStorage.getItem('token')
+											const res = await fetch(`/api/user/follower/${u.id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } })
+											if (res.ok) setFollowers(prev => prev.filter(f => f.id !== u.id))
+										}}
+										style={{ background: 'none', border: '1px solid #f44336', color: '#f44336', borderRadius: '20px', padding: '4px 12px', fontFamily: '"policeConthrax", sans-serif', fontSize: '11px', cursor: 'pointer', flexShrink: 0 }}
+									>
+										Remove
+									</button>
 								</div>
 							))
 						)}
@@ -306,7 +359,6 @@ const ProfilePage = () => {
 				</ProfileModal>
 			)}
 
-			{/* Modal following */}
 			{statsModal === 'following' && (
 				<ProfileModal title="Following" onClose={() => setStatsModal(null)}>
 					<div className="stats-users-list">
@@ -314,9 +366,21 @@ const ProfilePage = () => {
 							<p style={{ color: '#e7e7e7' }}>You follow no one yet.</p>
 						) : (
 							following.map((u) => (
-								<div key={u.id} className="stats-user-item" onClick={() => navigate(`/profile/${u.id}`)}>
-									<img src={u.avatarUrl && u.avatarUrl !== 'default_avatar.png' ? u.avatarUrl : "https://placehold.co/50x50"} alt={u.username} className="stats-user-avatar" />
-									<span className="stats-user-name">{u.username}</span>
+								<div key={u.id} className="stats-user-item" style={{ justifyContent: 'space-between' }}>
+									<div style={{ display: 'flex', alignItems: 'center', gap: '15px' }} onClick={() => navigate(`/profile/${u.id}`)}>
+										<img src={getAvatar(u.avatarUrl, u.username)} alt={u.username} className="stats-user-avatar" />
+										<span className="stats-user-name">{u.username}</span>
+									</div>
+									<button
+										onClick={async () => {
+											const token = localStorage.getItem('token')
+											const res = await fetch(`/api/user/follow/${u.id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } })
+											if (res.ok) setFollowing(prev => prev.filter(f => f.id !== u.id))
+										}}
+										style={{ background: 'none', border: '1px solid #f44336', color: '#f44336', borderRadius: '20px', padding: '4px 12px', fontFamily: '"policeConthrax", sans-serif', fontSize: '11px', cursor: 'pointer', flexShrink: 0 }}
+									>
+										Unfollow
+									</button>
 								</div>
 							))
 						)}
@@ -324,18 +388,6 @@ const ProfilePage = () => {
 				</ProfileModal>
 			)}
 
-			{/* Modal posts */}
-			{statsModal === 'posts' && (
-				<ProfileModal title="Posts" onClose={() => setStatsModal(null)}>
-					{reviews.length === 0 ? (
-						<p style={{ color: '#e7e7e7' }}>No reviews yet.</p>
-					) : (
-						reviews.map((review) => <ReviewItem key={review.id} review={review} />)
-					)}
-				</ProfileModal>
-			)}
-
-			{/* Modal edit review */}
 			{editReview && (
 				<div className="settings-modal-overlay" onClick={() => setEditReview(null)}>
 					<div className="settings-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px', width: '90vw' }}>
@@ -350,10 +402,7 @@ const ProfilePage = () => {
 						</p>
 						<textarea
 							style={{ background: 'rgba(255,255,255,0.05)', border: '2px solid rgba(231,231,231,0.3)', borderRadius: '10px', color: '#e7e7e7', fontFamily: '"policeConthrax", sans-serif', fontSize: '13px', padding: '10px', resize: 'none', height: '120px', width: '100%', outline: 'none', marginBottom: '15px' }}
-							value={editText}
-							onChange={(e) => setEditText(e.target.value)}
-							maxLength={MAX_CHARS}
-							placeholder="Your review..."
+							value={editText} onChange={(e) => setEditText(e.target.value)} maxLength={MAX_CHARS} placeholder="Your review..."
 						/>
 						<p style={{ color: 'rgba(231,231,231,0.5)', fontSize: '11px', fontFamily: '"policeConthrax", sans-serif', textAlign: 'right', marginBottom: '15px' }}>
 							{editText.length}/{MAX_CHARS}
@@ -367,7 +416,6 @@ const ProfilePage = () => {
 				</div>
 			)}
 
-			{/* Modal confirm delete */}
 			{deleteReviewId && (
 				<div className="settings-modal-overlay" onClick={() => setDeleteReviewId(null)}>
 					<div className="settings-modal" onClick={(e) => e.stopPropagation()}>
@@ -380,6 +428,7 @@ const ProfilePage = () => {
 					</div>
 				</div>
 			)}
+			<Footer />
 		</div>
 	)
 }
