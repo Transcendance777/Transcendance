@@ -29,6 +29,19 @@ const InscriptionForm = () => {
 		setErrorMsg('')
 	}, [isLogin])
 
+	// Récupère le token Google depuis l'URL après le callback OAuth
+	useEffect(() => {
+		const params = new URLSearchParams(window.location.search)
+		const token = params.get('token')
+		const user = params.get('user')
+		if (token && user) {
+			localStorage.setItem('token', token)
+			localStorage.setItem('user', user)
+			window.history.replaceState({}, '', '/')
+			navigate('/home')
+		}
+	}, [navigate])
+
 	const handleSubmit = async (e) => {
 		e.preventDefault()
 		setErrorMsg('')
@@ -36,16 +49,15 @@ const InscriptionForm = () => {
 		try {
 			if (isLogin) {
 				const response = await axios.post('/api/auth/login', {
-					identifier: email, // le champ "email" sert pour email ou pseudo
+					identifier: email,
 					password: password
 				})
-				// Stocke le token et l'utilisateur
 				localStorage.setItem('token', response.data.token)
 				localStorage.setItem('user', JSON.stringify(response.data.user))
 				navigate('/home')
 			} else {
 				if (!username || !email || !password) {
-					setErrorMsg('Tous les champs sont requis.')
+					setErrorMsg('All fields are required.')
 					return
 				}
 				const response = await axios.post('/api/auth/register', {
@@ -53,13 +65,12 @@ const InscriptionForm = () => {
 					username: username,
 					password: password
 				})
-				// Connexion automatique après inscription
 				localStorage.setItem('token', response.data.token)
 				localStorage.setItem('user', JSON.stringify(response.data.user))
 				navigate('/home')
 			}
 		} catch (error) {
-			const msg = error.response?.data?.error || 'Une erreur est survenue.'
+			const msg = error.response?.data?.error || 'An error occurred.'
 			setErrorMsg(msg)
 		}
 	}
@@ -76,24 +87,24 @@ const InscriptionForm = () => {
 					className={`toggle-btn ${isLogin ? 'active' : ''}`}
 					onClick={() => setIsLogin(true)}
 				>
-					Connexion
+					Login
 				</button>
 				<button
 					className={`toggle-btn ${!isLogin ? 'active' : ''}`}
 					onClick={() => setIsLogin(false)}
 				>
-					Inscription
+					Sign up
 				</button>
 			</div>
 
 			<form onSubmit={handleSubmit}>
 				{!isLogin && (
 					<>
-						<p className="emailMessage texte">Nom d'utilisateur :</p>
+						<p className="emailMessage texte">Username :</p>
 						<input
 							className="emailArea"
 							type="text"
-							placeholder="Exemple: xX_DarkWolf_Xx"
+							placeholder="Example: xX_DarkWolf_Xx"
 							value={username}
 							onChange={(e) => setUsername(e.target.value)}
 						/>
@@ -102,19 +113,19 @@ const InscriptionForm = () => {
 				)}
 
 				<p className="emailMessage texte">
-					{isLogin ? 'Email/Nom d\'utilisateur :' : 'Adresse email :'}
+					{isLogin ? 'Email / Username :' : 'Email address :'}
 				</p>
 				<input
 					className="emailArea"
 					type={isLogin ? 'text' : 'email'}
-					placeholder={isLogin ? 'Email ou pseudo...' : 'Exemple: TungTungSahur@gmail.com'}
+					placeholder={isLogin ? 'Email or username...' : 'Example: john@gmail.com'}
 					value={email}
 					onChange={(e) => setEmail(e.target.value)}
 				/>
 
 				<br />
 
-				<p className="passwordMessage texte">Mot de passe :</p>
+				<p className="passwordMessage texte">Password :</p>
 				<div className="password-wrapper">
 					<input
 						className="passwordArea"
@@ -133,7 +144,7 @@ const InscriptionForm = () => {
 
 				{isLogin && (
 					<p className="forgot-password-link" onClick={() => { setShowForgotPassword(true); setForgotStep(1) }}>
-						Mot de passe oublié ?
+						Forgot password ?
 					</p>
 				)}
 
@@ -148,17 +159,21 @@ const InscriptionForm = () => {
 				<input
 					type="submit"
 					className="submitButton"
-					value={isLogin ? 'Se connecter' : "S'inscrire"}
+					value={isLogin ? 'Log in' : 'Sign up'}
 				/>
 			</form>
 
 			<div className="form-divider">
-				<span>ou</span>
+				<span>or</span>
 			</div>
 
-			<button className="google-btn">
+			<button
+				className="google-btn"
+				type="button"
+				onClick={() => window.location.href = '/api/auth/google'}
+			>
 				<img src="https://www.google.com/favicon.ico" alt="Google" className="google-icon" />
-				Continuer avec Google
+				Continue with Google
 			</button>
 
 			{showForgotPassword && (
@@ -167,48 +182,48 @@ const InscriptionForm = () => {
 
 						{forgotStep === 1 && (
 							<>
-								<h3 className="forgot-modal-title">Mot de passe oublié</h3>
-								<p className="forgot-modal-text">Entrez votre adresse email pour recevoir un code de vérification.</p>
+								<h3 className="forgot-modal-title">Forgot password</h3>
+								<p className="forgot-modal-text">Enter your email address to receive a verification code.</p>
 								<input
 									className="forgot-input"
 									type="email"
-									placeholder="Votre email..."
+									placeholder="Your email..."
 									value={forgotEmail}
 									onChange={(e) => setForgotEmail(e.target.value)}
 								/>
 								<div className="forgot-modal-btns">
-									<button className="forgot-cancel-btn" onClick={() => setShowForgotPassword(false)}>Annuler</button>
-									<button className="forgot-submit-btn" onClick={() => setForgotStep(2)}>Envoyer</button>
+									<button className="forgot-cancel-btn" onClick={() => setShowForgotPassword(false)}>Cancel</button>
+									<button className="forgot-submit-btn" onClick={() => setForgotStep(2)}>Send</button>
 								</div>
 							</>
 						)}
 
 						{forgotStep === 2 && (
 							<>
-								<h3 className="forgot-modal-title">Code de vérification</h3>
-								<p className="forgot-modal-text">Entrez le code reçu par email.</p>
+								<h3 className="forgot-modal-title">Verification code</h3>
+								<p className="forgot-modal-text">Enter the code you received by email.</p>
 								<input
 									className="forgot-input"
 									type="text"
-									placeholder="Code de vérification..."
+									placeholder="Verification code..."
 									value={verifCode}
 									onChange={(e) => setVerifCode(e.target.value)}
 								/>
 								<div className="forgot-modal-btns">
-									<button className="forgot-cancel-btn" onClick={() => setForgotStep(1)}>Retour</button>
-									<button className="forgot-submit-btn" onClick={() => setForgotStep(3)}>Vérifier</button>
+									<button className="forgot-cancel-btn" onClick={() => setForgotStep(1)}>Back</button>
+									<button className="forgot-submit-btn" onClick={() => setForgotStep(3)}>Verify</button>
 								</div>
 							</>
 						)}
 
 						{forgotStep === 3 && (
 							<>
-								<h3 className="forgot-modal-title">Nouveau mot de passe</h3>
+								<h3 className="forgot-modal-title">New password</h3>
 								<div className="forgot-password-wrapper">
 									<input
 										className="forgot-input"
 										type={showNewPass1 ? 'text' : 'password'}
-										placeholder="Nouveau mot de passe..."
+										placeholder="New password..."
 										value={newPassword1}
 										onChange={(e) => setNewPassword1(e.target.value)}
 									/>
@@ -220,7 +235,7 @@ const InscriptionForm = () => {
 									<input
 										className="forgot-input"
 										type={showNewPass2 ? 'text' : 'password'}
-										placeholder="Confirmer le mot de passe..."
+										placeholder="Confirm password..."
 										value={newPassword2}
 										onChange={(e) => setNewPassword2(e.target.value)}
 									/>
@@ -229,8 +244,8 @@ const InscriptionForm = () => {
 									</button>
 								</div>
 								<div className="forgot-modal-btns">
-									<button className="forgot-cancel-btn" onClick={() => setForgotStep(2)}>Retour</button>
-									<button className="forgot-submit-btn" onClick={() => setShowForgotPassword(false)}>Confirmer</button>
+									<button className="forgot-cancel-btn" onClick={() => setForgotStep(2)}>Back</button>
+									<button className="forgot-submit-btn" onClick={() => setShowForgotPassword(false)}>Confirm</button>
 								</div>
 							</>
 						)}

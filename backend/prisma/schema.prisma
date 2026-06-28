@@ -31,6 +31,7 @@ model Users {
 	likedGames		LikedGame[]
 	playingList		PlayingList[]
 	favoriteGames FavoriteGame[]
+	reviewComments ReviewComment[]
 
 	// Self-referencing Many-to-Many for Friendships
 	friendsInitiated	Friendship[] @relation("FriendshipsInitiated")
@@ -90,6 +91,7 @@ model Review {
   user       Users 			@relation(fields: [userId], references: [id], onDelete: Cascade)
   game       Game			@relation(fields: [gameId], references: [id], onDelete: Cascade)
   likes      ReviewLike[]
+  comments ReviewComment[]
 
   // Constraints
   @@unique([userId, gameId], name: "unique_user_game_review")
@@ -100,15 +102,30 @@ model Review {
 model ReviewLike {
   userId   Int      @map("user_id")
   reviewId Int      @map("review_id")
+  type     String   @default("like") @db.VarChar(10) // 'like' ou 'dislike'
   likedAt  DateTime @default(now()) @map("liked_at")
 
-  // Relations
-  user   Users		@relation(fields: [userId], references: [id], onDelete: Cascade)
-  review Review		@relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  user   Users  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  review Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
 
-  // Constraints
   @@id([userId, reviewId])
   @@map("review_likes")
+}
+
+model ReviewComment {
+  id        Int      @id @default(autoincrement())
+  reviewId  Int      @map("review_id")
+  userId    Int      @map("user_id")
+  text      String
+  parentId  Int?     @map("parent_id") // null = commentaire racine, sinon = réponse à un comment
+  createdAt DateTime @default(now()) @map("created_at")
+
+  review   Review          @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  user     Users           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent   ReviewComment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies  ReviewComment[] @relation("CommentReplies")
+
+  @@map("review_comments")
 }
 
 // Table des Jeux Likés par les utilisateurs

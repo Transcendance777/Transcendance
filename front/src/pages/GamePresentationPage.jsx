@@ -7,6 +7,7 @@ import GamePresentationReviews from '../components/GamePresentationReviews'
 import { FiHeart, FiEdit } from 'react-icons/fi'
 import { MdSportsEsports } from 'react-icons/md'
 import '../styles/GamePresentationPage.css'
+import Footer from '../components/Footer'
 
 const GamePresentationPage = () => {
 	const { id } = useParams()
@@ -273,10 +274,11 @@ const GamePresentationPage = () => {
 						</div>
 					</div>
 
-					<GamePresentationReviews />
+					<GamePresentationReviews gameId={game?.idExterne || id} />
 
 				</div>
 			</Background>
+			<Footer />
 		</div>
 	)
 }

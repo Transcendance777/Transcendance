@@ -4,6 +4,7 @@
 	width: 100%;
 	padding-top: 90px;
 }
+
 .home-content {
 	width: 100%;
 	z-index: 1;
@@ -21,7 +22,7 @@
 	display: flex;
 	flex-direction: column;
 	gap: 20px;
-	overflow: hidden;
+	/* overflow: hidden supprimé — bloquait le hover scale */
 }
 
 .home-section-title {
@@ -74,7 +75,6 @@
 	display: flex;
 	gap: 20px;
 	flex-wrap: wrap;
-	overflow: hidden;
 	max-width: 100%;
 }
 
@@ -90,7 +90,7 @@
 	border-radius: 12px;
 	padding: 15px;
 	transition: background-color 0.2s ease;
-	overflow: hidden;
+	/* overflow: hidden supprimé — bloquait le hover scale */
 }
 
 .home-highlight-card:hover {
@@ -99,8 +99,11 @@
 
 .home-highlight-grid {
 	overflow: hidden;
+	/* garde overflow hidden ici pour masquer le scroll infini */
 	width: 100%;
 	max-width: 100%;
+	padding: 6px 0;
+	/* espace pour le scale */
 }
 
 .home-highlight-track {
@@ -108,6 +111,8 @@
 	gap: 12px;
 	animation: scroll-left 20s linear infinite;
 	width: max-content;
+	padding: 4px 0;
+	/* espace pour le scale */
 }
 
 @keyframes scroll-left {
@@ -290,8 +295,8 @@
 /* Games grid */
 .home-games-grid {
 	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-	gap: 20px;
+	grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+	gap: 15px;
 }
 
 .home-game-card {

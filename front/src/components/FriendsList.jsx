@@ -1,27 +1,19 @@
 import '../styles/FriendsList.css'
 import { useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
-import { FiChevronUp, FiChevronDown } from 'react-icons/fi'
+import { FiChevronUp, FiChevronDown, FiUserMinus } from 'react-icons/fi'
 
 const ROWS_VISIBLE = 2
 
-const FriendsList = () => {
+const getAvatar = (avatarUrl, username) => {
+	if (avatarUrl && avatarUrl !== 'default_avatar.png') return avatarUrl
+	return `https://ui-avatars.com/api/?name=${encodeURIComponent(username || 'U')}&background=f5a623&color=fff&size=128&bold=true`
+}
+
+const FriendsList = ({ friends, loading, onUnfollow }) => {
 	const navigate = useNavigate()
-	const [friends, setFriends] = useState([])
 	const [startRow, setStartRow] = useState(0)
 	const [friendsPerRow, setFriendsPerRow] = useState(6)
-
-	useEffect(() => {
-		const token = localStorage.getItem('token')
-		if (!token) return
-
-		fetch('/api/user/following', {
-			headers: { Authorization: `Bearer ${token}` }
-		})
-			.then(res => res.ok ? res.json() : [])
-			.then(data => setFriends(data))
-			.catch(err => console.error('Erreur following:', err))
-	}, [])
 
 	useEffect(() => {
 		const update = () => {
@@ -34,15 +26,25 @@ const FriendsList = () => {
 		return () => window.removeEventListener('resize', update)
 	}, [])
 
-	const totalRows = Math.ceil(friends.length / friendsPerRow)
+	const handleUnfollow = async (e, userId) => {
+		e.stopPropagation()
+		const token = localStorage.getItem('token')
+		const res = await fetch(`/api/user/follow/${userId}`, {
+			method: 'DELETE',
+			headers: { Authorization: `Bearer ${token}` }
+		})
+		if (res.ok) {
+			onUnfollow(userId)
+			setStartRow(0)
+		}
+	}
 
+	const totalRows = Math.ceil(friends.length / friendsPerRow)
 	const prev = () => setStartRow(r => Math.max(r - 1, 0))
 	const next = () => setStartRow(r => Math.min(r + 1, Math.max(0, totalRows - ROWS_VISIBLE)))
+	const visibleFriends = friends.slice(startRow * friendsPerRow, (startRow + ROWS_VISIBLE) * friendsPerRow)
 
-	const visibleFriends = friends.slice(
-		startRow * friendsPerRow,
-		(startRow + ROWS_VISIBLE) * friendsPerRow
-	)
+	if (loading) return null
 
 	return (
 		<div className="friends-list-section">
@@ -54,11 +56,23 @@ const FriendsList = () => {
 				<div className="friends-list-wrapper">
 					<div className="friends-grid">
 						{visibleFriends.map((friend) => (
-							<div key={friend.id} className="friend-card" onClick={() => navigate(`/profile/${friend.id}`)}>
+							<div key={friend.id} className="friend-card" style={{ position: 'relative' }} onClick={() => navigate(`/profile/${friend.id}`)}>
+								<button
+									onClick={(e) => handleUnfollow(e, friend.id)}
+									title="Unfollow"
+									style={{
+										position: 'absolute', top: '4px', right: '4px',
+										background: 'rgba(0,0,0,0.7)', border: 'none', color: '#f44336',
+										borderRadius: '50%', width: '24px', height: '24px',
+										display: 'flex', alignItems: 'center', justifyContent: 'center',
+										cursor: 'pointer', opacity: 0, transition: 'opacity 0.2s ease', zIndex: 2
+									}}
+									className="unfollow-btn"
+								>
+									<FiUserMinus size={13} />
+								</button>
 								<img
-									src={friend.avatarUrl && friend.avatarUrl !== 'default_avatar.png'
-										? friend.avatarUrl
-										: "https://placehold.co/70x70"}
+									src={getAvatar(friend.avatarUrl, friend.username)}
 									alt={friend.username}
 									className="friend-avatar"
 								/>

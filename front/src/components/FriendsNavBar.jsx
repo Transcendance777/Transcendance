@@ -6,7 +6,12 @@ import { useNavigate, Link } from 'react-router-dom'
 import SearchBar from './SearchBar'
 import NavAvatar from './NavAvatar'
 
-const FriendsNavBar = () => {
+const getAvatar = (avatarUrl, username) => {
+	if (avatarUrl && avatarUrl !== 'default_avatar.png') return avatarUrl
+	return `https://ui-avatars.com/api/?name=${encodeURIComponent(username || 'U')}&background=f5a623&color=fff&size=128&bold=true`
+}
+
+const FriendsNavBar = ({ onFriendAdded, removedFriendId }) => {
 	const [menuOpen, setMenuOpen] = useState(false)
 	const [showAddModal, setShowAddModal] = useState(false)
 	const [search, setSearch] = useState('')
@@ -29,7 +34,6 @@ const FriendsNavBar = () => {
 		return () => window.removeEventListener('resize', handleResize)
 	}, [])
 
-	// Charge les followings existants au montage pour pré-remplir sentRequests
 	useEffect(() => {
 		const token = localStorage.getItem('token')
 		if (!token) return
@@ -39,11 +43,16 @@ const FriendsNavBar = () => {
 			.catch(err => console.error('Erreur following:', err))
 	}, [])
 
+	useEffect(() => {
+		if (removedFriendId) {
+			setSentRequests(prev => prev.filter(id => id !== removedFriendId))
+		}
+	}, [removedFriendId])
+
 	const handleSearch = async (value) => {
 		setSearch(value)
 		setSearchMsg('')
 		if (value.trim() === '') return setResults([])
-
 		const token = localStorage.getItem('token')
 		try {
 			const res = await fetch(`/api/user/search?q=${encodeURIComponent(value)}`, {
@@ -68,6 +77,7 @@ const FriendsNavBar = () => {
 			const data = await res.json()
 			if (!res.ok) return console.error(data.error)
 			setSentRequests(prev => [...prev, userId])
+			if (onFriendAdded) onFriendAdded()
 		} catch (err) {
 			console.error('Erreur add friend:', err)
 		}
@@ -86,14 +96,12 @@ const FriendsNavBar = () => {
 				<div className="friends-navbar-left">
 					<button className="friends-hamburger" onClick={(e) => { e.stopPropagation(); setMenuOpen(!menuOpen) }}>☰</button>
 				</div>
-
 				<div className="friends-navbar-center">
 					<a onClick={() => navigate('/home')} className="nav-link home-icon-link" style={{ cursor: 'pointer' }}>
 						<FiHome />
 					</a>
 					<Link to="/friends" className="friends-navbar-title">Friends</Link>
 				</div>
-
 				<div className="friends-navbar-right">
 					<SearchBar />
 					<button className="friends-add-btn" onClick={() => setShowAddModal(true)}>
@@ -101,7 +109,6 @@ const FriendsNavBar = () => {
 					</button>
 					<NavAvatar size={35} />
 				</div>
-
 				{menuOpen && (
 					<div className="friends-dropdown">
 						{window.innerWidth <= 900 && <NavAvatar size={35} showLabel={true} />}
@@ -113,18 +120,13 @@ const FriendsNavBar = () => {
 				)}
 			</nav>
 
-			{/* Modale Add Friend */}
 			{showAddModal && (
 				<div className="add-friend-overlay" onClick={handleClose}>
 					<div className="add-friend-modal" onClick={(e) => e.stopPropagation()}>
-
 						<div className="add-friend-modal-header">
 							<h3 className="add-friend-modal-title">Add a friend</h3>
-							<button className="add-friend-close-btn" onClick={handleClose}>
-								<FiX size={20} />
-							</button>
+							<button className="add-friend-close-btn" onClick={handleClose}><FiX size={20} /></button>
 						</div>
-
 						<input
 							className="add-friend-input"
 							type="text"
@@ -133,7 +135,6 @@ const FriendsNavBar = () => {
 							onChange={(e) => handleSearch(e.target.value)}
 							autoFocus
 						/>
-
 						<div className="add-friend-results">
 							{searchMsg && <p className="add-friend-msg">{searchMsg}</p>}
 							{results.map((user) => {
@@ -141,13 +142,19 @@ const FriendsNavBar = () => {
 								return (
 									<div key={user.id} className="add-friend-result-item">
 										<img
-											src={user.avatarUrl && user.avatarUrl !== 'default_avatar.png'
-												? user.avatarUrl
-												: "https://placehold.co/40x40"}
+											src={getAvatar(user.avatarUrl, user.username)}
 											alt={user.username}
 											className="add-friend-result-avatar"
+											onClick={() => { handleClose(); navigate(`/profile/${user.id}`) }}
+											style={{ cursor: 'pointer' }}
 										/>
-										<span className="add-friend-result-username">{user.username}</span>
+										<span
+											className="add-friend-result-username"
+											onClick={() => { handleClose(); navigate(`/profile/${user.id}`) }}
+											style={{ cursor: 'pointer', flex: 1 }}
+										>
+											{user.username}
+										</span>
 										<button
 											className={`add-friend-result-btn ${isFollowing ? 'sent' : ''}`}
 											onClick={() => !isFollowing && handleAddFriend(user.id)}
@@ -160,7 +167,6 @@ const FriendsNavBar = () => {
 								)
 							})}
 						</div>
-
 					</div>
 				</div>
 			)}

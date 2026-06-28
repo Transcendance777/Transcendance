@@ -4,6 +4,7 @@ import GamesNavBar from '../components/GamesNavBar'
 import GamesCarousel from '../components/GamesCarousel'
 import Background from '../components/Background'
 import '../styles/GamesPage.css'
+import Footer from '../components/Footer'
 
 // Toutes les catégories disponibles
 const ALL_CATEGORIES = [
@@ -84,6 +85,10 @@ const GamesPage = () => {
 		}
 	}, [searchParams, categories])
 
+	useEffect(() => {
+		window.scrollTo(0, 0)
+	}, [])
+
 	return (
 		<div className="games-page">
 			<GamesNavBar pageName="Games" />
@@ -95,7 +100,9 @@ const GamesPage = () => {
 						</div>
 					))}
 				</div>
+				
 			</Background>
+			<Footer />
 		</div>
 	)
 }

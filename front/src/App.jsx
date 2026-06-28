@@ -9,6 +9,8 @@ import OtherProfilePage from './pages/OtherProfilePage'
 import SettingsPage from './pages/SettingsPage'
 import GamePresentationPage from './pages/GamePresentationPage'
 import FriendsPage from './pages/FriendsPage'
+import PrivacyPolicyPage from './pages/PrivacyPolicyPage'
+import TermsOfServicePage from './pages/TermsOfServicePage'
 
 const App = () => {
 	return (
@@ -23,6 +25,8 @@ const App = () => {
 			<Route path="/settings" element={<SettingsPage />} />
 			<Route path="/game/:id" element={<GamePresentationPage />} />
 			<Route path="/friends" element={<FriendsPage />} />
+			<Route path="/privacy" element={<PrivacyPolicyPage />} />
+			<Route path="/terms" element={<TermsOfServicePage />} />
 		</Routes>
 	)
 }
