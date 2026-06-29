@@ -111,3 +111,15 @@
 	color: #e7e7e7;
 	font-size: 12px;
 }
+
+@media (max-width: 600px) {
+	.search-input {
+		width: 110px;
+		font-size: 11px;
+		padding: 6px 10px;
+	}
+
+	.search-results {
+		width: 220px;
+	}
+}

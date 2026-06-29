@@ -1,7 +1,8 @@
 import '../styles/FriendsList.css'
 import { useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
-import { FiChevronUp, FiChevronDown, FiUserMinus } from 'react-icons/fi'
+import { FiChevronUp, FiChevronDown, FiUserMinus, FiUserPlus } from 'react-icons/fi'
+import { useTranslation } from 'react-i18next'
 
 const ROWS_VISIBLE = 2
 
@@ -10,8 +11,9 @@ const getAvatar = (avatarUrl, username) => {
 	return `https://ui-avatars.com/api/?name=${encodeURIComponent(username || 'U')}&background=f5a623&color=fff&size=128&bold=true`
 }
 
-const FriendsList = ({ friends, loading, onUnfollow }) => {
+const FriendsList = ({ friends, loading, onUnfollow, onAddFriend }) => {
 	const navigate = useNavigate()
+	const { t } = useTranslation()
 	const [startRow, setStartRow] = useState(0)
 	const [friendsPerRow, setFriendsPerRow] = useState(6)
 
@@ -48,9 +50,27 @@ const FriendsList = ({ friends, loading, onUnfollow }) => {
 
 	return (
 		<div className="friends-list-section">
+			<div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '15px' }}>
+				<button
+					onClick={onAddFriend}
+					style={{
+						display: 'flex', alignItems: 'center', gap: '8px',
+						background: 'rgba(245, 166, 35, 0.1)', border: '1px solid rgba(245, 166, 35, 0.4)',
+						borderRadius: '20px', padding: '8px 16px',
+						color: '#f5a623', fontFamily: '"policeConthrax", sans-serif',
+						fontSize: '12px', cursor: 'pointer', transition: 'all 0.2s ease'
+					}}
+					onMouseEnter={e => { e.currentTarget.style.background = 'rgba(245, 166, 35, 0.2)'; e.currentTarget.style.borderColor = '#f5a623' }}
+					onMouseLeave={e => { e.currentTarget.style.background = 'rgba(245, 166, 35, 0.1)'; e.currentTarget.style.borderColor = 'rgba(245, 166, 35, 0.4)' }}
+				>
+					<FiUserPlus size={16} />
+					{t('friends.add_friend')}
+				</button>
+			</div>
+
 			{friends.length === 0 ? (
 				<p style={{ color: 'rgba(231,231,231,0.5)', fontFamily: '"policeConthrax", sans-serif', fontSize: '13px', padding: '20px' }}>
-					You follow nobody for now.
+					{t('friends.no_friends')}
 				</p>
 			) : (
 				<div className="friends-list-wrapper">
@@ -59,7 +79,7 @@ const FriendsList = ({ friends, loading, onUnfollow }) => {
 							<div key={friend.id} className="friend-card" style={{ position: 'relative' }} onClick={() => navigate(`/profile/${friend.id}`)}>
 								<button
 									onClick={(e) => handleUnfollow(e, friend.id)}
-									title="Unfollow"
+									title={t('profile.unfollow')}
 									style={{
 										position: 'absolute', top: '4px', right: '4px',
 										background: 'rgba(0,0,0,0.7)', border: 'none', color: '#f44336',
@@ -71,11 +91,7 @@ const FriendsList = ({ friends, loading, onUnfollow }) => {
 								>
 									<FiUserMinus size={13} />
 								</button>
-								<img
-									src={getAvatar(friend.avatarUrl, friend.username)}
-									alt={friend.username}
-									className="friend-avatar"
-								/>
+								<img src={getAvatar(friend.avatarUrl, friend.username)} alt={friend.username} className="friend-avatar" />
 								<p className="friend-name">{friend.username}</p>
 							</div>
 						))}

@@ -6,7 +6,8 @@ import ProfileModal from '../components/ProfileModal'
 import PostStars from '../components/PostStars'
 import '../styles/ProfilePage.css'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { FiEdit2, FiTrash2, FiX } from 'react-icons/fi'
+import { useTranslation } from 'react-i18next'
+import { FiEdit2, FiTrash2, FiX, FiSettings } from 'react-icons/fi'
 import Footer from '../components/Footer'
 
 const MAX_CHARS = 500
@@ -17,6 +18,7 @@ const getAvatar = (avatarUrl, username) => {
 }
 
 const ProfilePage = () => {
+	const { t } = useTranslation()
 	const [modal, setModal] = useState(null)
 	const [showAvatar, setShowAvatar] = useState(false)
 	const [statsModal, setStatsModal] = useState(null)
@@ -47,7 +49,6 @@ const ProfilePage = () => {
 		const token = localStorage.getItem('token')
 		if (!token) return
 		const headers = { Authorization: `Bearer ${token}` }
-
 		fetch('/api/user/liked', { headers }).then(res => res.ok ? res.json() : []).then(data => setLikedGames(data)).catch(err => console.error(err))
 		fetch('/api/user/playing', { headers }).then(res => res.ok ? res.json() : []).then(data => setPlayingList(data)).catch(err => console.error(err))
 		fetch('/api/user/followers', { headers }).then(res => res.ok ? res.json() : []).then(data => setFollowers(data)).catch(err => console.error(err))
@@ -60,9 +61,7 @@ const ProfilePage = () => {
 	}, [])
 
 	useEffect(() => {
-		if (location.state?.openModal) {
-			setModal(location.state.openModal)
-		}
+		if (location.state?.openModal) setModal(location.state.openModal)
 	}, [location.state])
 
 	const handleReviewClick = (reviewId) => {
@@ -144,13 +143,8 @@ const ProfilePage = () => {
 
 	const ReviewItem = ({ review, showActions = true }) => (
 		<div className="modal-review-item" style={{ position: 'relative', cursor: 'pointer' }} onClick={() => handleReviewClick(review.id)}>
-			<img
-				src={review.game.coverImageUrl || "https://placehold.co/80x110"}
-				alt={review.game.title}
-				className="modal-review-img"
-				onClick={(e) => { e.stopPropagation(); navigate(`/game/${review.game.idExterne}`) }}
-				style={{ cursor: 'pointer' }}
-			/>
+			<img src={review.game.coverImageUrl || "https://placehold.co/80x110"} alt={review.game.title} className="modal-review-img"
+				onClick={(e) => { e.stopPropagation(); navigate(`/game/${review.game.idExterne}`) }} style={{ cursor: 'pointer' }} />
 			<div style={{ flex: 1 }}>
 				<p className="modal-review-game">{review.game.title}</p>
 				<p className="modal-review-text">{review.reviewText || ''}</p>
@@ -177,7 +171,6 @@ const ProfilePage = () => {
 	)
 
 	const avatarUrl = getAvatar(user?.avatarUrl, user?.username)
-
 	if (!user) return null
 
 	return (
@@ -189,21 +182,26 @@ const ProfilePage = () => {
 					<div className="profile-header">
 						<img src={avatarUrl} alt="avatar" className="profile-avatar" onClick={() => setShowAvatar(true)} />
 						<div className="profile-info">
-							<h1 className="profile-username">{user.username}</h1>
+							<div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+								<h1 className="profile-username">{user.username}</h1>
+								<button onClick={() => navigate('/settings')} style={{ background: 'none', border: 'none', color: '#e7e7e7', cursor: 'pointer', transition: 'transform 0.2s ease' }}
+									onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.1)'}
+									onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}>
+									<FiSettings size={20} />
+								</button>
+							</div>
 							<div className="profile-stats">
 								<div className="profile-stat" onClick={() => setStatsModal('followers')} style={{ cursor: 'pointer' }}>
 									<span className="stat-number">{followers.length}</span>
-									<span className="stat-label">Followers</span>
+									<span className="stat-label">{t('profile.followers')}</span>
 								</div>
 								<div className="profile-stat" onClick={() => setStatsModal('following')} style={{ cursor: 'pointer' }}>
 									<span className="stat-number">{following.length}</span>
-									<span className="stat-label">Following</span>
+									<span className="stat-label">{t('profile.following')}</span>
 								</div>
-								<div className="profile-stat" onClick={() => {
-									reviewsSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-								}} style={{ cursor: 'pointer' }}>
+								<div className="profile-stat" onClick={() => reviewsSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })} style={{ cursor: 'pointer' }}>
 									<span className="stat-number">{reviews.length}</span>
-									<span className="stat-label">Posts</span>
+									<span className="stat-label">{t('profile.posts')}</span>
 								</div>
 							</div>
 						</div>
@@ -211,11 +209,10 @@ const ProfilePage = () => {
 
 					<ProfileFavorites editable={true} />
 
-					{/* Section reviews avec ref */}
 					<div className="profile-reviews-section" ref={reviewsSectionRef}>
-						<h2 className="profile-section-title">Reviews</h2>
+						<h2 className="profile-section-title">{t('profile.reviews')}</h2>
 						{reviews.length === 0 ? (
-							<p style={{ color: 'rgba(231,231,231,0.5)', fontFamily: '"policeConthrax", sans-serif', fontSize: '13px' }}>No reviews yet.</p>
+							<p style={{ color: 'rgba(231,231,231,0.5)', fontFamily: '"policeConthrax", sans-serif', fontSize: '13px' }}>{t('profile.no_reviews')}</p>
 						) : (
 							reviews.slice(0, 2).map((review) => (
 								<div key={review.id} ref={el => reviewItemRefs.current[review.id] = el} className="profile-review-item" style={{ position: 'relative' }}>
@@ -238,14 +235,14 @@ const ProfilePage = () => {
 							))
 						)}
 						{reviews.length > 2 && (
-							<button className="profile-see-more-btn" onClick={() => setModal('reviews')}>See more</button>
+							<button className="profile-see-more-btn" onClick={() => setModal('reviews')}>{t('profile.see_more')}</button>
 						)}
 					</div>
 
 					<div className="profile-tabs">
-						<button className="profile-tab-btn" onClick={() => setModal('activity')}>Last Activity</button>
-						<button className="profile-tab-btn" onClick={() => setModal('likes')}>Likes</button>
-						<button className="profile-tab-btn" onClick={() => setModal('playinglist')}>Playing List</button>
+						<button className="profile-tab-btn" onClick={() => setModal('activity')}>{t('profile.last_activity')}</button>
+						<button className="profile-tab-btn" onClick={() => setModal('likes')}>{t('profile.likes')}</button>
+						<button className="profile-tab-btn" onClick={() => setModal('playinglist')}>{t('profile.playing_list')}</button>
 					</div>
 
 				</div>
@@ -258,31 +255,24 @@ const ProfilePage = () => {
 			)}
 
 			{modal === 'reviews' && (
-				<ProfileModal title="My Reviews" onClose={() => setModal(null)}>
+				<ProfileModal title={t('profile.my_reviews')} onClose={() => setModal(null)}>
 					{reviews.map((review) => <ReviewItem key={review.id} review={review} />)}
 				</ProfileModal>
 			)}
 
 			{modal === 'activity' && (
-				<ProfileModal title="Last Activity" onClose={() => setModal(null)}>
+				<ProfileModal title={t('profile.last_activity')} onClose={() => setModal(null)}>
 					{activity.length === 0 ? (
 						<p style={{ color: 'rgba(231,231,231,0.5)', fontFamily: '"policeConthrax", sans-serif', fontSize: '13px' }}>
-							No activity yet.
+							{t('profile.no_activity')}
 						</p>
 					) : (
 						activity.map((a, i) => (
 							<div key={i} className="modal-activity-item" style={{ cursor: 'pointer' }}
 								onClick={() => {
-									if (a.type === 'reviewed' && a.reviewId) {
-										navigate('/reviews', { state: { tab: 'mine', reviewId: a.reviewId } })
-										setModal(null)
-									} else if (a.type === 'liked' || a.type === 'playing') {
-										navigate(`/game/${a.targetId}`)
-										setModal(null)
-									} else if (a.type === 'followed') {
-										navigate(`/profile/${a.targetId}`)
-										setModal(null)
-									}
+									if (a.type === 'reviewed' && a.reviewId) { navigate('/reviews', { state: { tab: 'mine', reviewId: a.reviewId } }); setModal(null) }
+									else if (a.type === 'liked' || a.type === 'playing') { navigate(`/game/${a.targetId}`); setModal(null) }
+									else if (a.type === 'followed') { navigate(`/profile/${a.targetId}`); setModal(null) }
 								}}
 							>
 								<span className="modal-activity-type">
@@ -297,10 +287,10 @@ const ProfilePage = () => {
 			)}
 
 			{modal === 'likes' && (
-				<ProfileModal title="Liked Games" onClose={() => setModal(null)}>
+				<ProfileModal title={t('profile.likes')} onClose={() => setModal(null)}>
 					<div className="modal-games-grid">
 						{likedGames.length === 0 ? (
-							<p style={{ color: '#e7e7e7' }}>No games have been liked yet.</p>
+							<p style={{ color: '#e7e7e7' }}>{t('profile.no_liked')}</p>
 						) : (
 							likedGames.map((game) => (
 								<div key={game.id} className="modal-game-card" onClick={() => navigate(`/game/${game.idExterne}`)}>
@@ -314,10 +304,10 @@ const ProfilePage = () => {
 			)}
 
 			{modal === 'playinglist' && (
-				<ProfileModal title="Playing List" onClose={() => setModal(null)}>
+				<ProfileModal title={t('profile.playing_list')} onClose={() => setModal(null)}>
 					<div className="modal-games-grid">
 						{playingList.length === 0 ? (
-							<p style={{ color: '#e7e7e7' }}>No games in progress.</p>
+							<p style={{ color: '#e7e7e7' }}>{t('profile.no_playing')}</p>
 						) : (
 							playingList.map((game) => (
 								<div key={game.id} className="modal-game-card" onClick={() => navigate(`/game/${game.idExterne}`)}>
@@ -331,10 +321,10 @@ const ProfilePage = () => {
 			)}
 
 			{statsModal === 'followers' && (
-				<ProfileModal title="Followers" onClose={() => setStatsModal(null)}>
+				<ProfileModal title={t('profile.followers')} onClose={() => setStatsModal(null)}>
 					<div className="stats-users-list">
 						{followers.length === 0 ? (
-							<p style={{ color: '#e7e7e7' }}>No follower yet.</p>
+							<p style={{ color: '#e7e7e7' }}>{t('profile.no_follower')}</p>
 						) : (
 							followers.map((u) => (
 								<div key={u.id} className="stats-user-item" style={{ justifyContent: 'space-between' }}>
@@ -342,15 +332,12 @@ const ProfilePage = () => {
 										<img src={getAvatar(u.avatarUrl, u.username)} alt={u.username} className="stats-user-avatar" />
 										<span className="stats-user-name">{u.username}</span>
 									</div>
-									<button
-										onClick={async () => {
-											const token = localStorage.getItem('token')
-											const res = await fetch(`/api/user/follower/${u.id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } })
-											if (res.ok) setFollowers(prev => prev.filter(f => f.id !== u.id))
-										}}
-										style={{ background: 'none', border: '1px solid #f44336', color: '#f44336', borderRadius: '20px', padding: '4px 12px', fontFamily: '"policeConthrax", sans-serif', fontSize: '11px', cursor: 'pointer', flexShrink: 0 }}
-									>
-										Remove
+									<button onClick={async () => {
+										const token = localStorage.getItem('token')
+										const res = await fetch(`/api/user/follower/${u.id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } })
+										if (res.ok) setFollowers(prev => prev.filter(f => f.id !== u.id))
+									}} style={{ background: 'none', border: '1px solid #f44336', color: '#f44336', borderRadius: '20px', padding: '4px 12px', fontFamily: '"policeConthrax", sans-serif', fontSize: '11px', cursor: 'pointer', flexShrink: 0 }}>
+										{t('profile.remove')}
 									</button>
 								</div>
 							))
@@ -360,10 +347,10 @@ const ProfilePage = () => {
 			)}
 
 			{statsModal === 'following' && (
-				<ProfileModal title="Following" onClose={() => setStatsModal(null)}>
+				<ProfileModal title={t('profile.following')} onClose={() => setStatsModal(null)}>
 					<div className="stats-users-list">
 						{following.length === 0 ? (
-							<p style={{ color: '#e7e7e7' }}>You follow no one yet.</p>
+							<p style={{ color: '#e7e7e7' }}>{t('profile.no_following')}</p>
 						) : (
 							following.map((u) => (
 								<div key={u.id} className="stats-user-item" style={{ justifyContent: 'space-between' }}>
@@ -371,15 +358,12 @@ const ProfilePage = () => {
 										<img src={getAvatar(u.avatarUrl, u.username)} alt={u.username} className="stats-user-avatar" />
 										<span className="stats-user-name">{u.username}</span>
 									</div>
-									<button
-										onClick={async () => {
-											const token = localStorage.getItem('token')
-											const res = await fetch(`/api/user/follow/${u.id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } })
-											if (res.ok) setFollowing(prev => prev.filter(f => f.id !== u.id))
-										}}
-										style={{ background: 'none', border: '1px solid #f44336', color: '#f44336', borderRadius: '20px', padding: '4px 12px', fontFamily: '"policeConthrax", sans-serif', fontSize: '11px', cursor: 'pointer', flexShrink: 0 }}
-									>
-										Unfollow
+									<button onClick={async () => {
+										const token = localStorage.getItem('token')
+										const res = await fetch(`/api/user/follow/${u.id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } })
+										if (res.ok) setFollowing(prev => prev.filter(f => f.id !== u.id))
+									}} style={{ background: 'none', border: '1px solid #f44336', color: '#f44336', borderRadius: '20px', padding: '4px 12px', fontFamily: '"policeConthrax", sans-serif', fontSize: '11px', cursor: 'pointer', flexShrink: 0 }}>
+										{t('profile.unfollow')}
 									</button>
 								</div>
 							))
@@ -392,7 +376,7 @@ const ProfilePage = () => {
 				<div className="settings-modal-overlay" onClick={() => setEditReview(null)}>
 					<div className="settings-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px', width: '90vw' }}>
 						<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-							<h3 className="settings-modal-title">Edit Review</h3>
+							<h3 className="settings-modal-title">{t('profile.edit_review')}</h3>
 							<button onClick={() => setEditReview(null)} style={{ background: 'none', border: 'none', color: '#e7e7e7', cursor: 'pointer' }}>
 								<FiX size={20} />
 							</button>
@@ -402,15 +386,15 @@ const ProfilePage = () => {
 						</p>
 						<textarea
 							style={{ background: 'rgba(255,255,255,0.05)', border: '2px solid rgba(231,231,231,0.3)', borderRadius: '10px', color: '#e7e7e7', fontFamily: '"policeConthrax", sans-serif', fontSize: '13px', padding: '10px', resize: 'none', height: '120px', width: '100%', outline: 'none', marginBottom: '15px' }}
-							value={editText} onChange={(e) => setEditText(e.target.value)} maxLength={MAX_CHARS} placeholder="Your review..."
+							value={editText} onChange={(e) => setEditText(e.target.value)} maxLength={MAX_CHARS} placeholder={t('profile.your_review')}
 						/>
 						<p style={{ color: 'rgba(231,231,231,0.5)', fontSize: '11px', fontFamily: '"policeConthrax", sans-serif', textAlign: 'right', marginBottom: '15px' }}>
 							{editText.length}/{MAX_CHARS}
 						</p>
 						<PostStars key={editStarsKey} onRate={setEditRating} />
 						<div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '20px' }}>
-							<button className="settings-cancel-btn" onClick={() => setEditReview(null)}>Cancel</button>
-							<button className="settings-save-btn" onClick={handleEditSubmit}>Save</button>
+							<button className="settings-cancel-btn" onClick={() => setEditReview(null)}>{t('profile.cancel')}</button>
+							<button className="settings-save-btn" onClick={handleEditSubmit}>{t('profile.save')}</button>
 						</div>
 					</div>
 				</div>
@@ -419,11 +403,11 @@ const ProfilePage = () => {
 			{deleteReviewId && (
 				<div className="settings-modal-overlay" onClick={() => setDeleteReviewId(null)}>
 					<div className="settings-modal" onClick={(e) => e.stopPropagation()}>
-						<h3 className="settings-modal-title">Delete review ?</h3>
-						<p className="settings-modal-text">This action is irreversible.</p>
+						<h3 className="settings-modal-title">{t('profile.delete_review')}</h3>
+						<p className="settings-modal-text">{t('profile.irreversible')}</p>
 						<div className="settings-modal-btns">
-							<button className="settings-cancel-btn" onClick={() => setDeleteReviewId(null)}>Cancel</button>
-							<button className="settings-confirm-danger-btn" onClick={handleDelete}>Delete</button>
+							<button className="settings-cancel-btn" onClick={() => setDeleteReviewId(null)}>{t('profile.cancel')}</button>
+							<button className="settings-confirm-danger-btn" onClick={handleDelete}>{t('profile.delete')}</button>
 						</div>
 					</div>
 				</div>

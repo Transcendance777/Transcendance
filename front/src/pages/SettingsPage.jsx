@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { FiEye, FiEyeOff } from 'react-icons/fi'
+import { useTranslation } from 'react-i18next'
+import i18n from '../i18n'
 import SettingsNavBar from '../components/SettingsNavBar'
 import Background from '../components/Background'
 import '../styles/SettingsPage.css'
@@ -11,7 +13,14 @@ const getAvatar = (avatarUrl, username) => {
 	return `https://ui-avatars.com/api/?name=${encodeURIComponent(username || 'U')}&background=f5a623&color=fff&size=128&bold=true`
 }
 
+const LANGUAGES = [
+	{ code: 'en', label: 'English', flag: '🇬🇧' },
+	{ code: 'fr', label: 'Français', flag: '🇫🇷' },
+	{ code: 'es', label: 'Español', flag: '🇪🇸' },
+]
+
 const SettingsPage = () => {
+	const { t } = useTranslation()
 	const [username, setUsername] = useState('')
 	const [currentPassword, setCurrentPassword] = useState('')
 	const [newPassword, setNewPassword] = useState('')
@@ -34,6 +43,7 @@ const SettingsPage = () => {
 	const [apiKey, setApiKey] = useState(null)
 	const [apiKeyMsg, setApiKeyMsg] = useState('')
 	const [showApiKey, setShowApiKey] = useState(false)
+	const [currentLang, setCurrentLang] = useState(localStorage.getItem('language') || 'en')
 	const navigate = useNavigate()
 
 	useEffect(() => {
@@ -47,6 +57,12 @@ const SettingsPage = () => {
 			if (user.avatarUrl && user.avatarUrl !== 'default_avatar.png') setHasCustomAvatar(true)
 		}
 	}, [])
+
+	const handleLanguageChange = (code) => {
+		i18n.changeLanguage(code)
+		localStorage.setItem('language', code)
+		setCurrentLang(code)
+	}
 
 	const handleAvatarChange = (e) => {
 		const file = e.target.files[0]
@@ -104,7 +120,7 @@ const SettingsPage = () => {
 	}
 
 	const handleSaveUsername = async () => {
-		if (!username.trim()) return setUsernameMsg('Please enter a username.')
+		if (!username.trim()) return setUsernameMsg(t('settings.enter_username'))
 		const token = localStorage.getItem('token')
 		try {
 			const res = await fetch('/api/user/username', {
@@ -117,7 +133,7 @@ const SettingsPage = () => {
 			const user = JSON.parse(localStorage.getItem('user'))
 			user.username = data.user.username
 			localStorage.setItem('user', JSON.stringify(user))
-			setUsernameMsg('Username updated ✓')
+			setUsernameMsg(t('settings.username_updated'))
 			setUsername('')
 		} catch (err) {
 			setUsernameMsg('Server error.')
@@ -126,11 +142,11 @@ const SettingsPage = () => {
 
 	const handleUpdatePassword = async () => {
 		if (!currentPassword || !newPassword || !confirmPassword)
-			return setPasswordMsg('Please fill in all fields.')
+			return setPasswordMsg(t('settings.fill_fields'))
 		if (newPassword !== confirmPassword)
-			return setPasswordMsg('Passwords do not match.')
+			return setPasswordMsg(t('settings.passwords_match'))
 		if (newPassword.length < 6)
-			return setPasswordMsg('Password must be at least 6 characters.')
+			return setPasswordMsg(t('settings.password_length'))
 		const token = localStorage.getItem('token')
 		try {
 			const res = await fetch('/api/user/password', {
@@ -140,7 +156,7 @@ const SettingsPage = () => {
 			})
 			const data = await res.json()
 			if (!res.ok) return setPasswordMsg(data.error)
-			setPasswordMsg('Password updated ✓')
+			setPasswordMsg(t('settings.password_updated'))
 			setCurrentPassword('')
 			setNewPassword('')
 			setConfirmPassword('')
@@ -150,9 +166,8 @@ const SettingsPage = () => {
 	}
 
 	const handleDeleteAccount = async () => {
-		// Compte Google — pas besoin de mot de passe
 		if (!isGoogleAccount && !deletePassword) {
-			return setDeletePasswordMsg('Please enter your password.')
+			return setDeletePasswordMsg(t('settings.enter_password'))
 		}
 		const token = localStorage.getItem('token')
 		try {
@@ -182,7 +197,7 @@ const SettingsPage = () => {
 			if (!res.ok) return setApiKeyMsg(data.error)
 			setApiKey(data.key)
 			setShowApiKey(true)
-			setApiKeyMsg('API key generated ✓')
+			setApiKeyMsg(t('settings.generate_key') + ' ✓')
 		} catch (err) {
 			setApiKeyMsg('Server error.')
 		}
@@ -219,19 +234,19 @@ const SettingsPage = () => {
 
 					{/* Section Compte */}
 					<div className="settings-section">
-						<h2 className="settings-section-title">Account</h2>
+						<h2 className="settings-section-title">{t('settings.account')}</h2>
 
 						<div className="settings-item">
-							<p className="settings-label">Username</p>
+							<p className="settings-label">{t('settings.username')}</p>
 							<div className="settings-input-row">
 								<input
 									className="settings-input"
 									type="text"
-									placeholder="New username..."
+									placeholder={t('settings.new_username')}
 									value={username}
 									onChange={(e) => setUsername(e.target.value)}
 								/>
-								<button className="settings-save-btn" onClick={handleSaveUsername}>Save</button>
+								<button className="settings-save-btn" onClick={handleSaveUsername}>{t('settings.save')}</button>
 							</div>
 							{usernameMsg && (
 								<p style={{ color: usernameMsg.includes('✓') ? '#4caf50' : '#f44336', fontSize: '13px', fontFamily: '"policeConthrax", sans-serif' }}>
@@ -241,7 +256,7 @@ const SettingsPage = () => {
 						</div>
 
 						<div className="settings-item">
-							<p className="settings-label">Profile picture</p>
+							<p className="settings-label">{t('settings.profile_picture')}</p>
 							<div className="settings-avatar-row">
 								<img
 									src={avatarSrc}
@@ -251,14 +266,14 @@ const SettingsPage = () => {
 									style={{ cursor: 'pointer' }}
 								/>
 								<div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-									<p className="settings-danger-desc">Click on the picture to change it</p>
+									<p className="settings-danger-desc">{t('settings.click_to_change')}</p>
 									{hasCustomAvatar && (
 										<button
 											className="settings-danger-btn"
 											style={{ fontSize: '11px', padding: '6px 14px' }}
 											onClick={handleRemoveAvatar}
 										>
-											Remove picture
+											{t('settings.remove_picture')}
 										</button>
 									)}
 								</div>
@@ -266,20 +281,53 @@ const SettingsPage = () => {
 						</div>
 					</div>
 
+					{/* Section Langue */}
+					<div className="settings-section">
+						<h2 className="settings-section-title">{t('settings.language')}</h2>
+						<div className="settings-item">
+							<p className="settings-danger-desc">{t('settings.language_desc')}</p>
+							<div style={{ display: 'flex', gap: '15px', marginTop: '15px', flexWrap: 'wrap' }}>
+								{LANGUAGES.map((lang) => (
+									<button
+										key={lang.code}
+										onClick={() => handleLanguageChange(lang.code)}
+										style={{
+											display: 'flex',
+											alignItems: 'center',
+											gap: '10px',
+											background: currentLang === lang.code ? 'rgba(245, 166, 35, 0.2)' : 'rgba(255,255,255,0.05)',
+											border: currentLang === lang.code ? '2px solid #f5a623' : '2px solid rgba(231,231,231,0.2)',
+											borderRadius: '12px',
+											padding: '10px 20px',
+											color: '#e7e7e7',
+											fontFamily: '"policeConthrax", sans-serif',
+											fontSize: '13px',
+											cursor: 'pointer',
+											transition: 'all 0.2s ease'
+										}}
+									>
+										<span style={{ fontSize: '24px' }}>{lang.flag}</span>
+										{lang.label}
+									</button>
+								))}
+							</div>
+						</div>
+					</div>
+
 					{/* Section Sécurité — masquée pour les comptes Google */}
 					{!isGoogleAccount && (
 						<div className="settings-section">
-							<h2 className="settings-section-title">Security & Privacy</h2>
+							<h2 className="settings-section-title">{t('settings.security')}</h2>
 
 							<div className="settings-item">
-								<p className="settings-label">Change password</p>
+								<p className="settings-label">{t('settings.change_password')}</p>
 								<div className="settings-password-form">
 
 									<div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
 										<input
 											className="settings-input"
 											type={showCurrentPassword ? 'text' : 'password'}
-											placeholder="Current password..."
+											placeholder={t('settings.current_password')}
 											value={currentPassword}
 											onChange={(e) => setCurrentPassword(e.target.value)}
 											style={{ paddingRight: '40px', width: '100%' }}
@@ -293,7 +341,7 @@ const SettingsPage = () => {
 										<input
 											className="settings-input"
 											type={showNewPassword ? 'text' : 'password'}
-											placeholder="New password..."
+											placeholder={t('settings.new_password')}
 											value={newPassword}
 											onChange={(e) => setNewPassword(e.target.value)}
 											style={{ paddingRight: '40px', width: '100%' }}
@@ -307,7 +355,7 @@ const SettingsPage = () => {
 										<input
 											className="settings-input"
 											type={showConfirmPassword ? 'text' : 'password'}
-											placeholder="Confirm new password..."
+											placeholder={t('settings.confirm_password')}
 											value={confirmPassword}
 											onChange={(e) => setConfirmPassword(e.target.value)}
 											style={{ paddingRight: '40px', width: '100%' }}
@@ -317,7 +365,7 @@ const SettingsPage = () => {
 										</button>
 									</div>
 
-									<button className="settings-save-btn" onClick={handleUpdatePassword}>Update password</button>
+									<button className="settings-save-btn" onClick={handleUpdatePassword}>{t('settings.update_password')}</button>
 								</div>
 								{passwordMsg && (
 									<p style={{ color: passwordMsg.includes('✓') ? '#4caf50' : '#f44336', fontSize: '13px', fontFamily: '"policeConthrax", sans-serif' }}>
@@ -330,10 +378,10 @@ const SettingsPage = () => {
 
 					{/* Section API Key */}
 					<div className="settings-section">
-						<h2 className="settings-section-title">API Key</h2>
+						<h2 className="settings-section-title">{t('settings.api_key')}</h2>
 						<div className="settings-item">
 							<p className="settings-label">External API access</p>
-							<p className="settings-danger-desc">Generate a key to access the GameRev public API.</p>
+							<p className="settings-danger-desc">{t('settings.api_key_desc')}</p>
 
 							{apiKey && (
 								<div style={{ position: 'relative', display: 'flex', alignItems: 'center', marginTop: '10px' }}>
@@ -358,18 +406,18 @@ const SettingsPage = () => {
 
 							<div style={{ display: 'flex', gap: '15px', marginTop: '15px', flexWrap: 'wrap' }}>
 								<button className="settings-save-btn" onClick={handleGenerateApiKey}>
-									Generate key
+									{t('settings.generate_key')}
 								</button>
 								{apiKey && (
 									<>
 										<button
 											className="settings-save-btn"
-											onClick={() => { navigator.clipboard.writeText(apiKey); setApiKeyMsg('Copied ✓') }}
+											onClick={() => { navigator.clipboard.writeText(apiKey); setApiKeyMsg(t('settings.copied')) }}
 										>
-											Copy
+											{t('settings.copy')}
 										</button>
 										<button className="settings-danger-btn" onClick={handleRevokeApiKey}>
-											Revoke
+											{t('settings.revoke')}
 										</button>
 									</>
 								)}
@@ -379,16 +427,16 @@ const SettingsPage = () => {
 
 					{/* Section Danger */}
 					<div className="settings-section settings-danger-section">
-						<h2 className="settings-section-title">Danger Zone</h2>
+						<h2 className="settings-section-title">{t('settings.danger_zone')}</h2>
 
 						<div className="settings-item">
 							<div className="settings-danger-row">
 								<div>
-									<p className="settings-label">Log out</p>
-									<p className="settings-danger-desc">You will be disconnected from your account.</p>
+									<p className="settings-label">{t('settings.logout')}</p>
+									<p className="settings-danger-desc">{t('settings.logout_desc')}</p>
 								</div>
 								<button className="settings-danger-btn" onClick={() => setShowLogoutConfirm(true)}>
-									Log out
+									{t('settings.logout')}
 								</button>
 							</div>
 						</div>
@@ -396,11 +444,11 @@ const SettingsPage = () => {
 						<div className="settings-item">
 							<div className="settings-danger-row">
 								<div>
-									<p className="settings-label">Delete account</p>
-									<p className="settings-danger-desc">This action is irreversible. All your data will be permanently deleted.</p>
+									<p className="settings-label">{t('settings.delete_account')}</p>
+									<p className="settings-danger-desc">{t('settings.delete_desc')}</p>
 								</div>
 								<button className="settings-delete-btn" onClick={() => setShowDeleteConfirm(true)}>
-									Delete account
+									{t('settings.delete_account')}
 								</button>
 							</div>
 						</div>
@@ -413,11 +461,11 @@ const SettingsPage = () => {
 			{showLogoutConfirm && (
 				<div className="settings-modal-overlay" onClick={() => setShowLogoutConfirm(false)}>
 					<div className="settings-modal" onClick={(e) => e.stopPropagation()}>
-						<h3 className="settings-modal-title">Log out ?</h3>
-						<p className="settings-modal-text">Are you sure you want to log out ?</p>
+						<h3 className="settings-modal-title">{t('settings.logout_confirm')}</h3>
+						<p className="settings-modal-text">{t('settings.logout_sure')}</p>
 						<div className="settings-modal-btns">
-							<button className="settings-cancel-btn" onClick={() => setShowLogoutConfirm(false)}>Cancel</button>
-							<button className="settings-confirm-danger-btn" onClick={handleLogout}>Log out</button>
+							<button className="settings-cancel-btn" onClick={() => setShowLogoutConfirm(false)}>{t('settings.cancel')}</button>
+							<button className="settings-confirm-danger-btn" onClick={handleLogout}>{t('settings.logout')}</button>
 						</div>
 					</div>
 				</div>
@@ -427,20 +475,16 @@ const SettingsPage = () => {
 			{showDeleteConfirm && (
 				<div className="settings-modal-overlay" onClick={closeDeleteModal}>
 					<div className="settings-modal" onClick={(e) => e.stopPropagation()}>
-						<h3 className="settings-modal-title">Delete account ?</h3>
+						<h3 className="settings-modal-title">{t('settings.delete_confirm')}</h3>
 						<p className="settings-modal-text">
-							{isGoogleAccount
-								? 'This action is irreversible. Are you sure ?'
-								: 'This action is irreversible. Enter your password to confirm.'
-							}
+							{isGoogleAccount ? t('settings.delete_google') : t('settings.delete_password')}
 						</p>
-						{/* Input mot de passe uniquement pour les comptes non-Google */}
 						{!isGoogleAccount && (
 							<div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
 								<input
 									className="settings-input"
 									type={showDeletePassword ? 'text' : 'password'}
-									placeholder="Your password..."
+									placeholder={t('settings.your_password')}
 									value={deletePassword}
 									onChange={(e) => setDeletePassword(e.target.value)}
 									style={{ paddingRight: '40px', width: '100%' }}
@@ -456,8 +500,8 @@ const SettingsPage = () => {
 							</p>
 						)}
 						<div className="settings-modal-btns">
-							<button className="settings-cancel-btn" onClick={closeDeleteModal}>Cancel</button>
-							<button className="settings-confirm-danger-btn" onClick={handleDeleteAccount}>Delete</button>
+							<button className="settings-cancel-btn" onClick={closeDeleteModal}>{t('settings.cancel')}</button>
+							<button className="settings-confirm-danger-btn" onClick={handleDeleteAccount}>{t('settings.delete_btn')}</button>
 						</div>
 					</div>
 				</div>
@@ -468,9 +512,9 @@ const SettingsPage = () => {
 				<div className="settings-modal-overlay" onClick={() => setShowAvatarModal(false)}>
 					<div className="avatar-edit-modal" onClick={(e) => e.stopPropagation()}>
 						<div className="avatar-edit-left">
-							<h3 className="settings-modal-title">Profile picture</h3>
+							<h3 className="settings-modal-title">{t('settings.profile_picture')}</h3>
 							<label htmlFor="avatar-input" className="avatar-import-btn">
-								Import picture
+								{t('settings.import_picture')}
 							</label>
 							<input
 								id="avatar-input"
@@ -480,8 +524,8 @@ const SettingsPage = () => {
 								onChange={handleAvatarChange}
 							/>
 							<div className="avatar-edit-btns">
-								<button className="settings-cancel-btn" onClick={() => setShowAvatarModal(false)}>Cancel</button>
-								<button className="settings-save-btn" onClick={handleSaveAvatar}>Save</button>
+								<button className="settings-cancel-btn" onClick={() => setShowAvatarModal(false)}>{t('settings.cancel')}</button>
+								<button className="settings-save-btn" onClick={handleSaveAvatar}>{t('settings.save')}</button>
 							</div>
 						</div>
 						<div className="avatar-edit-right">

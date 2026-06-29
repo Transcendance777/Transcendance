@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import PostNavBar from '../components/PostNavBar'
 import Background from '../components/Background'
 import PostStars from '../components/PostStars'
@@ -10,6 +11,7 @@ import Footer from '../components/Footer'
 const MAX_CHARS = 500
 
 const PostPage = () => {
+	const { t } = useTranslation()
 	const location = useLocation()
 	const [review, setReview] = useState('')
 	const [rating, setRating] = useState(null)
@@ -27,8 +29,8 @@ const PostPage = () => {
 	}, [location.state])
 
 	const handleSubmit = async () => {
-		if (!selectedGame) return setSubmitMsg('Choisis un jeu.')
-		if (!rating) return setSubmitMsg('Donne une note.')
+		if (!selectedGame) return setSubmitMsg(t('post.choose_game_msg'))
+		if (!rating) return setSubmitMsg(t('post.choose_rating'))
 
 		const token = localStorage.getItem('token')
 		setSubmitting(true)
@@ -56,7 +58,7 @@ const PostPage = () => {
 			setSubmitted(true)
 			setTimeout(() => setSubmitted(false), 2000)
 		} catch (err) {
-			setSubmitMsg('Erreur serveur.')
+			setSubmitMsg(t('post.server_error'))
 		} finally {
 			setSubmitting(false)
 		}
@@ -69,12 +71,12 @@ const PostPage = () => {
 				<div className="post-content">
 
 					<div className="post-left">
-						<p className="post-label">Write your review :</p>
+						<p className="post-label">{t('post.write_review')}</p>
 						<textarea
 							className="post-textarea"
 							value={review}
 							onChange={(e) => setReview(e.target.value)}
-							placeholder="Write your review here..."
+							placeholder={t('post.write_here')}
 							maxLength={MAX_CHARS}
 						/>
 						<div className="post-bottom">
@@ -83,7 +85,7 @@ const PostPage = () => {
 					</div>
 
 					<div className="post-right">
-						<p className="post-label">Choose a game :</p>
+						<p className="post-label">{t('post.choose_game')}</p>
 						<div className="post-game-preview" onClick={() => setShowPicker(true)}>
 							{selectedGame ? (
 								<>
@@ -91,7 +93,7 @@ const PostPage = () => {
 									<p className="post-game-name">{selectedGame.title}</p>
 								</>
 							) : (
-								<div className="post-game-placeholder">Click to choose</div>
+								<div className="post-game-placeholder">{t('post.click_to_choose')}</div>
 							)}
 						</div>
 						<PostStars key={starsKey} onRate={setRating} />

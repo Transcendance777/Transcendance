@@ -1,6 +1,7 @@
 import '../styles/ReviewsCard.css'
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { FiCornerDownRight, FiThumbsUp, FiThumbsDown, FiTrash2, FiEdit2, FiX } from 'react-icons/fi'
 import PostStars from './PostStars'
 
@@ -9,6 +10,7 @@ const MAX_CHARS = 500
 
 const ReviewsCard = ({ review, isOwn = false, onReviewUpdated = null, onReviewDeleted = null }) => {
 	const navigate = useNavigate()
+	const { t } = useTranslation()
 	const [userType, setUserType] = useState(null)
 	const [likes, setLikes] = useState(0)
 	const [dislikes, setDislikes] = useState(0)
@@ -17,8 +19,6 @@ const ReviewsCard = ({ review, isOwn = false, onReviewUpdated = null, onReviewDe
 	const [comments, setComments] = useState([])
 	const [replyingTo, setReplyingTo] = useState(null)
 	const [subReply, setSubReply] = useState('')
-
-	// Edit/delete states
 	const [showEdit, setShowEdit] = useState(false)
 	const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 	const [editText, setEditText] = useState(review.text || '')
@@ -185,7 +185,7 @@ const ReviewsCard = ({ review, isOwn = false, onReviewUpdated = null, onReviewDe
 				<div className="review-card-right">
 					<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
 						<p className="review-author" onClick={() => review.authorId && navigate(`/profile/${review.authorId}`)} style={{ cursor: review.authorId ? 'pointer' : 'default' }}>
-							{review.author} commented :
+							{review.author} {t('reviews.commented')}
 						</p>
 						{isOwn && (
 							<div style={{ display: 'flex', gap: '8px' }}>
@@ -219,13 +219,13 @@ const ReviewsCard = ({ review, isOwn = false, onReviewUpdated = null, onReviewDe
 								{totalComments > 0 && <span style={{ fontSize: '12px', marginLeft: '4px' }}>{totalComments}</span>}
 							</button>
 						</div>
-						<p className="review-date">Posted on {review.date}</p>
+						<p className="review-date">{t('reviews.posted_on')} {review.date}</p>
 					</div>
 
 					{showReply && (
 						<>
 							<div className="review-reply-box">
-								<textarea className="reply-textarea" placeholder="Write your reply..." value={reply}
+								<textarea className="reply-textarea" placeholder={t('reviews.write_reply')} value={reply}
 									onChange={(e) => setReply(e.target.value)} maxLength={MAX_REPLY} />
 								<div className="reply-bottom">
 									<span className="reply-count">{reply.length}/{MAX_REPLY}</span>
@@ -235,7 +235,9 @@ const ReviewsCard = ({ review, isOwn = false, onReviewUpdated = null, onReviewDe
 
 							<div className="replies-list">
 								{comments.length === 0 ? (
-									<p style={{ color: 'rgba(231,231,231,0.5)', fontFamily: '"policeConthrax", sans-serif', fontSize: '12px' }}>No replies yet.</p>
+									<p style={{ color: 'rgba(231,231,231,0.5)', fontFamily: '"policeConthrax", sans-serif', fontSize: '12px' }}>
+										{t('reviews.no_replies')}
+									</p>
 								) : (
 									comments.map((comment) => (
 										<div key={comment.id} className="reply-item">
@@ -286,7 +288,8 @@ const ReviewsCard = ({ review, isOwn = false, onReviewUpdated = null, onReviewDe
 											{replyingTo === comment.id && (
 												<div style={{ paddingLeft: '20px', marginTop: '8px' }}>
 													<div className="review-reply-box">
-														<textarea className="reply-textarea" placeholder={`Reply to ${comment.user.username}...`}
+														<textarea className="reply-textarea"
+															placeholder={`${t('reviews.reply_to')} ${comment.user.username}...`}
 															value={subReply} onChange={(e) => setSubReply(e.target.value)} maxLength={MAX_REPLY} />
 														<div className="reply-bottom">
 															<span className="reply-count">{subReply.length}/{MAX_REPLY}</span>
@@ -304,12 +307,11 @@ const ReviewsCard = ({ review, isOwn = false, onReviewUpdated = null, onReviewDe
 				</div>
 			</div>
 
-			{/* Modal edit */}
 			{showEdit && (
 				<div className="settings-modal-overlay" onClick={() => setShowEdit(false)}>
 					<div className="settings-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px', width: '90vw' }}>
 						<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-							<h3 className="settings-modal-title">Edit Review</h3>
+							<h3 className="settings-modal-title">{t('reviews.edit_review')}</h3>
 							<button onClick={() => setShowEdit(false)} style={{ background: 'none', border: 'none', color: '#e7e7e7', cursor: 'pointer' }}>
 								<FiX size={20} />
 							</button>
@@ -319,29 +321,28 @@ const ReviewsCard = ({ review, isOwn = false, onReviewUpdated = null, onReviewDe
 						</p>
 						<textarea
 							style={{ background: 'rgba(255,255,255,0.05)', border: '2px solid rgba(231,231,231,0.3)', borderRadius: '10px', color: '#e7e7e7', fontFamily: '"policeConthrax", sans-serif', fontSize: '13px', padding: '10px', resize: 'none', height: '120px', width: '100%', outline: 'none', marginBottom: '15px' }}
-							value={editText} onChange={(e) => setEditText(e.target.value)} maxLength={MAX_CHARS} placeholder="Your review..."
+							value={editText} onChange={(e) => setEditText(e.target.value)} maxLength={MAX_CHARS} placeholder={t('profile.your_review')}
 						/>
 						<p style={{ color: 'rgba(231,231,231,0.5)', fontSize: '11px', fontFamily: '"policeConthrax", sans-serif', textAlign: 'right', marginBottom: '15px' }}>
 							{editText.length}/{MAX_CHARS}
 						</p>
 						<PostStars key={editStarsKey} onRate={setEditRating} />
 						<div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '20px' }}>
-							<button className="settings-cancel-btn" onClick={() => setShowEdit(false)}>Cancel</button>
-							<button className="settings-save-btn" onClick={handleEditSubmit}>Save</button>
+							<button className="settings-cancel-btn" onClick={() => setShowEdit(false)}>{t('reviews.cancel')}</button>
+							<button className="settings-save-btn" onClick={handleEditSubmit}>{t('reviews.save')}</button>
 						</div>
 					</div>
 				</div>
 			)}
 
-			{/* Modal confirm delete */}
 			{showDeleteConfirm && (
 				<div className="settings-modal-overlay" onClick={() => setShowDeleteConfirm(false)}>
 					<div className="settings-modal" onClick={(e) => e.stopPropagation()}>
-						<h3 className="settings-modal-title">Delete review ?</h3>
-						<p className="settings-modal-text">This action is irreversible.</p>
+						<h3 className="settings-modal-title">{t('reviews.delete_review')}</h3>
+						<p className="settings-modal-text">{t('reviews.irreversible')}</p>
 						<div className="settings-modal-btns">
-							<button className="settings-cancel-btn" onClick={() => setShowDeleteConfirm(false)}>Cancel</button>
-							<button className="settings-confirm-danger-btn" onClick={handleDeleteReview}>Delete</button>
+							<button className="settings-cancel-btn" onClick={() => setShowDeleteConfirm(false)}>{t('reviews.cancel')}</button>
+							<button className="settings-confirm-danger-btn" onClick={handleDeleteReview}>{t('reviews.delete')}</button>
 						</div>
 					</div>
 				</div>

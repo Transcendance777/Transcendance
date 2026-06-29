@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import '../styles/PostGamePicker.css'
 
 const PostGamePicker = ({ onSelect, onClose }) => {
+	const { t } = useTranslation()
 	const [search, setSearch] = useState('')
 	const [games, setGames] = useState([])
 	const [loading, setLoading] = useState(false)
@@ -41,14 +43,14 @@ const PostGamePicker = ({ onSelect, onClose }) => {
 				<input
 					className="picker-search"
 					type="text"
-					placeholder="Rechercher un jeu..."
+					placeholder={t('search.placeholder')}
 					value={search}
 					onChange={(e) => setSearch(e.target.value)}
 					autoFocus
 				/>
 				{loading ? (
 					<p style={{ color: '#e7e7e7', fontFamily: 'policeConthrax', textAlign: 'center', padding: '20px' }}>
-						Chargement...
+						{t('game.loading')}
 					</p>
 				) : (
 					<div className="picker-grid">

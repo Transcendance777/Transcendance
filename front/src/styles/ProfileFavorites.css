@@ -233,3 +233,18 @@
 		padding: 20px;
 	}
 }
+
+@media (max-width: 480px) {
+	.favorites-grid {
+		grid-template-columns: repeat(3, 1fr);
+		gap: 8px;
+	}
+
+	.favorite-img {
+		height: 100px;
+	}
+
+	.favorite-title {
+		font-size: 9px;
+	}
+}

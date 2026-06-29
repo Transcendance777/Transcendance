@@ -1,5 +1,6 @@
 import '../styles/FriendsActivity.css'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 
 const getAvatar = (avatarUrl, username) => {
 	if (avatarUrl && avatarUrl !== 'default_avatar.png') return avatarUrl
@@ -8,6 +9,7 @@ const getAvatar = (avatarUrl, username) => {
 
 const FriendsActivity = ({ activities, loading }) => {
 	const navigate = useNavigate()
+	const { t } = useTranslation()
 
 	const handleClick = (activity) => {
 		if (activity.type === 'reviewed' && activity.reviewId) {
@@ -27,14 +29,22 @@ const FriendsActivity = ({ activities, loading }) => {
 		return '•'
 	}
 
+	const getAction = (type) => {
+		if (type === 'liked') return t('activity.liked')
+		if (type === 'reviewed') return t('activity.reviewed')
+		if (type === 'playing') return t('activity.playing')
+		if (type === 'followed') return t('activity.followed')
+		return ''
+	}
+
 	if (loading) return null
 
 	return (
 		<div className="friends-activity-section">
-			<h2 className="friends-activity-title">Recent Activity</h2>
+			<h2 className="friends-activity-title">{t('friends.recent_activity')}</h2>
 			{activities.length === 0 ? (
 				<p style={{ color: 'rgba(231,231,231,0.5)', fontFamily: '"policeConthrax", sans-serif', fontSize: '13px', padding: '10px 0' }}>
-					No recent activity from people you follow.
+					{t('friends.no_activity')}
 				</p>
 			) : (
 				activities.map((activity, i) => (
@@ -51,7 +61,7 @@ const FriendsActivity = ({ activities, loading }) => {
 								style={{ cursor: 'pointer' }}>
 								{activity.username}
 							</span>
-							{' '}{activity.action}{' '}
+							{' '}{getAction(activity.type)}{' '}
 							<span className="friends-activity-target">
 								{getEmoji(activity.type)} {activity.target}
 							</span>
