@@ -1,5 +1,5 @@
 import prisma from '../init/initPrisma.js';
-import { randomUUID } from 'crypto'; // module natif Node.js, pas besoin d'installer
+import { randomUUID } from 'crypto';
 
 async function generateKey() {
 

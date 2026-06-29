@@ -47,8 +47,8 @@ import reviewsRouter from './routes/reviews.js';
 import gamesRouter from './routes/apiGames.js';
 import apiKeyAuth from './middlewares/apiKeyAuth.js';
 import apiLimiter from './middlewares/rateLimiter.js';
-app.use('/api', apiLimiter, apiKeyAuth, gamesRouter);
-app.use('/api', apiLimiter, apiKeyAuth, reviewsRouter);
+app.use('/api/reviews', apiLimiter, apiKeyAuth, gamesRouter);
+app.use('/api/games', apiLimiter, apiKeyAuth, reviewsRouter);
 
 //infinite loop that listens to connection arriving on the backend port
 app.listen(PORT, () => console.log(`Backend actif sur le port ${PORT}`));
