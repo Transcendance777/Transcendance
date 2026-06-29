@@ -37,8 +37,8 @@ services:
   nginx:
     image: nginx:alpine
     ports:
-      - "80:80"   #Reste ouvert pour la redirection HTTP
-      - "443:443" #Reste ouvert pour la redirection HTTPS
+      - "8080:80"   # HTTP → redirect vers HTTPS
+      - "8443:443"  # HTTPS
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
       - ./nginx/certs:/etc/nginx/certs # copier les certificats dans le container
