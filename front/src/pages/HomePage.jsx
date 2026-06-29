@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import HomeNavBar from '../components/HomeNavBar'
 import Background from '../components/Background'
 import '../styles/HomePage.css'
@@ -12,6 +13,7 @@ const getAvatar = (avatarUrl, username) => {
 
 const HomePage = () => {
 	const navigate = useNavigate()
+	const { t } = useTranslation()
 	const [newReleases, setNewReleases] = useState([])
 	const [highlyPraised, setHighlyPraised] = useState([])
 	const [popular, setPopular] = useState([])
@@ -101,6 +103,14 @@ const HomePage = () => {
 		return '•'
 	}
 
+	const getAction = (type) => {
+		if (type === 'liked') return t('activity.liked')
+		if (type === 'reviewed') return t('activity.reviewed')
+		if (type === 'playing') return t('activity.playing')
+		if (type === 'followed') return t('activity.followed')
+		return ''
+	}
+
 	return (
 		<div className="home-page">
 			<HomeNavBar />
@@ -111,7 +121,7 @@ const HomePage = () => {
 					<div className="home-section">
 						<div className="home-highlights">
 							<div className="home-highlight-card" onClick={() => navigate('/games?category=new-releases')}>
-								<h2 className="home-section-title">New releases →</h2>
+								<h2 className="home-section-title">{t('home.new_releases')}</h2>
 								<div className="home-highlight-grid">
 									<div className="home-highlight-track">
 										{[...newReleases, ...newReleases].map((game, i) => (
@@ -124,7 +134,7 @@ const HomePage = () => {
 							</div>
 
 							<div className="home-highlight-card" onClick={() => navigate('/games?category=recent-acclaimed')}>
-								<h2 className="home-section-title">Recent hits →</h2>
+								<h2 className="home-section-title">{t('home.recent_hits')}</h2>
 								<div className="home-highlight-grid">
 									<div className="home-highlight-track">
 										{[...highlyPraised, ...highlyPraised].map((game, i) => (
@@ -140,34 +150,34 @@ const HomePage = () => {
 
 					{/* Stats réelles */}
 					<div className="home-section">
-						<h2 className="home-section-title">Your Stats</h2>
+						<h2 className="home-section-title">{t('home.your_stats')}</h2>
 						<div className="home-stats">
 							<div className="home-stat-card"
 								onClick={() => navigate('/reviews', { state: { tab: 'mine' } })}
 								style={{ cursor: 'pointer' }}>
 								<span className="home-stat-number">{reviews.length}</span>
-								<span className="home-stat-label">Reviews</span>
+								<span className="home-stat-label">{t('home.reviews')}</span>
 							</div>
 							<div className="home-stat-card"
 								onClick={() => navigate('/profile', { state: { openModal: 'likes' } })}
 								style={{ cursor: 'pointer' }}>
 								<span className="home-stat-number">{likedGames.length}</span>
-								<span className="home-stat-label">Liked games</span>
+								<span className="home-stat-label">{t('home.liked_games')}</span>
 							</div>
 							<div className="home-stat-card"
 								onClick={() => navigate('/friends')}
 								style={{ cursor: 'pointer' }}>
 								<span className="home-stat-number">{following.length}</span>
-								<span className="home-stat-label">Following</span>
+								<span className="home-stat-label">{t('home.following')}</span>
 							</div>
 						</div>
 					</div>
 
-					{/* Recently reviewed — reviews des autres users */}
+					{/* Recently reviewed */}
 					{othersReviews.length > 0 && (
 						<div className="home-section">
 							<h2 className="home-section-title" onClick={() => navigate('/reviews')} style={{ cursor: 'pointer' }}>
-								Recently reviewed →
+								{t('home.recently_reviewed')}
 							</h2>
 							<div className="home-reviews-grid">
 								{othersReviews.slice(0, 4).map((review, i) => (
@@ -197,7 +207,7 @@ const HomePage = () => {
 					{friendsActivity.length > 0 && (
 						<div className="home-section">
 							<h2 className="home-section-title" style={{ cursor: 'pointer' }} onClick={() => navigate('/friends')}>
-								Your friends' activity →
+								{t('home.friends_activity')}
 							</h2>
 							<div className="home-friends-grid">
 								{friendsActivity.slice(0, 4).map((activity, i) => (
@@ -212,7 +222,7 @@ const HomePage = () => {
 											<span className="home-friend-username" onClick={() => navigate(`/profile/${activity.userId}`)}>
 												{activity.username}
 											</span>
-											<span className="home-friend-action"> {activity.action} </span>
+											<span className="home-friend-action"> {getAction(activity.type)} </span>
 											<span
 												className="home-friend-game"
 												onClick={() => activity.targetType === 'user'
@@ -231,7 +241,7 @@ const HomePage = () => {
 
 					{/* Popular this week */}
 					<div className="home-section">
-						<h2 className="home-section-title">Popular this week</h2>
+						<h2 className="home-section-title">{t('home.popular')}</h2>
 						<div className="home-games-grid">
 							{popular.map((game, i) => (
 								<div key={i} className="home-game-card" onClick={() => navigate(`/game/${game.id}`)}>
@@ -243,7 +253,7 @@ const HomePage = () => {
 
 					{/* Coming soon */}
 					<div className="home-section">
-						<h2 className="home-section-title">Coming soon</h2>
+						<h2 className="home-section-title">{t('home.coming_soon')}</h2>
 						<div className="home-games-grid">
 							{comingSoon.map((game, i) => (
 								<div key={i} className="home-game-card" onClick={() => navigate(`/game/${game.id}`)}>
@@ -259,7 +269,7 @@ const HomePage = () => {
 							<h2 className="home-section-title"
 								style={{ cursor: 'pointer' }}
 								onClick={() => navigate('/games')}>
-								Continue your playing list →
+								{t('home.playing_list')}
 							</h2>
 							<div className="home-games-grid">
 								{playingList.slice(0, 8).map((game, i) => (

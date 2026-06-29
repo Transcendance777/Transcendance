@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import GamePresentationNavBar from '../components/GamePresentationNavBar'
 import Background from '../components/Background'
 import GamePresentationScreenshots from '../components/GamePresentationScreenshots'
@@ -10,6 +11,7 @@ import '../styles/GamePresentationPage.css'
 import Footer from '../components/Footer'
 
 const GamePresentationPage = () => {
+	const { t } = useTranslation()
 	const { id } = useParams()
 	const navigate = useNavigate()
 	const [game, setGame] = useState(null)
@@ -32,12 +34,10 @@ const GamePresentationPage = () => {
 		fetchGame()
 	}, [id])
 
-	// Récupère le statut liked / playing pour ce jeu
 	useEffect(() => {
 		const fetchStatus = async () => {
 			const token = localStorage.getItem('token')
-			if (!token) return // pas connecté, on laisse les boutons inactifs
-
+			if (!token) return
 			try {
 				const res = await fetch(`/api/user/status/${id}`, {
 					headers: { Authorization: `Bearer ${token}` }
@@ -54,13 +54,9 @@ const GamePresentationPage = () => {
 		fetchStatus()
 	}, [id])
 
-	// Toggle like
 	const handleLike = async () => {
 		const token = localStorage.getItem('token')
-		if (!token) {
-			navigate('/') // pas connecté -> page login
-			return
-		}
+		if (!token) { navigate('/'); return }
 		try {
 			const res = await fetch(`/api/user/like/${id}`, {
 				method: 'POST',
@@ -75,13 +71,9 @@ const GamePresentationPage = () => {
 		}
 	}
 
-	// Toggle playing list
 	const handlePlaying = async () => {
 		const token = localStorage.getItem('token')
-		if (!token) {
-			navigate('/')
-			return
-		}
+		if (!token) { navigate('/'); return }
 		try {
 			const res = await fetch(`/api/user/playing/${id}`, {
 				method: 'POST',
@@ -143,16 +135,16 @@ const GamePresentationPage = () => {
 		<div className="gamepresentation-page">
 			<GamePresentationNavBar gameName="..." />
 			<Background style={{ alignItems: "center", justifyContent: "center" }}>
-				<p style={{ color: '#e7e7e7', fontFamily: 'policeConthrax', fontSize: '20px' }}>Chargement...</p>
+				<p style={{ color: '#e7e7e7', fontFamily: 'policeConthrax', fontSize: '20px' }}>{t('game.loading')}</p>
 			</Background>
 		</div>
 	)
 
 	if (!game) return (
 		<div className="gamepresentation-page">
-			<GamePresentationNavBar gameName="Jeu introuvable" />
+			<GamePresentationNavBar gameName={t('game.not_found')} />
 			<Background style={{ alignItems: "center", justifyContent: "center" }}>
-				<p style={{ color: '#e7e7e7', fontFamily: 'policeConthrax', fontSize: '20px' }}>Jeu introuvable.</p>
+				<p style={{ color: '#e7e7e7', fontFamily: 'policeConthrax', fontSize: '20px' }}>{t('game.not_found')}</p>
 			</Background>
 		</div>
 	)
@@ -167,69 +159,50 @@ const GamePresentationPage = () => {
 			<GamePresentationNavBar gameName={gameName} />
 			<Background style={{ alignItems: "flex-start" }}>
 				<div className="gamepresentation-content">
-
 					<div className="gamepresentation-main">
-
 						<div className="gamepresentation-left">
 							<img src={getCover(game)} alt={gameName} className="gamepresentation-cover" />
-
 							<div className="gamepresentation-actions">
-								<button
-									className={`gamepresentation-action-btn ${liked ? 'active-like' : ''}`}
-									onClick={handleLike}
-									title="Like"
-								>
+								<button className={`gamepresentation-action-btn ${liked ? 'active-like' : ''}`} onClick={handleLike} title="Like">
 									<FiHeart />
 								</button>
-								<button
-									className={`gamepresentation-action-btn ${inPlayingList ? 'active-playing' : ''}`}
-									onClick={handlePlaying}
-									title="Add to Playing List"
-								>
+								<button className={`gamepresentation-action-btn ${inPlayingList ? 'active-playing' : ''}`} onClick={handlePlaying} title="Add to Playing List">
 									<MdSportsEsports />
 								</button>
-								<button
-									className="gamepresentation-action-btn"
-									onClick={handleWriteReview}
-									title="Write a review"
-								>
+								<button className="gamepresentation-action-btn" onClick={handleWriteReview} title="Write a review">
 									<FiEdit />
 								</button>
 							</div>
-
-							{screenshots.length > 0 && (
-								<GamePresentationScreenshots screenshots={screenshots} />
-							)}
+							{screenshots.length > 0 && <GamePresentationScreenshots screenshots={screenshots} />}
 						</div>
 
 						<div className="gamepresentation-right">
-
 							<h1 className="gamepresentation-game-name">{gameName}</h1>
 
 							<div className="gamepresentation-info-block">
-								<h3 className="gamepresentation-info-title">Description</h3>
-								<p className="gamepresentation-info-text">{game.summary || 'Aucune description disponible.'}</p>
+								<h3 className="gamepresentation-info-title">{t('game.description')}</h3>
+								<p className="gamepresentation-info-text">{game.summary || t('game.not_found')}</p>
 							</div>
 
 							<div className="gamepresentation-info-block">
-								<h3 className="gamepresentation-info-title">Developers</h3>
+								<h3 className="gamepresentation-info-title">{t('game.developers')}</h3>
 								<p className="gamepresentation-info-text">{developer}</p>
 								{publisher !== 'N/A' && (
 									<>
-										<h3 className="gamepresentation-info-title" style={{ marginTop: '10px' }}>Publisher</h3>
+										<h3 className="gamepresentation-info-title" style={{ marginTop: '10px' }}>{t('game.publisher')}</h3>
 										<p className="gamepresentation-info-text">{publisher}</p>
 									</>
 								)}
 							</div>
 
 							<div className="gamepresentation-info-block">
-								<h3 className="gamepresentation-info-title">Release Date</h3>
+								<h3 className="gamepresentation-info-title">{t('game.release_date')}</h3>
 								<p className="gamepresentation-info-text">{formatDate(game.releaseDate || game.first_release_date)}</p>
 							</div>
 
 							{genres.length > 0 && (
 								<div className="gamepresentation-info-block">
-									<h3 className="gamepresentation-info-title">Genres</h3>
+									<h3 className="gamepresentation-info-title">{t('game.genres')}</h3>
 									<div className="gamepresentation-tags">
 										{genres.map((genre, i) => (
 											<span key={i} className="gamepresentation-tag">{genre}</span>
@@ -240,7 +213,7 @@ const GamePresentationPage = () => {
 
 							{game.platforms && (
 								<div className="gamepresentation-info-block">
-									<h3 className="gamepresentation-info-title">Platforms</h3>
+									<h3 className="gamepresentation-info-title">{t('game.platforms')}</h3>
 									<div className="gamepresentation-tags">
 										{game.platforms.map((platform, i) => (
 											<span key={i} className="gamepresentation-tag">{platform.name}</span>
@@ -251,7 +224,7 @@ const GamePresentationPage = () => {
 
 							{game.rating && (
 								<div className="gamepresentation-info-block">
-									<h3 className="gamepresentation-info-title">IGDB Rating</h3>
+									<h3 className="gamepresentation-info-title">{t('game.igdb_rating')}</h3>
 									<div className="gamepresentation-rating">
 										{renderStars(game.rating)}
 										<span className="gamepresentation-rating-number">{(game.rating / 10).toFixed(1)}/10</span>
@@ -261,7 +234,7 @@ const GamePresentationPage = () => {
 
 							{game.reviews?.length > 0 && (
 								<div className="gamepresentation-info-block">
-									<h3 className="gamepresentation-info-title">User Rating</h3>
+									<h3 className="gamepresentation-info-title">{t('game.user_rating')}</h3>
 									<div className="gamepresentation-rating">
 										{renderStars(game.reviews.reduce((sum, r) => sum + r.rating, 0) / game.reviews.length * 20)}
 										<span className="gamepresentation-rating-number">
@@ -270,12 +243,10 @@ const GamePresentationPage = () => {
 									</div>
 								</div>
 							)}
-
 						</div>
 					</div>
 
 					<GamePresentationReviews gameId={game?.idExterne || id} />
-
 				</div>
 			</Background>
 			<Footer />

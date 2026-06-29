@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { FiSearch } from 'react-icons/fi'
 import '../styles/SearchBar.css'
 
@@ -9,6 +10,7 @@ const getAvatar = (avatarUrl, username) => {
 }
 
 const SearchBar = () => {
+	const { t } = useTranslation()
 	const [searchOpen, setSearchOpen] = useState(false)
 	const [search, setSearch] = useState('')
 	const [gameResults, setGameResults] = useState([])
@@ -92,7 +94,7 @@ const SearchBar = () => {
 				<input
 					className="search-input"
 					type="text"
-					placeholder="Search a game or user..."
+					placeholder={t('search.placeholder')}
 					value={search}
 					onChange={(e) => setSearch(e.target.value)}
 					autoFocus
@@ -102,14 +104,10 @@ const SearchBar = () => {
 				<div className="search-results">
 					{userResults.length > 0 && (
 						<>
-							<p className="search-results-label">Users</p>
+							<p className="search-results-label">{t('search.users')}</p>
 							{userResults.map((user) => (
 								<div key={user.id} className="search-result-item" onClick={() => handleSelectUser(user.id)}>
-									<img
-										src={getAvatar(user.avatarUrl, user.username)}
-										alt={user.username}
-										className="search-result-avatar"
-									/>
+									<img src={getAvatar(user.avatarUrl, user.username)} alt={user.username} className="search-result-avatar" />
 									<span className="search-result-title">{user.username}</span>
 								</div>
 							))}
@@ -117,7 +115,7 @@ const SearchBar = () => {
 					)}
 					{gameResults.length > 0 && (
 						<>
-							<p className="search-results-label">Games</p>
+							<p className="search-results-label">{t('search.games')}</p>
 							{gameResults.map((game, i) => (
 								<div key={i} className="search-result-item" onClick={() => handleSelectGame(game.id)}>
 									<img src={game.image} alt={game.title} className="search-result-img" />

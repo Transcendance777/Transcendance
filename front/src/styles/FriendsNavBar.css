@@ -287,3 +287,13 @@
 		max-height: 200px;
 	}
 }
+
+@media (max-width: 600px) {
+	.friends-navbar-right {
+		gap: 6px;
+	}
+
+	.search-input {
+		width: 100px;
+	}
+}

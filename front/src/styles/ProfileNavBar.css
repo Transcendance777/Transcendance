@@ -141,3 +141,13 @@
 		flex: 2;
 	}
 }
+
+@media (max-width: 600px) {
+	.profile-navbar-right {
+		gap: 6px;
+	}
+
+	.search-input {
+		width: 120px;
+	}
+}

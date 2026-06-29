@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { FiPlus, FiX } from 'react-icons/fi'
 import '../styles/ProfileFavorites.css'
 
@@ -7,6 +8,7 @@ const MAX_FAVORITES = 4
 
 const ProfileFavorites = ({ editable = false, externalFavorites = null }) => {
 	const navigate = useNavigate()
+	const { t } = useTranslation()
 	const [favorites, setFavorites] = useState([])
 	const [showModal, setShowModal] = useState(false)
 	const [search, setSearch] = useState('')
@@ -16,12 +18,10 @@ const ProfileFavorites = ({ editable = false, externalFavorites = null }) => {
 	const displayFavorites = externalFavorites !== null ? externalFavorites : favorites
 
 	useEffect(() => {
-		if (externalFavorites !== null) return // pas besoin de fetch si données externes
+		if (externalFavorites !== null) return
 		const token = localStorage.getItem('token')
 		if (!token) return
-		fetch('/api/user/favorites', {
-			headers: { Authorization: `Bearer ${token}` }
-		})
+		fetch('/api/user/favorites', { headers: { Authorization: `Bearer ${token}` } })
 			.then(res => res.ok ? res.json() : [])
 			.then(data => setFavorites(data))
 			.catch(err => console.error('Erreur favorites:', err))
@@ -31,7 +31,6 @@ const ProfileFavorites = ({ editable = false, externalFavorites = null }) => {
 		setSearch(value)
 		setSearchMsg('')
 		if (value.trim() === '') return setResults([])
-
 		try {
 			const res = await fetch(`/api/games/search?q=${encodeURIComponent(value)}`)
 			const data = await res.json()
@@ -40,13 +39,11 @@ const ProfileFavorites = ({ editable = false, externalFavorites = null }) => {
 				.map(g => ({
 					id: g.idExterne || g.id?.toString(),
 					title: g.title || g.name,
-					cover: g.coverImageUrl ||
-						(g.cover?.url ? `https:${g.cover.url.replace('t_thumb', 't_cover_big')}` : null)
+					cover: g.coverImageUrl || (g.cover?.url ? `https:${g.cover.url.replace('t_thumb', 't_cover_big')}` : null)
 				}))
 				.filter(g => g.cover)
-
 			setResults(formatted.slice(0, 8))
-			setSearchMsg(formatted.length === 0 ? 'No games found.' : '')
+			setSearchMsg(formatted.length === 0 ? t('friends.no_user') : '')
 		} catch (err) {
 			console.error('Erreur search:', err)
 		}
@@ -100,11 +97,9 @@ const ProfileFavorites = ({ editable = false, externalFavorites = null }) => {
 		<>
 			<div className="profile-favorites">
 				<h2 className="profile-section-title">Favorite Games</h2>
-
-				{/* Message si pas de favoris en mode lecture */}
 				{!editable && displayFavorites.length === 0 ? (
 					<p style={{ color: 'rgba(231,231,231,0.5)', fontFamily: '"policeConthrax", sans-serif', fontSize: '13px' }}>
-						No favorite games yet.
+						{t('profile.no_reviews')}
 					</p>
 				) : (
 					<div className="favorites-grid">
@@ -133,7 +128,6 @@ const ProfileFavorites = ({ editable = false, externalFavorites = null }) => {
 				)}
 			</div>
 
-			{/* Modale ajout favori */}
 			{showModal && (
 				<div className="favorite-modal-overlay" onClick={handleClose}>
 					<div className="favorite-modal" onClick={(e) => e.stopPropagation()}>
@@ -146,7 +140,7 @@ const ProfileFavorites = ({ editable = false, externalFavorites = null }) => {
 						<input
 							className="favorite-modal-input"
 							type="text"
-							placeholder="Search a game..."
+							placeholder={t('search.placeholder')}
 							value={search}
 							onChange={(e) => handleSearch(e.target.value)}
 							autoFocus

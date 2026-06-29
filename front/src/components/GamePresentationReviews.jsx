@@ -1,7 +1,7 @@
 import '../styles/GamePresentationReviews.css'
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { FiThumbsUp, FiThumbsDown } from 'react-icons/fi'
+import { useTranslation } from 'react-i18next'
 
 const getAvatar = (avatarUrl, username) => {
 	if (avatarUrl && avatarUrl !== 'default_avatar.png') return avatarUrl
@@ -10,6 +10,7 @@ const getAvatar = (avatarUrl, username) => {
 
 const GamePresentationReviews = ({ gameId }) => {
 	const navigate = useNavigate()
+	const { t } = useTranslation()
 	const [reviews, setReviews] = useState([])
 	const [loading, setLoading] = useState(true)
 
@@ -17,7 +18,6 @@ const GamePresentationReviews = ({ gameId }) => {
 		if (!gameId) return
 		const token = localStorage.getItem('token')
 		const headers = token ? { Authorization: `Bearer ${token}` } : {}
-
 		fetch(`/api/games/${gameId}`, { headers })
 			.then(res => res.ok ? res.json() : null)
 			.then(data => {
@@ -56,10 +56,10 @@ const GamePresentationReviews = ({ gameId }) => {
 
 	return (
 		<div className="gamepresentation-reviews">
-			<h2 className="gamepresentation-reviews-title">Reviews</h2>
+			<h2 className="gamepresentation-reviews-title">{t('game.reviews')}</h2>
 			{reviews.length === 0 ? (
 				<p style={{ color: 'rgba(231,231,231,0.5)', fontFamily: '"policeConthrax", sans-serif', fontSize: '13px' }}>
-					No reviews yet.
+					{t('game.no_reviews')}
 				</p>
 			) : (
 				reviews.map((review, i) => (

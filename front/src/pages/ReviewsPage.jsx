@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useLocation } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import ReviewsNavBar from '../components/ReviewsNavBar'
 import ReviewsCard from '../components/ReviewsCard'
 import Background from '../components/Background'
@@ -7,6 +8,7 @@ import '../styles/ReviewsPage.css'
 import Footer from '../components/Footer'
 
 const ReviewsPage = () => {
+	const { t } = useTranslation()
 	const location = useLocation()
 	const [activeTab, setActiveTab] = useState('users')
 	const [usersReviews, setUsersReviews] = useState([])
@@ -19,9 +21,7 @@ const ReviewsPage = () => {
 	useEffect(() => {
 		const token = localStorage.getItem('token')
 		if (!token) return
-
 		const headers = { Authorization: `Bearer ${token}` }
-
 		Promise.all([
 			fetch('/api/user/reviews/all', { headers }).then(res => res.ok ? res.json() : []),
 			fetch('/api/user/reviews', { headers }).then(res => res.ok ? res.json() : []),
@@ -73,23 +73,23 @@ const ReviewsPage = () => {
 			: myReviews
 
 	const emptyMessage = activeTab === 'users'
-		? 'No reviews yet.'
+		? t('reviews.no_reviews')
 		: activeTab === 'friends'
-			? 'No reviews from people you follow.'
-			: 'You have no reviews yet.'
+			? t('reviews.no_friends_reviews')
+			: t('reviews.no_reviews')
 
 	return (
 		<div className="reviews-page">
 			<ReviewsNavBar />
 			<div className="reviews-tabs">
 				<button className={`reviews-tab-btn ${activeTab === 'users' ? 'active' : ''}`} onClick={() => setActiveTab('users')}>
-					Users Reviews
+					{t('reviews.users_reviews')}
 				</button>
 				<button className={`reviews-tab-btn ${activeTab === 'friends' ? 'active' : ''}`} onClick={() => setActiveTab('friends')}>
-					Friends Reviews
+					{t('reviews.friends_reviews')}
 				</button>
 				<button className={`reviews-tab-btn ${activeTab === 'mine' ? 'active' : ''}`} onClick={() => setActiveTab('mine')}>
-					My Reviews
+					{t('reviews.my_reviews')}
 				</button>
 			</div>
 			<Background style={{ alignItems: "flex-start" }}>

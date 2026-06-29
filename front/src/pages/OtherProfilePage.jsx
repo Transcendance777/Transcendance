@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import ProfileNavBar from '../components/ProfileNavBar'
 import Background from '../components/Background'
 import ProfileModal from '../components/ProfileModal'
@@ -15,6 +16,7 @@ const getAvatar = (avatarUrl, username) => {
 }
 
 const OtherProfilePage = () => {
+	const { t } = useTranslation()
 	const { userId } = useParams()
 	const navigate = useNavigate()
 	const [profileUser, setProfileUser] = useState(null)
@@ -98,7 +100,6 @@ const OtherProfilePage = () => {
 	}
 
 	const avatarUrl = getAvatar(profileUser?.avatarUrl, profileUser?.username)
-
 	if (loading) return null
 
 	return (
@@ -121,16 +122,12 @@ const OtherProfilePage = () => {
 										})
 										if (res.ok) setIsFollowing(false)
 									} : handleFollow}
-									title={isFollowing ? 'Unfollow' : 'Follow'}
+									title={isFollowing ? t('profile.unfollow') : 'Follow'}
 									style={{
 										background: 'none',
 										border: `2px solid ${isFollowing ? '#4caf50' : 'rgba(231,231,231,0.4)'}`,
-										borderRadius: '50%',
-										width: '36px',
-										height: '36px',
-										display: 'flex',
-										alignItems: 'center',
-										justifyContent: 'center',
+										borderRadius: '50%', width: '36px', height: '36px',
+										display: 'flex', alignItems: 'center', justifyContent: 'center',
 										cursor: 'pointer',
 										color: isFollowing ? '#4caf50' : '#e7e7e7',
 										transition: 'border-color 0.2s ease, color 0.2s ease, transform 0.2s ease',
@@ -138,41 +135,28 @@ const OtherProfilePage = () => {
 									}}
 									onMouseEnter={e => {
 										e.currentTarget.style.transform = 'scale(1.1)'
-										if (isFollowing) {
-											e.currentTarget.style.borderColor = '#f44336'
-											e.currentTarget.style.color = '#f44336'
-											setHoverUnfollow(true)
-										}
+										if (isFollowing) { e.currentTarget.style.borderColor = '#f44336'; e.currentTarget.style.color = '#f44336'; setHoverUnfollow(true) }
 									}}
 									onMouseLeave={e => {
 										e.currentTarget.style.transform = 'scale(1)'
-										if (isFollowing) {
-											e.currentTarget.style.borderColor = '#4caf50'
-											e.currentTarget.style.color = '#4caf50'
-											setHoverUnfollow(false)
-										}
+										if (isFollowing) { e.currentTarget.style.borderColor = '#4caf50'; e.currentTarget.style.color = '#4caf50'; setHoverUnfollow(false) }
 									}}
 								>
-									{isFollowing
-										? (hoverUnfollow ? <FiUserMinus size={16} /> : <FiCheck size={16} />)
-										: <FiUserPlus size={16} />
-									}
+									{isFollowing ? (hoverUnfollow ? <FiUserMinus size={16} /> : <FiCheck size={16} />) : <FiUserPlus size={16} />}
 								</button>
 							</div>
 							<div className="profile-stats">
 								<div className="profile-stat" onClick={() => setStatsModal('followers')} style={{ cursor: 'pointer' }}>
 									<span className="stat-number">{followers.length}</span>
-									<span className="stat-label">Followers</span>
+									<span className="stat-label">{t('profile.followers')}</span>
 								</div>
 								<div className="profile-stat" onClick={() => setStatsModal('following')} style={{ cursor: 'pointer' }}>
 									<span className="stat-number">{following.length}</span>
-									<span className="stat-label">Following</span>
+									<span className="stat-label">{t('profile.following')}</span>
 								</div>
-								<div className="profile-stat" onClick={() => {
-									reviewsSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-								}} style={{ cursor: 'pointer' }}>
+								<div className="profile-stat" onClick={() => reviewsSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })} style={{ cursor: 'pointer' }}>
 									<span className="stat-number">{reviews.length}</span>
-									<span className="stat-label">Posts</span>
+									<span className="stat-label">{t('profile.posts')}</span>
 								</div>
 							</div>
 						</div>
@@ -181,10 +165,10 @@ const OtherProfilePage = () => {
 					<ProfileFavorites editable={false} externalFavorites={favoriteGames} />
 
 					<div className="profile-reviews-section" ref={reviewsSectionRef}>
-						<h2 className="profile-section-title">Reviews</h2>
+						<h2 className="profile-section-title">{t('profile.reviews')}</h2>
 						{reviews.length === 0 ? (
 							<p style={{ color: 'rgba(231,231,231,0.5)', fontFamily: '"policeConthrax", sans-serif', fontSize: '13px' }}>
-								No reviews yet.
+								{t('profile.no_reviews')}
 							</p>
 						) : (
 							<>
@@ -205,16 +189,16 @@ const OtherProfilePage = () => {
 									</div>
 								))}
 								{reviews.length > 2 && (
-									<button className="profile-see-more-btn" onClick={() => setModal('reviews')}>See more</button>
+									<button className="profile-see-more-btn" onClick={() => setModal('reviews')}>{t('profile.see_more')}</button>
 								)}
 							</>
 						)}
 					</div>
 
 					<div className="profile-tabs">
-						<button className="profile-tab-btn" onClick={() => setModal('activity')}>Last Activity</button>
-						<button className="profile-tab-btn" onClick={() => setModal('likes')}>Likes</button>
-						<button className="profile-tab-btn" onClick={() => setModal('playinglist')}>Playing List</button>
+						<button className="profile-tab-btn" onClick={() => setModal('activity')}>{t('profile.last_activity')}</button>
+						<button className="profile-tab-btn" onClick={() => setModal('likes')}>{t('profile.likes')}</button>
+						<button className="profile-tab-btn" onClick={() => setModal('playinglist')}>{t('profile.playing_list')}</button>
 					</div>
 
 				</div>
@@ -227,16 +211,11 @@ const OtherProfilePage = () => {
 			)}
 
 			{modal === 'reviews' && (
-				<ProfileModal title="Reviews" onClose={() => setModal(null)}>
+				<ProfileModal title={t('profile.reviews')} onClose={() => setModal(null)}>
 					{reviews.map((review) => (
 						<div key={review.id} className="modal-review-item" style={{ cursor: 'pointer' }} onClick={() => handleReviewClick(review.id)}>
-							<img
-								src={review.game.coverImageUrl || "https://placehold.co/80x110"}
-								alt={review.game.title}
-								className="modal-review-img"
-								onClick={(e) => { e.stopPropagation(); navigate(`/game/${review.game.idExterne}`) }}
-								style={{ cursor: 'pointer' }}
-							/>
+							<img src={review.game.coverImageUrl || "https://placehold.co/80x110"} alt={review.game.title} className="modal-review-img"
+								onClick={(e) => { e.stopPropagation(); navigate(`/game/${review.game.idExterne}`) }} style={{ cursor: 'pointer' }} />
 							<div style={{ flex: 1 }}>
 								<p className="modal-review-game">{review.game.title}</p>
 								<p className="modal-review-text">{review.reviewText || ''}</p>
@@ -256,25 +235,18 @@ const OtherProfilePage = () => {
 			)}
 
 			{modal === 'activity' && (
-				<ProfileModal title="Last Activity" onClose={() => setModal(null)}>
+				<ProfileModal title={t('profile.last_activity')} onClose={() => setModal(null)}>
 					{activity.length === 0 ? (
 						<p style={{ color: 'rgba(231,231,231,0.5)', fontFamily: '"policeConthrax", sans-serif', fontSize: '13px' }}>
-							No activity yet.
+							{t('profile.no_activity')}
 						</p>
 					) : (
 						activity.map((a, i) => (
 							<div key={i} className="modal-activity-item" style={{ cursor: 'pointer' }}
 								onClick={() => {
-									if (a.type === 'reviewed' && a.reviewId) {
-										navigate('/reviews', { state: { tab: 'users', reviewId: a.reviewId } })
-										setModal(null)
-									} else if (a.type === 'liked' || a.type === 'playing') {
-										navigate(`/game/${a.targetId}`)
-										setModal(null)
-									} else if (a.type === 'followed') {
-										navigate(`/profile/${a.targetId}`)
-										setModal(null)
-									}
+									if (a.type === 'reviewed' && a.reviewId) { navigate('/reviews', { state: { tab: 'users', reviewId: a.reviewId } }); setModal(null) }
+									else if (a.type === 'liked' || a.type === 'playing') { navigate(`/game/${a.targetId}`); setModal(null) }
+									else if (a.type === 'followed') { navigate(`/profile/${a.targetId}`); setModal(null) }
 								}}
 							>
 								<span className="modal-activity-type">
@@ -289,10 +261,10 @@ const OtherProfilePage = () => {
 			)}
 
 			{modal === 'likes' && (
-				<ProfileModal title="Liked Games" onClose={() => setModal(null)}>
+				<ProfileModal title={t('profile.likes')} onClose={() => setModal(null)}>
 					<div className="modal-games-grid">
 						{likedGames.length === 0 ? (
-							<p style={{ color: '#e7e7e7' }}>No game has been liked yet.</p>
+							<p style={{ color: '#e7e7e7' }}>{t('profile.no_liked')}</p>
 						) : (
 							likedGames.map((game) => (
 								<div key={game.id} className="modal-game-card" onClick={() => navigate(`/game/${game.idExterne}`)}>
@@ -306,10 +278,10 @@ const OtherProfilePage = () => {
 			)}
 
 			{modal === 'playinglist' && (
-				<ProfileModal title="Playing List" onClose={() => setModal(null)}>
+				<ProfileModal title={t('profile.playing_list')} onClose={() => setModal(null)}>
 					<div className="modal-games-grid">
 						{playingList.length === 0 ? (
-							<p style={{ color: '#e7e7e7' }}>No game in progress.</p>
+							<p style={{ color: '#e7e7e7' }}>{t('profile.no_playing')}</p>
 						) : (
 							playingList.map((game) => (
 								<div key={game.id} className="modal-game-card" onClick={() => navigate(`/game/${game.idExterne}`)}>
@@ -323,10 +295,10 @@ const OtherProfilePage = () => {
 			)}
 
 			{statsModal === 'followers' && (
-				<ProfileModal title="Followers" onClose={() => setStatsModal(null)}>
+				<ProfileModal title={t('profile.followers')} onClose={() => setStatsModal(null)}>
 					<div className="stats-users-list">
 						{followers.length === 0 ? (
-							<p style={{ color: '#e7e7e7' }}>No follower.</p>
+							<p style={{ color: '#e7e7e7' }}>{t('profile.no_follower')}</p>
 						) : (
 							followers.map((u) => (
 								<div key={u.id} className="stats-user-item" onClick={() => navigate(`/profile/${u.id}`)}>
@@ -340,10 +312,10 @@ const OtherProfilePage = () => {
 			)}
 
 			{statsModal === 'following' && (
-				<ProfileModal title="Following" onClose={() => setStatsModal(null)}>
+				<ProfileModal title={t('profile.following')} onClose={() => setStatsModal(null)}>
 					<div className="stats-users-list">
 						{following.length === 0 ? (
-							<p style={{ color: '#e7e7e7' }}>Follows nobody.</p>
+							<p style={{ color: '#e7e7e7' }}>{t('profile.no_following')}</p>
 						) : (
 							following.map((u) => (
 								<div key={u.id} className="stats-user-item" onClick={() => navigate(`/profile/${u.id}`)}>

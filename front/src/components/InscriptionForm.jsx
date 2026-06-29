@@ -4,8 +4,10 @@ import axios from 'axios'
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { FiEye, FiEyeOff } from 'react-icons/fi'
+import { useTranslation } from 'react-i18next'
 
 const InscriptionForm = () => {
+	const { t } = useTranslation()
 	const [isLogin, setIsLogin] = useState(true)
 	const [email, setEmail] = useState('')
 	const [password, setPassword] = useState('')
@@ -29,7 +31,6 @@ const InscriptionForm = () => {
 		setErrorMsg('')
 	}, [isLogin])
 
-	// Récupère le token Google depuis l'URL après le callback OAuth
 	useEffect(() => {
 		const params = new URLSearchParams(window.location.search)
 		const token = params.get('token')
@@ -57,7 +58,7 @@ const InscriptionForm = () => {
 				navigate('/home')
 			} else {
 				if (!username || !email || !password) {
-					setErrorMsg('All fields are required.')
+					setErrorMsg(t('login.all_fields'))
 					return
 				}
 				const response = await axios.post('/api/auth/register', {
@@ -70,7 +71,7 @@ const InscriptionForm = () => {
 				navigate('/home')
 			}
 		} catch (error) {
-			const msg = error.response?.data?.error || 'An error occurred.'
+			const msg = error.response?.data?.error || t('login.error')
 			setErrorMsg(msg)
 		}
 	}
@@ -87,20 +88,20 @@ const InscriptionForm = () => {
 					className={`toggle-btn ${isLogin ? 'active' : ''}`}
 					onClick={() => setIsLogin(true)}
 				>
-					Login
+					{t('login.login')}
 				</button>
 				<button
 					className={`toggle-btn ${!isLogin ? 'active' : ''}`}
 					onClick={() => setIsLogin(false)}
 				>
-					Sign up
+					{t('login.signup')}
 				</button>
 			</div>
 
 			<form onSubmit={handleSubmit}>
 				{!isLogin && (
 					<>
-						<p className="emailMessage texte">Username :</p>
+						<p className="emailMessage texte">{t('login.username')}</p>
 						<input
 							className="emailArea"
 							type="text"
@@ -113,7 +114,7 @@ const InscriptionForm = () => {
 				)}
 
 				<p className="emailMessage texte">
-					{isLogin ? 'Email / Username :' : 'Email address :'}
+					{isLogin ? t('login.email_username') : t('login.email')}
 				</p>
 				<input
 					className="emailArea"
@@ -125,7 +126,7 @@ const InscriptionForm = () => {
 
 				<br />
 
-				<p className="passwordMessage texte">Password :</p>
+				<p className="passwordMessage texte">{t('login.password')}</p>
 				<div className="password-wrapper">
 					<input
 						className="passwordArea"
@@ -144,7 +145,7 @@ const InscriptionForm = () => {
 
 				{isLogin && (
 					<p className="forgot-password-link" onClick={() => { setShowForgotPassword(true); setForgotStep(1) }}>
-						Forgot password ?
+						{t('login.forgot_password')}
 					</p>
 				)}
 
@@ -159,12 +160,12 @@ const InscriptionForm = () => {
 				<input
 					type="submit"
 					className="submitButton"
-					value={isLogin ? 'Log in' : 'Sign up'}
+					value={isLogin ? t('login.submit_login') : t('login.submit_signup')}
 				/>
 			</form>
 
 			<div className="form-divider">
-				<span>or</span>
+				<span>{t('login.or')}</span>
 			</div>
 
 			<button
@@ -173,7 +174,7 @@ const InscriptionForm = () => {
 				onClick={() => window.location.href = '/api/auth/google'}
 			>
 				<img src="https://www.google.com/favicon.ico" alt="Google" className="google-icon" />
-				Continue with Google
+				{t('login.google')}
 			</button>
 
 			{showForgotPassword && (
@@ -182,48 +183,48 @@ const InscriptionForm = () => {
 
 						{forgotStep === 1 && (
 							<>
-								<h3 className="forgot-modal-title">Forgot password</h3>
-								<p className="forgot-modal-text">Enter your email address to receive a verification code.</p>
+								<h3 className="forgot-modal-title">{t('login.forgot_title')}</h3>
+								<p className="forgot-modal-text">{t('login.forgot_text')}</p>
 								<input
 									className="forgot-input"
 									type="email"
-									placeholder="Your email..."
+									placeholder={t('login.forgot_email')}
 									value={forgotEmail}
 									onChange={(e) => setForgotEmail(e.target.value)}
 								/>
 								<div className="forgot-modal-btns">
-									<button className="forgot-cancel-btn" onClick={() => setShowForgotPassword(false)}>Cancel</button>
-									<button className="forgot-submit-btn" onClick={() => setForgotStep(2)}>Send</button>
+									<button className="forgot-cancel-btn" onClick={() => setShowForgotPassword(false)}>{t('login.cancel')}</button>
+									<button className="forgot-submit-btn" onClick={() => setForgotStep(2)}>{t('login.send')}</button>
 								</div>
 							</>
 						)}
 
 						{forgotStep === 2 && (
 							<>
-								<h3 className="forgot-modal-title">Verification code</h3>
-								<p className="forgot-modal-text">Enter the code you received by email.</p>
+								<h3 className="forgot-modal-title">{t('login.verify_title')}</h3>
+								<p className="forgot-modal-text">{t('login.verify_text')}</p>
 								<input
 									className="forgot-input"
 									type="text"
-									placeholder="Verification code..."
+									placeholder={t('login.verify_code')}
 									value={verifCode}
 									onChange={(e) => setVerifCode(e.target.value)}
 								/>
 								<div className="forgot-modal-btns">
-									<button className="forgot-cancel-btn" onClick={() => setForgotStep(1)}>Back</button>
-									<button className="forgot-submit-btn" onClick={() => setForgotStep(3)}>Verify</button>
+									<button className="forgot-cancel-btn" onClick={() => setForgotStep(1)}>{t('login.back')}</button>
+									<button className="forgot-submit-btn" onClick={() => setForgotStep(3)}>{t('login.verify')}</button>
 								</div>
 							</>
 						)}
 
 						{forgotStep === 3 && (
 							<>
-								<h3 className="forgot-modal-title">New password</h3>
+								<h3 className="forgot-modal-title">{t('login.new_password_title')}</h3>
 								<div className="forgot-password-wrapper">
 									<input
 										className="forgot-input"
 										type={showNewPass1 ? 'text' : 'password'}
-										placeholder="New password..."
+										placeholder={t('login.new_password')}
 										value={newPassword1}
 										onChange={(e) => setNewPassword1(e.target.value)}
 									/>
@@ -235,7 +236,7 @@ const InscriptionForm = () => {
 									<input
 										className="forgot-input"
 										type={showNewPass2 ? 'text' : 'password'}
-										placeholder="Confirm password..."
+										placeholder={t('login.confirm_password')}
 										value={newPassword2}
 										onChange={(e) => setNewPassword2(e.target.value)}
 									/>
@@ -244,8 +245,8 @@ const InscriptionForm = () => {
 									</button>
 								</div>
 								<div className="forgot-modal-btns">
-									<button className="forgot-cancel-btn" onClick={() => setForgotStep(2)}>Back</button>
-									<button className="forgot-submit-btn" onClick={() => setShowForgotPassword(false)}>Confirm</button>
+									<button className="forgot-cancel-btn" onClick={() => setForgotStep(2)}>{t('login.back')}</button>
+									<button className="forgot-submit-btn" onClick={() => setShowForgotPassword(false)}>{t('login.confirm')}</button>
 								</div>
 							</>
 						)}
