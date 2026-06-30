@@ -14,8 +14,12 @@ const ProfileFavorites = ({ editable = false, externalFavorites = null }) => {
 	const [search, setSearch] = useState('')
 	const [results, setResults] = useState([])
 	const [searchMsg, setSearchMsg] = useState('')
-
+	const [isTouchDevice, setIsTouchDevice] = useState(false)
 	const displayFavorites = externalFavorites !== null ? externalFavorites : favorites
+
+	useEffect(() => {
+		setIsTouchDevice('ontouchstart' in window || navigator.maxTouchPoints > 0)
+	}, [])
 
 	useEffect(() => {
 		if (externalFavorites !== null) return
@@ -96,7 +100,7 @@ const ProfileFavorites = ({ editable = false, externalFavorites = null }) => {
 	return (
 		<>
 			<div className="profile-favorites">
-				<h2 className="profile-section-title">Favorite Games</h2>
+				<h2 className="profile-section-title">{t('profile.favorite_games')}</h2>
 				{!editable && displayFavorites.length === 0 ? (
 					<p style={{ color: 'rgba(231,231,231,0.5)', fontFamily: '"policeConthrax", sans-serif', fontSize: '13px' }}>
 						{t('profile.no_reviews')}
@@ -107,7 +111,7 @@ const ProfileFavorites = ({ editable = false, externalFavorites = null }) => {
 							game ? (
 								<div key={i} className="favorite-card" onClick={() => navigate(`/game/${game.idExterne}`)}>
 									{editable && (
-										<button className="favorite-remove-btn" onClick={(e) => handleRemoveFavorite(e, game)}>
+										<button className="favorite-remove-btn" onClick={(e) => handleRemoveFavorite(e, game)} style={{ opacity: isTouchDevice ? 1 : undefined }}>
 											<FiX size={14} />
 										</button>
 									)}

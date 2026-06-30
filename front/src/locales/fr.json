@@ -6,7 +6,7 @@
 		"post": "Publier",
 		"profile": "Profil",
 		"friends": "Amis",
-		"settings": "Parametres"
+		"settings": "Params"
 	},
 	"login": {
 		"login": "Connexion",
@@ -35,7 +35,14 @@
 		"new_password_title": "Nouveau mot de passe",
 		"new_password": "Nouveau mot de passe...",
 		"confirm_password": "Confirmer le mot de passe...",
-		"confirm": "Confirmer"
+		"confirm": "Confirmer",
+		"err_all_fields": "Tous les champs sont requis.",
+		"err_password_length": "Le mot de passe doit contenir au moins 6 caractères.",
+		"err_email_used": "Cet email est déjà utilisé.",
+		"err_username_taken": "Ce nom d'utilisateur est déjà pris.",
+		"err_credentials": "Identifiants incorrects.",
+		"err_google_account": "Ce compte utilise la connexion Google.",
+		"err_identifier_required": "Email/nom d'utilisateur et mot de passe requis."
 	},
 	"home": {
 		"new_releases": "Nouvelles sorties →",
@@ -74,7 +81,8 @@
 		"no_follower": "Aucun abonné pour l'instant.",
 		"no_following": "Vous ne suivez personne.",
 		"remove": "Retirer",
-		"unfollow": "Se désabonner"
+		"unfollow": "Se désabonner",
+		"favorite_games": "Jeux favoris"
 	},
 	"settings": {
 		"account": "Compte",

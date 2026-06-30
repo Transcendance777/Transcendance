@@ -2,7 +2,7 @@
 	"nav": {
 		"home": "Inicio",
 		"games": "Juegos",
-		"reviews": "Reseñas",
+		"reviews": "Resenas",
 		"post": "Publicar",
 		"profile": "Perfil",
 		"friends": "Amigos",
@@ -35,7 +35,14 @@
 		"new_password_title": "Nueva contraseña",
 		"new_password": "Nueva contraseña...",
 		"confirm_password": "Confirmar contraseña...",
-		"confirm": "Confirmar"
+		"confirm": "Confirmar",
+		"err_all_fields": "Todos los campos son obligatorios.",
+		"err_password_length": "La contraseña debe tener al menos 6 caracteres.",
+		"err_email_used": "Este email ya está en uso.",
+		"err_username_taken": "Este nombre de usuario ya está en uso.",
+		"err_credentials": "Credenciales incorrectas.",
+		"err_google_account": "Esta cuenta usa inicio de sesión con Google.",
+		"err_identifier_required": "Email/nombre de usuario y contraseña requeridos."
 	},
 	"home": {
 		"new_releases": "Nuevos lanzamientos →",
@@ -74,7 +81,8 @@
 		"no_follower": "Sin seguidores todavía.",
 		"no_following": "No sigues a nadie.",
 		"remove": "Eliminar",
-		"unfollow": "Dejar de seguir"
+		"unfollow": "Dejar de seguir",
+		"favorite_games": "Juegos favoritos"
 	},
 	"settings": {
 		"account": "Cuenta",

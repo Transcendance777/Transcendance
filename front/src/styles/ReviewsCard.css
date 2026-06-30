@@ -235,3 +235,43 @@
 	color: #e7e7e7;
 	font-size: clamp(11px, 1vw, 13px);
 }
+
+@media (max-width: 480px) {
+	.review-card {
+		gap: 15px;
+		padding: 20px 15px;
+	}
+
+	.review-game-img {
+		width: 70px;
+		flex-shrink: 0;
+	}
+
+	.review-card-right {
+		min-width: 0;
+		gap: 10px;
+	}
+
+	.review-author,
+	.review-text,
+	.reply-text {
+		word-wrap: break-word;
+		overflow-wrap: break-word;
+	}
+
+	.review-author {
+		font-size: 13px;
+	}
+
+	.review-text {
+		font-size: 12px;
+	}
+
+	.review-footer {
+		gap: 12px;
+	}
+
+	.review-date {
+		font-size: 10px;
+	}
+}

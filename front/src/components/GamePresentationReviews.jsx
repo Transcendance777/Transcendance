@@ -2,6 +2,7 @@ import '../styles/GamePresentationReviews.css'
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import i18n from '../i18n'
 
 const getAvatar = (avatarUrl, username) => {
 	if (avatarUrl && avatarUrl !== 'default_avatar.png') return avatarUrl
@@ -18,10 +19,15 @@ const GamePresentationReviews = ({ gameId }) => {
 		if (!gameId) return
 		const token = localStorage.getItem('token')
 		const headers = token ? { Authorization: `Bearer ${token}` } : {}
+		const currentUser = JSON.parse(localStorage.getItem('user') || '{}')
+
 		fetch(`/api/games/${gameId}`, { headers })
 			.then(res => res.ok ? res.json() : null)
 			.then(data => {
-				if (data?.reviews) setReviews(data.reviews)
+				if (data?.reviews) {
+					const filtered = data.reviews.filter(r => r.userId !== currentUser.id)
+					setReviews(filtered)
+				}
 				setLoading(false)
 			})
 			.catch(err => {
@@ -48,8 +54,10 @@ const GamePresentationReviews = ({ gameId }) => {
 	}
 
 	const formatDate = (dateStr) => {
-		const d = new Date(dateStr)
-		return `${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}/${String(d.getFullYear()).slice(2)}`
+		const locale = i18n.language === 'fr' ? 'fr-FR' : i18n.language === 'es' ? 'es-ES' : 'en-US'
+		return new Date(dateStr).toLocaleDateString(locale, {
+			day: '2-digit', month: '2-digit', year: '2-digit'
+		})
 	}
 
 	if (loading) return null
@@ -63,10 +71,11 @@ const GamePresentationReviews = ({ gameId }) => {
 				</p>
 			) : (
 				reviews.map((review, i) => (
-					<div key={i} className="gamepresentation-review-item">
+					<div key={i} className="gamepresentation-review-item" style={{ cursor: 'pointer' }}
+						onClick={() => navigate('/reviews', { state: { tab: 'users', reviewId: review.id } })}>
 						<div className="gamepresentation-review-header">
 							<div style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}
-								onClick={() => navigate(`/profile/${review.userId}`)}>
+								onClick={(e) => { e.stopPropagation(); navigate(`/profile/${review.userId}`) }}>
 								<img
 									src={getAvatar(review.user?.avatarUrl, review.user?.username)}
 									alt={review.user?.username}

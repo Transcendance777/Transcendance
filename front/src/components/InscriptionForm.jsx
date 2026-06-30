@@ -24,6 +24,22 @@ const InscriptionForm = () => {
 	const [showNewPass1, setShowNewPass1] = useState(false)
 	const [showNewPass2, setShowNewPass2] = useState(false)
 
+
+	const ERROR_MAP = {
+		'All fields are required.': 'login.err_all_fields',
+		'Password must be at least 6 characters.': 'login.err_password_length',
+		'This email is already used.': 'login.err_email_used',
+		'This username is already taken.': 'login.err_username_taken',
+		'Incorrect credentials.': 'login.err_credentials',
+		'This account uses Google Sign-In.': 'login.err_google_account',
+		'Email/username and password required.': 'login.err_identifier_required'
+	}
+
+	const translateError = (msg) => {
+		const key = ERROR_MAP[msg]
+		return key ? t(key) : msg
+	}
+	
 	useEffect(() => {
 		setEmail('')
 		setPassword('')
@@ -72,7 +88,7 @@ const InscriptionForm = () => {
 			}
 		} catch (error) {
 			const msg = error.response?.data?.error || t('login.error')
-			setErrorMsg(msg)
+			setErrorMsg(translateError(msg))
 		}
 	}
 

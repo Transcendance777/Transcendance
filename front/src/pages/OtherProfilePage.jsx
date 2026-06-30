@@ -35,6 +35,13 @@ const OtherProfilePage = () => {
 	const reviewsSectionRef = useRef(null)
 	const [hoverUnfollow, setHoverUnfollow] = useState(false)
 	const reviewItemRefs = useRef({})
+	const [isTouchDevice, setIsTouchDevice] = useState(false)
+
+	useEffect(() => {
+		const handleResize = () => setIsMobile(window.innerWidth <= 768)
+		window.addEventListener('resize', handleResize)
+		return () => window.removeEventListener('resize', handleResize)
+	}, [])
 
 	useEffect(() => {
 		const token = localStorage.getItem('token')
@@ -80,6 +87,10 @@ const OtherProfilePage = () => {
 		}
 	}
 
+	useEffect(() => {
+		setIsTouchDevice('ontouchstart' in window || navigator.maxTouchPoints > 0)
+	}, [])
+
 	const handleReviewClick = (reviewId) => {
 		setModal(null)
 		setStatsModal(null)
@@ -101,6 +112,8 @@ const OtherProfilePage = () => {
 
 	const avatarUrl = getAvatar(profileUser?.avatarUrl, profileUser?.username)
 	if (loading) return null
+
+	const showUnfollowIcon = isFollowing && (hoverUnfollow || isTouchDevice)
 
 	return (
 		<div className="profile-page">
@@ -125,24 +138,24 @@ const OtherProfilePage = () => {
 									title={isFollowing ? t('profile.unfollow') : 'Follow'}
 									style={{
 										background: 'none',
-										border: `2px solid ${isFollowing ? '#4caf50' : 'rgba(231,231,231,0.4)'}`,
+										border: `2px solid ${showUnfollowIcon ? '#f44336' : isFollowing ? '#4caf50' : 'rgba(231,231,231,0.4)'}`,
 										borderRadius: '50%', width: '36px', height: '36px',
 										display: 'flex', alignItems: 'center', justifyContent: 'center',
 										cursor: 'pointer',
-										color: isFollowing ? '#4caf50' : '#e7e7e7',
+										color: showUnfollowIcon ? '#f44336' : isFollowing ? '#4caf50' : '#e7e7e7',
 										transition: 'border-color 0.2s ease, color 0.2s ease, transform 0.2s ease',
 										flexShrink: 0
 									}}
 									onMouseEnter={e => {
 										e.currentTarget.style.transform = 'scale(1.1)'
-										if (isFollowing) { e.currentTarget.style.borderColor = '#f44336'; e.currentTarget.style.color = '#f44336'; setHoverUnfollow(true) }
+										if (isFollowing) { setHoverUnfollow(true) }
 									}}
 									onMouseLeave={e => {
 										e.currentTarget.style.transform = 'scale(1)'
-										if (isFollowing) { e.currentTarget.style.borderColor = '#4caf50'; e.currentTarget.style.color = '#4caf50'; setHoverUnfollow(false) }
+										if (isFollowing) { setHoverUnfollow(false) }
 									}}
 								>
-									{isFollowing ? (hoverUnfollow ? <FiUserMinus size={16} /> : <FiCheck size={16} />) : <FiUserPlus size={16} />}
+									{isFollowing ? (showUnfollowIcon ? <FiUserMinus size={16} /> : <FiCheck size={16} />) : <FiUserPlus size={16} />}
 								</button>
 							</div>
 							<div className="profile-stats">

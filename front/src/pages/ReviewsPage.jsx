@@ -6,6 +6,7 @@ import ReviewsCard from '../components/ReviewsCard'
 import Background from '../components/Background'
 import '../styles/ReviewsPage.css'
 import Footer from '../components/Footer'
+import i18n from '../i18n'
 
 const ReviewsPage = () => {
 	const { t } = useTranslation()
@@ -60,9 +61,12 @@ const ReviewsPage = () => {
 		}, 300)
 	}, [loading, activeTab, location.state])
 
-	const formatDate = (dateStr) => new Date(dateStr).toLocaleDateString('en-US', {
-		weekday: 'long', month: '2-digit', day: '2-digit', year: '2-digit'
-	})
+	const formatDate = (dateStr) => {
+		const locale = i18n.language === 'fr' ? 'fr-FR' : i18n.language === 'es' ? 'es-ES' : 'en-US'
+		return new Date(dateStr).toLocaleDateString(locale, {
+			weekday: 'long', month: '2-digit', day: '2-digit', year: '2-digit'
+		})
+	}
 
 	if (loading) return null
 

@@ -224,10 +224,6 @@
 }
 
 @media (max-width: 600px) {
-	.favorites-grid {
-		gap: 10px;
-	}
-
 	.favorite-modal {
 		width: 95vw;
 		padding: 20px;
@@ -236,15 +232,28 @@
 
 @media (max-width: 480px) {
 	.favorites-grid {
-		grid-template-columns: repeat(3, 1fr);
-		gap: 8px;
+		display: grid;
+		grid-template-columns: repeat(2, 1fr);
+		gap: 12px;
+		justify-content: center;
+	}
+
+	.favorite-card {
+		width: 100%;
 	}
 
 	.favorite-img {
-		height: 100px;
+		height: 130px;
+		object-fit: contain;
+		background: rgba(0, 0, 0, 0.3);
+	}
+
+	.favorite-add-placeholder,
+	.favorite-empty-slot {
+		height: 130px;
 	}
 
 	.favorite-title {
-		font-size: 9px;
+		font-size: 10px;
 	}
 }

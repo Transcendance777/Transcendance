@@ -253,7 +253,7 @@
 
 @media (max-width: 600px) {
 	.friends-navbar-right {
-		gap: clamp(5px, 2vw, 20px);
+		gap: 6px;
 	}
 
 	.friends-hamburger {
@@ -262,6 +262,20 @@
 
 	.friends-navbar-center {
 		flex: 2;
+	}
+
+	.search-input {
+		width: 100px;
+	}
+
+	.home-icon-link {
+		width: 28px;
+		height: 28px;
+		font-size: 14px;
+	}
+
+	.friends-navbar-title {
+		font-size: 16px;
 	}
 
 	.add-friend-modal {
@@ -285,15 +299,5 @@
 
 	.add-friend-results {
 		max-height: 200px;
-	}
-}
-
-@media (max-width: 600px) {
-	.friends-navbar-right {
-		gap: 6px;
-	}
-
-	.search-input {
-		width: 100px;
 	}
 }
