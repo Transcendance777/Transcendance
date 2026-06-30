@@ -1,0 +1,42 @@
+services:
+  waf:
+    image: owasp/modsecurity-crs:nginx
+    environment:
+      - BACKEND=http://nginx:80
+      - MODSEC_RULE_ENGINE=On
+      - PARANOIA=2
+      - ANOMALY_INBOUND=5        # score max avant blocage
+      - ANOMALY_OUTBOUND=4
+      - BLOCKING_PARANOIA=2
+      - MODSEC_AUDIT_LOG=/var/log/modsec_audit.log
+      - MODSEC_AUDIT_LOG_FORMAT=JSON
+      - PORT=8080
+      - TIMEOUT=60
+      - DNS_SERVER=127.0.0.11    # DNS interne Docker
+    ports:
+      - "8080:8080"
+    networks:
+      - wafnet
+
+#verifier = v
+# v utilite de custom rule
+# v dangerosite d avor env dans docker compose
+
+
+
+  # nginx:
+  #   build: ./nginx
+  #   expose:
+  #     - "80"
+  #   networks:
+  #     - wafnet
+
+  # php:
+  #   build: ./php
+  #   networks:
+  #     - wafnet
+
+# networks:
+#   wafnet: {}
+
+#allowed method a ajouter dans le .env

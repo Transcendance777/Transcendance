@@ -1,0 +1,51 @@
+services:
+  vault:
+    image: hashicorp/vault:1.17
+    restart: unless-stopped
+    container_name: vault
+    environment:
+      - VAULT_ADDR=http://127.0.0.1:8200
+      - VAULT_SKIP_VERIFY=true  # dev only, TLS désactivé
+    cap_add:
+      - IPC_LOCK # empeche l'écriture de donnée dans la RAM
+    ports:
+      - "8200:8200"
+      - "8201:8201"
+    volumes:
+      - vault_data:/vault/data
+      - vault_logs:/vault/logs
+      - vault_file:/vault/file
+      - ./vault/config:/vault/config
+      - ./vault/certs:/certs
+      - ./vault/keys:/vault/keys
+      - ./vault/policies:/vault/policies
+    command: vault server -config=/vault/config/vault.hcl -log-level="info"
+    healthcheck:
+      test: ["CMD", "sh", "-c", "curl -s -o /dev/null http://127.0.0.1:8200/v1/sys/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  unsealer:
+    image: alpine:3.19
+    container_name: vault-unsealer
+    volumes:
+      - ./unsealer/unseal.sh:/unseal.sh
+      - ./vault/keys/keys.json:/vault/keys/keys.json
+    command: sh -c "apk add --no-cache curl jq && sh /unseal.sh"
+    restart: on-failure
+
+  healthcheck:
+    image: alpine:3.19
+    container_name: vault-healthcheck
+    depends_on:
+      - vault
+    volumes:
+      - ./healthcheck/check.sh:/check.sh
+    command: sh -c "apk add --no-cache curl jq && sh /check.sh"
+    restart: unless-stopped
+
+volumes:
+  vault_data:
+  vault_logs:
+  vault_file:

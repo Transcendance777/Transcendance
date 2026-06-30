@@ -1,0 +1,58 @@
+DE QUOI S OCCUPE VAULT ->
+Backend API  →  PostgreSQL   (DB_PASSWORD, credentials)
+Backend API  →  JWT / Auth   (JWT_SECRET, API_KEYS)
+Prometheus   →  scrape       (pas de secret Vault nécessaire)
+Grafana      →  dashboard    (GRAFANA_ADMIN_PASSWORD si besoin)
+NGINX        →  reverse proxy (certs TLS potentiellement)
+
+
+disable_mlock = true #a activer en production
+
+podman-compose down
+podman-compose up
+
+https://blog.stephane-robert.info/docs/securiser/secrets/hashicorp-vault/installation/
+
+# Logs
+L’audit Vault est correctement activé et capture les opérations système, CLI et API.
+Les secrets sont protégés via HMAC (log_raw=false), empêchant toute fuite de données sensibles dans les journaux.
+Les accès système (health check, UI, audit enable) sont tracés, assurant une traçabilité complète des actions sur Vault.
+
+# Active le moteur KV v2
+vault secrets enable -path=secret kv-v2 2>/dev/null || true
+
+#auto unseal
+https://developer.hashicorp.com/vault/docs/secrets/key-management/awskms
+https://blog.stephane-robert.info/docs/securiser/secrets/hashicorp-vault/auto-unseal-et-recovery-keys/
+
+
+Les permissions sont définies dans les policies sur des paths.
+Un token reçoit une ou plusieurs policies lors de l'authentification.
+Quand on accède à un path, Vault évalue les règles des policies attachées au token et applique celles qui correspondent le mieux au path demandé.
+Le token lui-même n'override pas les permissions ;
+il transporte simplement les policies qui lui ont été attribuées.
+
+vault login -method=userpass \
+    username=alice \
+    password=monMotDePasse
+
+policy = perm
+
+
+vault policy write backend-read backend-read.hcl
+
+path "secret/data/app/*" {
+  capabilities = ["read"]
+}
+
+path "secret/metadata/app/*" {
+  capabilities = ["read"]
+}
+
+
+VAULT_TOKEN=hvs.CAESI... vault kv get secret/prod/backend
+
+
+
+cypter les KEYS EN BASE 64
+
