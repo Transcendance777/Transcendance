@@ -113,6 +113,16 @@
 }
 
 @media (max-width: 600px) {
+	
+	.search-icon {
+		font-size: 18px;
+	}
+	
+	.search-icon svg {
+		width: 18px;
+		height: 18px;
+	}
+
 	.search-input {
 		width: 110px;
 		font-size: 11px;

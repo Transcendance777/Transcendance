@@ -336,8 +336,10 @@ const ProfilePage = () => {
 										const token = localStorage.getItem('token')
 										const res = await fetch(`/api/user/follower/${u.id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } })
 										if (res.ok) setFollowers(prev => prev.filter(f => f.id !== u.id))
-									}} style={{ background: 'none', border: '1px solid #f44336', color: '#f44336', borderRadius: '20px', padding: '4px 12px', fontFamily: '"policeConthrax", sans-serif', fontSize: '11px', cursor: 'pointer', flexShrink: 0 }}>
-										{t('profile.remove')}
+									}} title={t('profile.remove')} style={{ background: 'rgba(244,67,54,0.1)', border: '1px solid #f44336', color: '#f44336', borderRadius: '50%', width: '30px', height: '30px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0, transition: 'transform 0.2s ease' }}
+										onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.1)'}
+										onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}>
+										<FiX size={16} />
 									</button>
 								</div>
 							))
@@ -362,8 +364,10 @@ const ProfilePage = () => {
 										const token = localStorage.getItem('token')
 										const res = await fetch(`/api/user/follow/${u.id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } })
 										if (res.ok) setFollowing(prev => prev.filter(f => f.id !== u.id))
-									}} style={{ background: 'none', border: '1px solid #f44336', color: '#f44336', borderRadius: '20px', padding: '4px 12px', fontFamily: '"policeConthrax", sans-serif', fontSize: '11px', cursor: 'pointer', flexShrink: 0 }}>
-										{t('profile.unfollow')}
+									}} title={t('profile.unfollow')} style={{ background: 'rgba(244,67,54,0.1)', border: '1px solid #f44336', color: '#f44336', borderRadius: '50%', width: '30px', height: '30px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0, transition: 'transform 0.2s ease' }}
+										onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.1)'}
+										onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}>
+										<FiX size={16} />
 									</button>
 								</div>
 							))
@@ -371,7 +375,6 @@ const ProfilePage = () => {
 					</div>
 				</ProfileModal>
 			)}
-
 			{editReview && (
 				<div className="settings-modal-overlay" onClick={() => setEditReview(null)}>
 					<div className="settings-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px', width: '90vw' }}>

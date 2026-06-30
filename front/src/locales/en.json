@@ -35,7 +35,14 @@
 		"new_password_title": "New password",
 		"new_password": "New password...",
 		"confirm_password": "Confirm password...",
-		"confirm": "Confirm"
+		"confirm": "Confirm",
+		"err_all_fields": "All fields are required.",
+		"err_password_length": "Password must be at least 6 characters.",
+		"err_email_used": "This email is already used.",
+		"err_username_taken": "This username is already taken.",
+		"err_credentials": "Incorrect credentials.",
+		"err_google_account": "This account uses Google Sign-In.",
+		"err_identifier_required": "Email/username and password required."
 	},
 	"home": {
 		"new_releases": "New releases →",
@@ -74,7 +81,8 @@
 		"no_follower": "No follower yet.",
 		"no_following": "You follow no one yet.",
 		"remove": "Remove",
-		"unfollow": "Unfollow"
+		"unfollow": "Unfollow",
+		"favorite_games": "Favorite Games"
 	},
 	"settings": {
 		"account": "Account",

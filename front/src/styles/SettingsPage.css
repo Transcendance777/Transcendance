@@ -310,3 +310,56 @@
 	display: flex;
 	align-items: center;
 }
+
+@media (max-width: 480px) {
+	.settings-avatar-row {
+		flex-wrap: wrap;
+	}
+
+	.settings-danger-btn {
+		font-size: 10px;
+		padding: 5px 10px;
+		white-space: nowrap;
+	}
+
+	.settings-content {
+		padding: 15px;
+	}
+
+	.settings-modal {
+		width: 90vw;
+		padding: 20px;
+	}
+
+	.settings-modal-btns {
+		gap: 10px;
+	}
+
+	.settings-cancel-btn,
+	.settings-confirm-danger-btn,
+	.settings-delete-btn {
+		font-size: 11px;
+		padding: 8px 14px;
+		white-space: nowrap;
+	}
+
+	.avatar-edit-modal {
+		flex-direction: column;
+		width: 90vw;
+		padding: 20px;
+		gap: 20px;
+	}
+
+	.avatar-preview-img {
+		width: 150px;
+		height: 150px;
+	}
+
+	.avatar-edit-left {
+		width: 100%;
+	}
+
+	.avatar-edit-btns {
+		flex-wrap: wrap;
+	}
+}

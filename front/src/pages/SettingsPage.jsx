@@ -14,9 +14,9 @@ const getAvatar = (avatarUrl, username) => {
 }
 
 const LANGUAGES = [
-	{ code: 'en', label: 'English', flag: '🇬🇧' },
-	{ code: 'fr', label: 'Français', flag: '🇫🇷' },
-	{ code: 'es', label: 'Español', flag: '🇪🇸' },
+	{ code: 'en', label: 'English', flag: 'https://flagcdn.com/w40/gb.png' },
+	{ code: 'fr', label: 'Français', flag: 'https://flagcdn.com/w40/fr.png' },
+	{ code: 'es', label: 'Español', flag: 'https://flagcdn.com/w40/es.png' },
 ]
 
 const SettingsPage = () => {
@@ -306,7 +306,7 @@ const SettingsPage = () => {
 											transition: 'all 0.2s ease'
 										}}
 									>
-										<span style={{ fontSize: '24px' }}>{lang.flag}</span>
+										<img src={lang.flag} alt={lang.label} style={{ width: '24px', height: '18px', objectFit: 'cover', borderRadius: '3px' }} />
 										{lang.label}
 									</button>
 								))}

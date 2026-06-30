@@ -16,6 +16,11 @@ const FriendsList = ({ friends, loading, onUnfollow, onAddFriend }) => {
 	const { t } = useTranslation()
 	const [startRow, setStartRow] = useState(0)
 	const [friendsPerRow, setFriendsPerRow] = useState(6)
+	const [isTouchDevice, setIsTouchDevice] = useState(false)
+
+	useEffect(() => {
+		setIsTouchDevice('ontouchstart' in window || navigator.maxTouchPoints > 0)
+	}, [])
 
 	useEffect(() => {
 		const update = () => {
@@ -85,7 +90,7 @@ const FriendsList = ({ friends, loading, onUnfollow, onAddFriend }) => {
 										background: 'rgba(0,0,0,0.7)', border: 'none', color: '#f44336',
 										borderRadius: '50%', width: '24px', height: '24px',
 										display: 'flex', alignItems: 'center', justifyContent: 'center',
-										cursor: 'pointer', opacity: 0, transition: 'opacity 0.2s ease', zIndex: 2
+										cursor: 'pointer', opacity: isTouchDevice ? 1 : 0, transition: 'opacity 0.2s ease', zIndex: 2
 									}}
 									className="unfollow-btn"
 								>
