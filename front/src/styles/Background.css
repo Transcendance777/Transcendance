@@ -1,0 +1,19 @@
+.backgroundImage {
+	position: relative;
+	background-image: url("/backgroundImage.jpg");
+	background-size: cover;
+	min-height: 100vh;
+	display: flex;
+	background-position: center;
+	background-attachment: fixed;
+}
+
+.backgroundOverlay {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	min-height: 100%;
+	backdrop-filter: blur(5px);
+	background-color: rgba(0, 0, 0, 0.5);
+}

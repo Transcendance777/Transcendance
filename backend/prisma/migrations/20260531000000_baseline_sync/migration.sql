@@ -1,0 +1,1 @@
+-- Baseline migration to fix Prisma sync

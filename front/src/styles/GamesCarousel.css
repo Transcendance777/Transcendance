@@ -1,0 +1,42 @@
+.games-carousel-section {
+	padding: 20px 40px;
+	overflow: visible;
+}
+
+.games-carousel-title {
+	color: #e7e7e7;
+	font-family: "policeConthrax", sans-serif;
+	font-size: clamp(14px, 1.5vw, 20px);
+	margin-bottom: 40px;
+}
+
+.games-carousel-wrapper {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	width: 100%;
+}
+
+.games-carousel-track {
+	display: flex;
+	gap: 15px;
+	overflow: hidden;
+	flex: 1;
+	padding: 10px 5px;
+	margin: -10px -5px;
+}
+
+.games-carousel-btn {
+	background: none;
+	border: none;
+	color: #e7e7e7;
+	font-size: 40px;
+	cursor: pointer;
+	flex-shrink: 0;
+	position: relative;
+	z-index: 2;
+}
+
+.games-carousel-btn:hover {
+	color: white;
+}

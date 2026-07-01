@@ -1,0 +1,122 @@
+.post-navbar {
+	position: fixed;
+		top: 0;
+		left: 0;
+		right: 0;
+		z-index: 500;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		background-color: black;
+		padding: 25px 20px;
+}
+
+.post-navbar-left {
+	display: flex;
+	align-items: center;
+	flex: 1;
+}
+
+.post-navbar-center {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	flex: 1;
+	gap: 10px;
+}
+
+.post-navbar-right {
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	flex: 1;
+	gap: clamp(10px, 3vw, 150px);
+}
+
+.post-navbar-title {
+	font-family: "policePS3", sans-serif;
+	color: #e7e7e7;
+	font-size: clamp(20px, 2.5vw, 40px);
+	white-space: nowrap;
+	display: inline-block;
+	transition: transform 0.2s ease;
+	text-decoration: none;
+}
+
+.post-navbar-title:hover {
+	transform: scale(1.15);
+	cursor: pointer;
+}
+
+.post-hamburger {
+	background: none;
+	border: none;
+	color: #e7e7e7;
+	font-size: 30px;
+	cursor: pointer;
+	transition: transform 0.2s ease;
+	display: block;
+}
+
+.post-hamburger:hover {
+	transform: scale(1.15);
+}
+
+.post-dropdown {
+	position: absolute;
+	top: 80px;
+	left: 0;
+	background-color: black;
+	display: flex;
+	flex-direction: column;
+	padding: 20px;
+	gap: 15px;
+	z-index: 100;
+}
+
+.home-icon-link {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 18px;
+	width: 38px;
+	height: 38px;
+	border-radius: 50%;
+	background-color: rgba(255, 255, 255, 0.1);
+	transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.home-icon-link:hover {
+	background-color: rgba(255, 255, 255, 0.2);
+	transform: scale(1.05);
+}
+
+@media (max-width: 900px) {
+	.post-hamburger {
+		display: block;
+	}
+}
+
+@media (max-width: 600px) {
+	.search-icon {
+		font-size: 18px;
+	}
+
+	.search-input {
+		width: clamp(80px, 25vw, 150px);
+		font-size: 11px;
+		padding: 3px 10px;
+	}
+
+	.post-navbar-right {
+		gap: clamp(5px, 2vw, 20px);
+	}
+
+	.post-hamburger {
+		font-size: 20px;
+	}
+
+	.post-navbar-center {
+		flex: 2;
+	}
+}

@@ -1,0 +1,329 @@
+.emailMessage {
+	color: #e7e7e7;
+	text-align: center;
+	padding-bottom: 15px;
+	margin-top: 30px;
+	font-size: clamp(15px, 1.5vw, 20px);
+}
+
+.passwordMessage {
+	color: #e7e7e7;
+	text-align: center;
+	padding-top: 30px;
+	padding-bottom: 15px;
+	font-size: clamp(15px, 1.5vw, 20px);
+}
+
+.emailArea {
+	height: 30px;
+	width: 300px;
+	font-size: 17px;
+	margin-top: 10px;
+}
+
+.passwordArea {
+	height: 30px;
+	width: 100%;
+	font-size: 17px;
+	margin-top: 0;
+	pointer-events: all;
+}
+
+.password-wrapper {
+	position: relative;
+	display: inline-flex;
+	align-items: center;
+	width: 300px;
+	margin-top: 10px;
+}
+
+.password-toggle {
+	position: absolute;
+	right: 8px;
+	background: none;
+	border: none;
+	color: #555;
+	cursor: pointer;
+	font-size: 16px;
+	display: flex;
+	align-items: center;
+	z-index: 999;
+	pointer-events: all;
+}
+
+.password-toggle:hover {
+	color: #333;
+	opacity: 1;
+	visibility: visible;
+}
+
+.submitButton {
+	height: 45px;
+	width: 200px;
+	font-size: 14px;
+	margin-top: 20px;
+	background: linear-gradient(135deg, #e7e7e7, #ffffff);
+	color: black;
+	border: none;
+	border-radius: 25px;
+	font-family: "policeConthrax", sans-serif;
+	cursor: pointer;
+	transition: transform 0.2s ease, box-shadow 0.2s ease;
+	box-shadow: 0 4px 15px rgba(255, 255, 255, 0.2);
+	letter-spacing: 1px;
+}
+
+.submitButton:hover {
+	transform: scale(1.05);
+	box-shadow: 0 6px 20px rgba(255, 255, 255, 0.4);
+}
+
+.formBackground {
+	background-color: rgba(0, 0, 0, 0.75);
+	border-radius: 30px;
+	padding: 25px;
+	width: fit-content;
+	position: relative;
+	z-index: 1;
+	text-align: center;
+}
+
+.welcomeText {
+	color: #e7e7e7;
+	font-family: "policePS3", sans-serif;
+	font-size: clamp(25px, 4vw, 60px);
+	overflow: visible;
+	z-index: 1;
+	text-align: center;
+	animation: apparition 0.8s ease-out forwards;
+}
+
+@keyframes apparition {
+	0% {
+		letter-spacing: 30px;
+		opacity: 0;
+	}
+	100% {
+		letter-spacing: normal;
+		opacity: 1;
+	}
+}
+
+@media (max-width: 600px) {
+	.welcomeText {
+		font-size: clamp(16px, 4vw, 55px);
+	}
+}
+
+.form-toggle {
+	display: flex;
+	gap: 10px;
+	justify-content: center;
+	margin-bottom: 20px;
+}
+
+.toggle-btn {
+	background: none;
+	border: 2px solid #e7e7e7;
+	color: #e7e7e7;
+	font-family: "policeConthrax", sans-serif;
+	font-size: clamp(10px, 1vw, 14px);
+	padding: 8px 20px;
+	border-radius: 20px;
+	cursor: pointer;
+	transition: all 0.2s ease;
+}
+
+.toggle-btn.active {
+	background-color: #e7e7e7;
+	color: black;
+}
+
+.toggle-btn:hover {
+	transform: scale(1.05);
+}
+
+.form-divider {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	margin: 15px 0;
+	color: #e7e7e7;
+	font-family: "policeConthrax", sans-serif;
+	font-size: 12px;
+}
+
+.form-divider::before,
+.form-divider::after {
+	content: '';
+	flex: 1;
+	height: 1px;
+	background-color: #e7e7e7;
+}
+
+.form-logo {
+	display: flex;
+	justify-content: center;
+	margin-bottom: 20px;
+}
+
+.form-logo-img {
+	width: 70px;
+	height: 70px;
+	border-radius: 50%;
+	border: 3px solid #e7e7e7;
+	object-fit: cover;
+}
+
+.google-btn {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 10px;
+	width: 100%;
+	padding: 10px;
+	background: white;
+	border: none;
+	border-radius: 20px;
+	font-family: "policeConthrax", sans-serif;
+	font-size: clamp(10px, 1vw, 14px);
+	cursor: pointer;
+	transition: transform 0.2s ease;
+}
+
+.google-btn:hover {
+	transform: scale(1.03);
+}
+
+.google-icon {
+	width: 20px;
+	height: 20px;
+}
+
+.forgot-password-link {
+	color: rgba(231, 231, 231, 0.6);
+	font-family: "policeConthrax", sans-serif;
+	font-size: clamp(10px, 1vw, 12px);
+	cursor: pointer;
+	text-align: right;
+	margin-top: 5px;
+	transition: color 0.2s ease;
+}
+
+.forgot-password-link:hover {
+	color: #e7e7e7;
+}
+
+.forgot-modal-overlay {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: rgba(0, 0, 0, 0.85);
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	z-index: 2000;
+}
+
+.forgot-modal {
+	background-color: #111;
+	border-radius: 15px;
+	padding: 30px;
+	width: clamp(280px, 40vw, 450px);
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+}
+
+.forgot-modal-title {
+	font-family: "policeConthrax", sans-serif;
+	color: #e7e7e7;
+	font-size: clamp(14px, 1.8vw, 20px);
+}
+
+.forgot-modal-text {
+	font-family: "policeConthrax", sans-serif;
+	color: rgba(231, 231, 231, 0.6);
+	font-size: clamp(10px, 1.1vw, 13px);
+}
+
+.forgot-input {
+	background: rgba(255, 255, 255, 0.05);
+	border: 2px solid rgba(231, 231, 231, 0.3);
+	border-radius: 10px;
+	color: #e7e7e7;
+	font-family: "policeConthrax", sans-serif;
+	font-size: 13px;
+	padding: 10px 15px;
+	outline: none;
+	width: 100%;
+	transition: border-color 0.2s ease;
+	box-sizing: border-box;
+}
+
+.forgot-input:focus {
+	border-color: #e7e7e7;
+}
+
+.forgot-password-wrapper {
+	position: relative;
+	display: flex;
+	align-items: center;
+}
+
+.forgot-eye-btn {
+	position: absolute;
+	right: 10px;
+	background: none;
+	border: none;
+	color: #555;
+	cursor: pointer;
+	font-size: 16px;
+	display: flex;
+	align-items: center;
+}
+
+.forgot-eye-btn:hover {
+	color: #e7e7e7;
+}
+
+.forgot-modal-btns {
+	display: flex;
+	gap: 15px;
+	justify-content: flex-end;
+}
+
+.forgot-cancel-btn {
+	background: none;
+	border: 2px solid rgba(231, 231, 231, 0.3);
+	color: #e7e7e7;
+	font-family: "policeConthrax", sans-serif;
+	font-size: clamp(11px, 1vw, 14px);
+	padding: 8px 20px;
+	border-radius: 20px;
+	cursor: pointer;
+	transition: transform 0.2s ease;
+}
+
+.forgot-cancel-btn:hover {
+	transform: scale(1.05);
+}
+
+.forgot-submit-btn {
+	background: rgba(255, 255, 255, 0.1);
+	border: 2px solid #e7e7e7;
+	color: #e7e7e7;
+	font-family: "policeConthrax", sans-serif;
+	font-size: clamp(11px, 1vw, 14px);
+	padding: 8px 20px;
+	border-radius: 20px;
+	cursor: pointer;
+	transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.forgot-submit-btn:hover {
+	transform: scale(1.05);
+	background-color: rgba(255, 255, 255, 0.2);
+}

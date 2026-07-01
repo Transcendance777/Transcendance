@@ -1,0 +1,52 @@
+.profile-modal-overlay {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: rgba(0, 0, 0, 0.85);
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	z-index: 1000;
+}
+
+.profile-modal-content {
+	background-color: #111;
+	border-radius: 15px;
+	padding: 30px;
+	width: clamp(300px, 75vw, 1000px);
+	max-height: 80vh;
+	overflow-y: auto;
+}
+
+.profile-modal-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 20px;
+}
+
+.profile-modal-title {
+	font-family: "policeConthrax", sans-serif;
+	color: #e7e7e7;
+	font-size: clamp(18px, 2vw, 28px);
+}
+
+.profile-modal-close {
+	background: none;
+	border: none;
+	color: #e7e7e7;
+	font-size: 20px;
+	cursor: pointer;
+	transition: transform 0.2s ease;
+}
+
+.profile-modal-close:hover {
+	transform: scale(1.2);
+}
+
+.profile-modal-body {
+	color: #e7e7e7;
+	font-family: "policeConthrax", sans-serif;
+}

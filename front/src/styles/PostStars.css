@@ -1,0 +1,42 @@
+.stars-container {
+	display: flex;
+	gap: 4px;
+	justify-content: center;
+}
+
+.star-wrapper {
+	position: relative;
+	width: clamp(30px, 4vw, 50px);
+	height: clamp(30px, 4vw, 50px);
+	cursor: pointer;
+}
+
+.star-half {
+	position: absolute;
+	top: 0;
+	left: 0;
+	font-size: clamp(30px, 4vw, 50px);
+	color: #555;
+	transition: color 0.2s ease;
+	line-height: 1;
+}
+
+.star-half.left {
+	clip-path: inset(0 50% 0 0);
+}
+
+.star-half.right {
+	clip-path: inset(0 0 0 50%);
+}
+
+.star-half.active {
+	color: #f5a623;
+}
+
+.star-half.left {
+	clip-path: inset(0 49% 0 0);
+}
+
+.star-half.right {
+	clip-path: inset(0 0 0 49%);
+}

@@ -1,0 +1,42 @@
+.profile-favorites {
+	padding: 20px 40px;
+	position: relative;
+	z-index: 1;
+}
+
+.profile-section-title {
+	font-family: "policeConthrax", sans-serif;
+	color: #e7e7e7;
+	font-size: clamp(14px, 1.5vw, 20px);
+	margin-bottom: 20px;
+}
+
+.favorites-grid {
+	display: flex;
+	gap: 20px;
+}
+
+.favorite-card {
+	cursor: pointer;
+	transition: transform 0.2s ease;
+	width: clamp(100px, 10vw, 160px);
+}
+
+.favorite-card:hover {
+	transform: scale(1.05);
+}
+
+.favorite-img {
+	width: 100%;
+	border-radius: 10px;
+	object-fit: cover;
+	height: clamp(140px, 14vw, 220px);
+}
+
+.favorite-title {
+	font-family: "policeConthrax", sans-serif;
+	color: #e7e7e7;
+	font-size: 11px;
+	text-align: center;
+	margin-top: 8px;
+}

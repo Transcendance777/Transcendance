@@ -1,0 +1,106 @@
+* {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+}
+
+@font-face {
+	font-family: "policePS3";
+	src: url("/WebslingerBold-z8eEX.ttf");
+}
+
+@font-face {
+	font-family: "policeConthrax";
+	src: url("/Conthrax-SemiBold.otf")
+}
+
+a {
+	text-decoration: none;
+}
+
+.texte {
+	font-family: "policeConthrax", sans-serif;
+	color: #e7e7e7;
+	z-index: 1;
+	font-size: clamp(14px, 2vw, 23px);
+}
+
+.navbar-avatar {
+	width: 45px;
+	height: 45px;
+	border-radius: 50%;
+	object-fit: cover;
+	border: 2px solid #e7e7e7;
+	transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.navbar-avatar:hover {
+	transform: scale(1.1);
+	border-color: white;
+}
+
+.profil-avatar-link {
+	display: inline-flex;
+	align-items: center;
+}
+
+.search-container {
+	position: relative;
+}
+
+.search-results {
+	position: absolute;
+	top: 100%;
+	right: 0;
+	margin-top: 8px;
+	background-color: #111;
+	border-radius: 10px;
+	padding: 8px;
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	width: clamp(220px, 25vw, 320px);
+	max-height: 400px;
+	overflow-y: auto;
+	z-index: 200;
+	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.search-result-item {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 8px;
+	border-radius: 8px;
+	cursor: pointer;
+	transition: background-color 0.2s ease;
+}
+
+.search-result-item:hover {
+	background-color: rgba(255, 255, 255, 0.08);
+}
+
+.search-result-img {
+	width: 40px;
+	height: 55px;
+	object-fit: cover;
+	border-radius: 4px;
+	flex-shrink: 0;
+}
+
+.search-result-title {
+	font-family: "policeConthrax", sans-serif;
+	color: #e7e7e7;
+	font-size: 12px;
+}
+
+html,
+body {
+	overflow-x: hidden;
+}
+
+@media (max-width: 900px) {
+	.profil-avatar-link {
+		display: none !important;
+	}
+}

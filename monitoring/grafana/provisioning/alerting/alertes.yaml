@@ -1,0 +1,160 @@
+apiVersion: 1
+
+groups:
+  - orgId: 1
+    name: "Alertes Gamerev"
+    folder: "supervision"
+    interval: 30s
+    rules:
+
+      # --- ALERTE 1 : SERVICE DOWN ---
+      # "1 - up" donne 1 quand le service est down (up=0), 0 quand il est up
+      # classic_conditions évalue chaque série (instance) indépendamment → labels conservés
+      - uid: alerte_service_down
+        title: "Service indisponible"
+        condition: B
+        data:
+          - refId: A
+            datasourceUid: prometheus
+            relativeTimeRange:
+              from: 600
+              to: 0
+            model:
+              expr: 1 - up
+              refId: A
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              type: classic_conditions
+              refId: B
+              conditions:
+                - evaluator:
+                    type: gt
+                    params: [0]
+                  operator:
+                    type: and
+                  query:
+                    params: [A]
+                  reducer:
+                    type: last
+                    params: []
+        noDataState: NoData
+        execErrState: Error
+        for: 1m
+        annotations:
+          summary: "Le service {{ $labels.instance }} est DOWN"
+        labels:
+          severity: critical
+
+      # --- ALERTE 2 : CPU > 85% (désactivée — cAdvisor incompatible Podman rootless) ---
+      # - uid: alerte_cpu_high
+      #   title: "Utilisation du CPU élevée"
+      #   condition: B
+      #   data:
+      #     - refId: A
+      #       datasourceUid: prometheus
+      #       relativeTimeRange:
+      #         from: 600
+      #         to: 0
+      #       model:
+      #         expr: sum by (name) (rate(container_cpu_usage_seconds_total{name!=""}[2m])) * 100
+      #         refId: A
+      #     - refId: B
+      #       datasourceUid: __expr__
+      #       model:
+      #         type: classic_conditions
+      #         refId: B
+      #         conditions:
+      #           - evaluator:
+      #               type: gt
+      #               params: [85]
+      #             operator:
+      #               type: and
+      #             query:
+      #               params: [A]
+      #             reducer:
+      #               type: last
+      #               params: []
+      #   noDataState: NoData
+      #   execErrState: Error
+      #   for: 2m
+      #   annotations:
+      #     summary: "CPU > 85% sur le conteneur {{ $labels.name }}"
+      #   labels:
+      #     severity: warning
+
+      # --- ALERTE 3 : CONNEXIONS DB > 100 ---
+      - uid: alert_db_connections
+        title: "Trop de connexions PostgreSQL"
+        condition: B
+        data:
+          - refId: A
+            datasourceUid: prometheus
+            relativeTimeRange:
+              from: 600
+              to: 0
+            model:
+              expr: sum(pg_stat_activity_count) by (instance)
+              refId: A
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              type: classic_conditions
+              refId: B
+              conditions:
+                - evaluator:
+                    type: gt
+                    params: [100]
+                  operator:
+                    type: and
+                  query:
+                    params: [A]
+                  reducer:
+                    type: last
+                    params: []
+        noDataState: NoData
+        execErrState: Error
+        for: 2m
+        annotations:
+          summary: "Limite de connexions atteinte sur {{ $labels.instance }}"
+          description: "Plus de 100 connexions actives sur la DB {{ $labels.instance }}"
+        labels:
+          severity: warning
+
+      # --- ALERTE 4 : RAM > 90% (désactivée — cAdvisor incompatible Podman rootless) ---
+      # - uid: alert_ram_high
+      #   title: "Utilisation RAM critique"
+      #   condition: B
+      #   data:
+      #     - refId: A
+      #       datasourceUid: prometheus
+      #       relativeTimeRange:
+      #         from: 600
+      #         to: 0
+      #       model:
+      #         expr: sum(container_memory_usage_bytes{name!=""}) / scalar(machine_memory_bytes) * 100
+      #         refId: A
+      #     - refId: B
+      #       datasourceUid: __expr__
+      #       model:
+      #         type: classic_conditions
+      #         refId: B
+      #         conditions:
+      #           - evaluator:
+      #               type: gt
+      #               params: [90]
+      #             operator:
+      #               type: and
+      #             query:
+      #               params: [A]
+      #             reducer:
+      #               type: last
+      #               params: []
+      #   noDataState: NoData
+      #   execErrState: Error
+      #   for: 5m
+      #   annotations:
+      #     summary: "RAM > 90% sur le serveur"
+      #     description: "Les conteneurs utilisent plus de 90% de la RAM disponible."
+      #   labels:
+      #     severity: critical
