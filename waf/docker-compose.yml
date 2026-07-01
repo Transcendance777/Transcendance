@@ -13,6 +13,9 @@ services:
       - PORT=8080
       - TIMEOUT=60
       - DNS_SERVER=127.0.0.11    # DNS interne Docker
+    volumes:
+      - ./waf/certs:/etc/waf/certs # copier les certificats dans le container
+
     ports:
       - "8080:8080"
     networks:
