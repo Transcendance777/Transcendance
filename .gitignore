@@ -3,6 +3,7 @@
 .env
 DEVOPS_ROADMAP.MD
 nginx/certs/*
+waf/certs/*
 
 tr.subject.pdf
 
