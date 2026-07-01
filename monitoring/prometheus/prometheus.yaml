@@ -6,11 +6,6 @@ scrape_configs:
     static_configs:
       - targets: ["localhost:9090"]
 
-  # - job_name: cadvisor  # incompatible Podman rootless
-  #   scrape_interval: 10s
-  #   static_configs:
-  #     - targets: ["cadvisor:8080"]
-
   - job_name: postgres
     static_configs:
       - targets: ["postgres-exporter:9187"]
