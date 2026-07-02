@@ -133,7 +133,7 @@ router.get('/google/callback',
 		}
 
 		// Redirige vers le front avec le token dans l'URL
-		res.redirect(`https://localhost/home?token=${token}&user=${encodeURIComponent(JSON.stringify(user))}`)
+		res.redirect(`https://localhost:8443/home?token=${token}&user=${encodeURIComponent(JSON.stringify(user))}`)
 	}
 )
 

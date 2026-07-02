@@ -82,7 +82,9 @@
 		"no_following": "Vous ne suivez personne.",
 		"remove": "Retirer",
 		"unfollow": "Se désabonner",
-		"favorite_games": "Jeux favoris"
+		"favorite_games": "Jeux favoris",
+		"already_favorite": "Ce jeu est déjà dans vos favoris.",
+		"add_favorite": "Ajouter un jeu favori"
 	},
 	"settings": {
 		"account": "Compte",
@@ -153,7 +155,8 @@
 		"click_to_choose": "Cliquez pour choisir",
 		"choose_game_msg": "Choisissez un jeu.",
 		"choose_rating": "Donnez une note.",
-		"server_error": "Erreur serveur."
+		"server_error": "Erreur serveur.",
+		"already_reviewed": "Vous avez déjà posté un avis pour ce jeu."
 	},
 	"friends": {
 		"recent_activity": "Activité récente",
