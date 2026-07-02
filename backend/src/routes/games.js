@@ -82,12 +82,24 @@ router.get('/popular', async (req, res) => {
 router.get('/coming-soon', async (req, res) => {
 	try {
 		const now = new Date()
-		const games = await prisma.game.findMany({
+		const dbGames = await prisma.game.findMany({
 			where: { releaseDate: { gt: now } },
 			orderBy: { releaseDate: 'asc' },
 			take: 40,
 		})
-		res.json(games)
+
+		if (dbGames.length >= 10) {
+			return res.json(dbGames)
+		}
+
+		// Complète avec IGDB si pas assez de résultats en DB
+		const { getComingSoon } = await import('../services/igdb.js')
+		const igdbGames = await getComingSoon()
+
+		const dbIdExternes = new Set(dbGames.map(g => g.idExterne))
+		const igdbFiltered = igdbGames.filter(g => !dbIdExternes.has(g.id?.toString()))
+
+		res.json([...dbGames, ...igdbFiltered])
 	} catch (error) {
 		console.error(error)
 		res.status(500).json({ error: 'Erreur DB' })
@@ -97,15 +109,39 @@ router.get('/coming-soon', async (req, res) => {
 router.get('/search', async (req, res) => {
 	const { q } = req.query;
 	if (!q) return res.status(400).json({ error: 'Paramètre q manquant' });
+
 	try {
-		const games = await searchGames(q);
-		const sorted = games.sort((a, b) => (b.rating_count || 0) - (a.rating_count || 0));
-		res.json(sorted);
+		// 1. Cherche d'abord dans la DB (résultats instantanés)
+		const dbGames = await prisma.game.findMany({
+			where: {
+				title: { contains: q, mode: 'insensitive' }
+			},
+			orderBy: { ratingCount: 'desc' },
+			take: 10,
+		})
+
+		// 2. Si assez de résultats en DB, on renvoie direct
+		if (dbGames.length >= 5) {
+			return res.json(dbGames)
+		}
+
+		// 3. Sinon, complète avec IGDB
+		const igdbGames = await searchGames(q)
+		const sorted = igdbGames.sort((a, b) => (b.rating_count || 0) - (a.rating_count || 0))
+
+		// 4. Fusionne en évitant les doublons (par idExterne)
+		const dbIdExternes = new Set(dbGames.map(g => g.idExterne))
+		const igdbFiltered = sorted
+			.filter(g => !dbIdExternes.has(g.id?.toString()))
+			.slice(0, 20)
+
+		// 5. Renvoie DB en premier (format DB), puis IGDB (format brut)
+		res.json([...dbGames, ...igdbFiltered])
 	} catch (error) {
-		console.error(error);
-		res.status(500).json({ error: 'Erreur IGDB' });
+		console.error(error)
+		res.status(500).json({ error: 'Erreur recherche' })
 	}
-});
+})
 
 router.get('/all', async (req, res) => {
 	try {
@@ -160,12 +196,35 @@ router.get('/recent-acclaimed', async (req, res) => {
 
 router.get('/:id', async (req, res) => {
 	try {
-		const game = await getGameById(req.params.id);
-		res.json(game[0] || null);
+		const idExterne = req.params.id.toString()
+
+		// Cherche d'abord en DB avec les reviews
+		const dbGame = await prisma.game.findUnique({
+			where: { idExterne },
+			include: {
+				reviews: {
+					include: { user: { select: { id: true, username: true, avatarUrl: true } } },
+					orderBy: { createdAt: 'desc' }
+				}
+			}
+		})
+
+		// Récupère les données IGDB pour compléter (screenshots, genres, etc.)
+		const igdbData = await getGameById(idExterne)
+		const igdb = igdbData?.[0] || null
+
+		if (!igdb && !dbGame) return res.status(404).json(null)
+
+		// Fusionne : données IGDB (riches) + reviews de la DB
+		res.json({
+			...igdb,
+			...dbGame,
+			reviews: dbGame?.reviews || []
+		})
 	} catch (error) {
-		console.error(error);
-		res.status(500).json({ error: 'Erreur IGDB' });
+		console.error(error)
+		res.status(500).json({ error: 'Erreur IGDB' })
 	}
-});
+})
 
 export default router;

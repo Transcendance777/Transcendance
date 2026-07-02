@@ -119,4 +119,14 @@
 	.post-navbar-center {
 		flex: 2;
 	}
+
+	.home-icon-link {
+		width: 28px;
+		height: 28px;
+		font-size: 14px;
+	}
+
+	.post-navbar-title {
+		font-size: 16px;
+	}
 }

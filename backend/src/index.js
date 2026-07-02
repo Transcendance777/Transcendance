@@ -1,96 +1,107 @@
-//libraries and includes
-import 'dotenv/config'; //parse env
-import express from 'express'; //import-> import tool/library
-import cors from 'cors'; // cors-> tool to comunicate safely with another service
-import { execSync } from 'child_process'; //for execSync function
+// bibliothèques et imports
+import 'dotenv/config'; // parse les variables d'environnement
+import express from 'express'; // framework web
+import cors from 'cors'; // outil pour communiquer en sécurité avec un autre service
+import session from 'express-session'; // gestion des sessions pour passport
+import passport from 'passport'; // authentification OAuth
+import { execSync } from 'child_process'; // pour la fonction execSync
 import gamesRouter from './routes/games.js';
-import prisma from './init/initPrisma.js'; //prisma singleton instance
+import prisma from './init/initPrisma.js'; // instance singleton de prisma
+import authRouter from './routes/auth.js';
+import userRouter from './routes/user.js';
+import './config/passport.js'; // configuration passport Google
 
 // port
 const PORT = process.env.PORT_BACK || 4000;
 
 /**
- * checks if DB schema has been changed, if so, update the DB
+ * Vérifie si le schéma DB a changé, si oui, met à jour la DB
  */
 function syncDatabaseSchema() {
-  console.log('🔄 Checking for database schema changes...');
-  try {
-    // execSync runs the command and blocks execution until it finishes successfully
-    execSync('npx prisma db push', { stdio: 'inherit' });
-    console.log('✅ Database schema is up to date!');
-  } catch (error) {
-    console.error('❌ Failed to sync database schema:', error);
-    console.log('🔄 Wiping and resetting database for a clean start...');
-
-    try {
-      // If a normal push fails, force a clean reset of the local DB
-      execSync('npx prisma db push --force-reset', { stdio: 'inherit' });
-      console.log('✨ Database reset and schema applied cleanly!');
-    } catch (resetError) {
-      console.error('❌ Critical failure updating database schema:', resetError);
-      process.exit(1); 
-    }
-  }
+	console.log('🔄 Vérification des changements de schéma...');
+	try {
+		// execSync exécute la commande et bloque jusqu'à ce qu'elle réussisse
+		execSync('npx prisma db push', { stdio: 'inherit' });
+		console.log('✅ Schéma de la base de données à jour !');
+	} catch (error) {
+		console.error('❌ Échec de la synchronisation du schéma:', error);
+		console.log('🔄 Réinitialisation de la base de données...');
+		try {
+			// Si le push normal échoue, force une réinitialisation propre de la DB
+			execSync('npx prisma db push --force-reset', { stdio: 'inherit' });
+			console.log('✨ Base de données réinitialisée et schéma appliqué !');
+		} catch (resetError) {
+			console.error('❌ Échec critique de la mise à jour du schéma:', resetError);
+			process.exit(1);
+		}
+	}
 }
 
 /**
- * if the database is empty, it feels it with a few games and basic users
- * @returns nothing
+ * Si la base de données est vide, la remplit avec quelques jeux
+ * @returns rien
  */
 async function seedDatabase() {
-  console.log('🌱 Checking database for seeding...');
-
-  try {
-    const gameCount = await prisma.game.count();
-
-    if (gameCount > 0) {
-      console.log(`Database already contains ${gameCount} games. Skipping seed script.`);
-      return;
-    }
-
-    // This triggers Prisma's seeding mechanism
-    execSync('npx prisma db seed', { stdio: 'inherit' });
-    console.log('✅ Database seeding completed!');
-  } catch (error) {
-    console.error('❌ Failed to seed database:', error);
-    // Optional: decide if you want to crash the app if seeding fails
-  }
+	console.log('🌱 Vérification du seeding de la base de données...');
+	try {
+		const gameCount = await prisma.game.count();
+		if (gameCount > 0) {
+			console.log(`La base de données contient déjà ${gameCount} jeux. Seed ignoré.`);
+			return;
+		}
+		// Déclenche le mécanisme de seed de Prisma
+		execSync('npx prisma db seed', { stdio: 'inherit' });
+		console.log('✅ Seeding de la base de données terminé !');
+	} catch (error) {
+		console.error('❌ Échec du seeding:', error);
+	}
 }
 
 syncDatabaseSchema();
 await seedDatabase();
 
-// connect prisma client
+// connexion du client Prisma
 prisma.$connect();
 
-//starting the app
-const app = express(); //actual start
-app.use(cors()); //apply this tool to the server
-app.use(express.json());//translates JSON files to JS directly
-app.use('/api/games', gamesRouter);
+// démarrage de l'application
+const app = express();
+app.use(cors()); // applique CORS au serveur
+app.use(express.json({ limit: '5mb' })); // traduit les JSON en JS directement
 
-//create a POST route -> if data is received on /api/login, heres how its being processed :
+// Session nécessaire pour passport OAuth
+app.use(session({
+	secret: process.env.SESSION_SECRET || 'gamerev_secret',
+	resave: false,
+	saveUninitialized: false,
+	cookie: { secure: false }
+}));
+
+// Initialisation de passport
+app.use(passport.initialize());
+app.use(passport.session());
+
+app.use('/api/games', gamesRouter);
+app.use('/api/auth', authRouter);
+app.use('/api/user', userRouter);
+
+// Route POST de test -> si des données sont reçues sur /api/login, voici le traitement :
 app.post('/api/login', async (req, res) => {
-    const { email, password } = req.body; 
-  
-    try {
-	// insert user in DB with prisma (for login test, remove later)
+	const { email, password } = req.body;
+	try {
+		// Insertion de l'utilisateur en DB avec prisma (pour test de login, à supprimer plus tard)
 		const newUser = await prisma.login_test.create({
-			data: {
-				email: email,
-				password: password,
-			},
-			select: { //to return those values so we can print them
+			data: { email, password },
+			select: { // retourne ces valeurs pour pouvoir les afficher
 				id: true,
 				email: true,
 			}
 		});
-		console.log("DATABASE INSERTION SUCCESS:", newUser);
+		console.log("INSERTION DB RÉUSSIE:", newUser);
 		res.status(201).json({ message: "Utilisateur créé !", email: newUser });
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: "Erreur lors de l'insertion en base." });
-    }
-  });
+	} catch (error) {
+		console.error(error);
+		res.status(500).json({ error: "Erreur lors de l'insertion en base." });
+	}
+});
 
 app.listen(PORT, () => console.log(`Backend actif sur le port ${PORT}`));

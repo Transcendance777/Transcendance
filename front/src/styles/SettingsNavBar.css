@@ -1,14 +1,14 @@
 .settings-navbar {
 	position: fixed;
-		top: 0;
-		left: 0;
-		right: 0;
-		z-index: 500;
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		background-color: black;
-		padding: 25px 20px;
+	top: 0;
+	left: 0;
+	right: 0;
+	z-index: 500;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	background-color: black;
+	padding: 25px 20px;
 }
 
 .settings-navbar-left {
@@ -73,3 +73,37 @@
 	z-index: 100;
 }
 
+
+@media (max-width: 600px) {
+	.search-icon {
+		font-size: 18px;
+	}
+
+	.search-input {
+		width: clamp(80px, 25vw, 150px);
+		font-size: 11px;
+		padding: 3px 10px;
+	}
+
+	.settings-navbar-right {
+		gap: clamp(5px, 2vw, 20px);
+	}
+
+	.settings-hamburger {
+		font-size: 20px;
+	}
+
+	.settings-navbar-center {
+		flex: 2;
+	}
+
+	.home-icon-link {
+		width: 28px;
+		height: 28px;
+		font-size: 14px;
+	}
+
+	.settings-navbar-title {
+		font-size: 16px;
+	}
+}

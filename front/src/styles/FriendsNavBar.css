@@ -1,14 +1,14 @@
 .friends-navbar {
 	position: fixed;
-		top: 0;
-		left: 0;
-		right: 0;
-		z-index: 500;
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		background-color: black;
-		padding: 25px 20px;
+	top: 0;
+	left: 0;
+	right: 0;
+	z-index: 500;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	background-color: black;
+	padding: 25px 20px;
 }
 
 .friends-navbar-left {
@@ -54,7 +54,6 @@
 	font-size: 30px;
 	cursor: pointer;
 	transition: transform 0.2s ease;
-	display: block;
 }
 
 .friends-hamburger:hover {
@@ -71,4 +70,234 @@
 	padding: 20px;
 	gap: 15px;
 	z-index: 100;
+}
+
+/* ─── ADD FRIEND BTN ─── */
+
+.friends-add-btn {
+	background: none;
+	border: none;
+	color: #e7e7e7;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 0;
+	transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.friends-add-btn:hover {
+	transform: scale(1.1);
+	color: #4caf50;
+}
+
+/* ─── MODALE ADD FRIEND ─── */
+
+.add-friend-overlay {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: rgba(0, 0, 0, 0.85);
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	z-index: 1000;
+}
+
+.add-friend-modal {
+	background-color: #111;
+	border-radius: 15px;
+	padding: 30px;
+	width: clamp(300px, 40vw, 500px);
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+}
+
+.add-friend-modal-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.add-friend-modal-title {
+	font-family: "policeConthrax", sans-serif;
+	color: #e7e7e7;
+	font-size: clamp(16px, 2vw, 22px);
+}
+
+.add-friend-close-btn {
+	background: none;
+	border: none;
+	color: #e7e7e7;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	padding: 0;
+	transition: transform 0.2s ease;
+}
+
+.add-friend-close-btn:hover {
+	transform: scale(1.15);
+}
+
+.add-friend-input {
+	background: rgba(255, 255, 255, 0.05);
+	border: 2px solid rgba(231, 231, 231, 0.3);
+	border-radius: 10px;
+	padding: 10px 15px;
+	color: #e7e7e7;
+	font-family: "policeConthrax", sans-serif;
+	font-size: 13px;
+	outline: none;
+	transition: border-color 0.2s ease;
+}
+
+.add-friend-input:focus {
+	border-color: #e7e7e7;
+}
+
+.add-friend-input::placeholder {
+	color: rgba(231, 231, 231, 0.4);
+}
+
+.add-friend-results {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	max-height: 300px;
+	overflow-y: auto;
+}
+
+.add-friend-msg {
+	font-family: "policeConthrax", sans-serif;
+	color: rgba(231, 231, 231, 0.5);
+	font-size: 13px;
+	text-align: center;
+}
+
+.add-friend-result-item {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 8px;
+	border-radius: 10px;
+	background: rgba(255, 255, 255, 0.03);
+	transition: background 0.2s ease;
+}
+
+.add-friend-result-item:hover {
+	background: rgba(255, 255, 255, 0.08);
+}
+
+.add-friend-result-avatar {
+	width: 40px;
+	height: 40px;
+	border-radius: 50%;
+	object-fit: cover;
+	border: 2px solid rgba(231, 231, 231, 0.3);
+	flex-shrink: 0;
+}
+
+.add-friend-result-username {
+	font-family: "policeConthrax", sans-serif;
+	color: #e7e7e7;
+	font-size: 13px;
+	flex: 1;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.add-friend-result-btn {
+	background: none;
+	border: 2px solid rgba(231, 231, 231, 0.3);
+	color: #e7e7e7;
+	border-radius: 50%;
+	width: 32px;
+	height: 32px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
+	transition: border-color 0.2s ease, transform 0.2s ease;
+	flex-shrink: 0;
+}
+
+.add-friend-result-btn:hover:not(:disabled) {
+	border-color: #4caf50;
+	color: #4caf50;
+	transform: scale(1.1);
+}
+
+.add-friend-result-btn.sent {
+	border-color: #4caf50;
+	color: #4caf50;
+	cursor: default;
+}
+
+/* ─── RESPONSIVE ─── */
+
+@media (max-width: 900px) {
+	.add-friend-modal {
+		width: 90vw;
+		padding: 20px;
+	}
+
+	.add-friend-results {
+		max-height: 250px;
+	}
+}
+
+@media (max-width: 600px) {
+	.friends-navbar-right {
+		gap: 6px;
+	}
+
+	.friends-hamburger {
+		font-size: 20px;
+	}
+
+	.friends-navbar-center {
+		flex: 2;
+	}
+
+	.search-input {
+		width: 100px;
+	}
+
+	.home-icon-link {
+		width: 28px;
+		height: 28px;
+		font-size: 14px;
+	}
+
+	.friends-navbar-title {
+		font-size: 16px;
+	}
+
+	.add-friend-modal {
+		width: 95vw;
+		padding: 15px;
+		gap: 15px;
+	}
+
+	.add-friend-modal-title {
+		font-size: 14px;
+	}
+
+	.add-friend-input {
+		font-size: 12px;
+		padding: 8px 12px;
+	}
+
+	.add-friend-result-username {
+		font-size: 11px;
+	}
+
+	.add-friend-results {
+		max-height: 200px;
+	}
 }
