@@ -42,20 +42,35 @@ router.get('/me', authMiddleware, async (req, res) => {
 
 router.post('/like/:gameId', authMiddleware, async (req, res) => {
 	try {
-		const game = await prisma.game.findUnique({ where: { idExterne: req.params.gameId.toString() } });
-		if (!game) return res.status(404).json({ error: 'Game not found.' });
-		const existing = await prisma.likedGame.findUnique({ where: { userId_gameId: { userId: req.user.id, gameId: game.id } } });
-		if (existing) {
-			await prisma.likedGame.delete({ where: { userId_gameId: { userId: req.user.id, gameId: game.id } } });
-			return res.json({ liked: false });
+		let game = await prisma.game.findUnique({ where: { idExterne: req.params.gameId.toString() } })
+		if (!game) {
+			const { getGameById } = await import('../services/igdb.js')
+			const igdbData = await getGameById(req.params.gameId.toString())
+			if (!igdbData || igdbData.length === 0) return res.status(404).json({ error: 'Game not found.' })
+			const g = igdbData[0]
+			game = await prisma.game.create({
+				data: {
+					idExterne: req.params.gameId.toString(),
+					title: g.name,
+					summary: g.summary || null,
+					releaseDate: g.first_release_date ? new Date(g.first_release_date * 1000) : null,
+					coverImageUrl: g.cover?.url ? `https:${g.cover.url.replace('t_thumb', 't_cover_big')}` : null,
+					developer: g.involved_companies?.[0]?.company?.name || null,
+				}
+			})
 		}
-		await prisma.likedGame.create({ data: { userId: req.user.id, gameId: game.id } });
-		res.json({ liked: true });
+		const existing = await prisma.likedGame.findUnique({ where: { userId_gameId: { userId: req.user.id, gameId: game.id } } })
+		if (existing) {
+			await prisma.likedGame.delete({ where: { userId_gameId: { userId: req.user.id, gameId: game.id } } })
+			return res.json({ liked: false })
+		}
+		await prisma.likedGame.create({ data: { userId: req.user.id, gameId: game.id } })
+		res.json({ liked: true })
 	} catch (error) {
-		console.error('Erreur like:', error);
-		res.status(500).json({ error: 'Server error.' });
+		console.error('Erreur like:', error)
+		res.status(500).json({ error: 'Server error.' })
 	}
-});
+})
 
 router.get('/liked', authMiddleware, async (req, res) => {
 	try {
@@ -75,20 +90,35 @@ router.get('/liked', authMiddleware, async (req, res) => {
 
 router.post('/playing/:gameId', authMiddleware, async (req, res) => {
 	try {
-		const game = await prisma.game.findUnique({ where: { idExterne: req.params.gameId.toString() } });
-		if (!game) return res.status(404).json({ error: 'Game not found.' });
-		const existing = await prisma.playingList.findUnique({ where: { userId_gameId: { userId: req.user.id, gameId: game.id } } });
-		if (existing) {
-			await prisma.playingList.delete({ where: { userId_gameId: { userId: req.user.id, gameId: game.id } } });
-			return res.json({ inList: false });
+		let game = await prisma.game.findUnique({ where: { idExterne: req.params.gameId.toString() } })
+		if (!game) {
+			const { getGameById } = await import('../services/igdb.js')
+			const igdbData = await getGameById(req.params.gameId.toString())
+			if (!igdbData || igdbData.length === 0) return res.status(404).json({ error: 'Game not found.' })
+			const g = igdbData[0]
+			game = await prisma.game.create({
+				data: {
+					idExterne: req.params.gameId.toString(),
+					title: g.name,
+					summary: g.summary || null,
+					releaseDate: g.first_release_date ? new Date(g.first_release_date * 1000) : null,
+					coverImageUrl: g.cover?.url ? `https:${g.cover.url.replace('t_thumb', 't_cover_big')}` : null,
+					developer: g.involved_companies?.[0]?.company?.name || null,
+				}
+			})
 		}
-		await prisma.playingList.create({ data: { userId: req.user.id, gameId: game.id } });
-		res.json({ inList: true });
+		const existing = await prisma.playingList.findUnique({ where: { userId_gameId: { userId: req.user.id, gameId: game.id } } })
+		if (existing) {
+			await prisma.playingList.delete({ where: { userId_gameId: { userId: req.user.id, gameId: game.id } } })
+			return res.json({ inList: false })
+		}
+		await prisma.playingList.create({ data: { userId: req.user.id, gameId: game.id } })
+		res.json({ inList: true })
 	} catch (error) {
-		console.error('Erreur playing:', error);
-		res.status(500).json({ error: 'Server error.' });
+		console.error('Erreur playing:', error)
+		res.status(500).json({ error: 'Server error.' })
 	}
-});
+})
 
 router.get('/playing', authMiddleware, async (req, res) => {
 	try {
