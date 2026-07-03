@@ -10,6 +10,7 @@ import prisma from './init/initPrisma.js'; // instance singleton de prisma
 import authRouter from './routes/auth.js';
 import userRouter from './routes/user.js';
 import './config/passport.js'; // configuration passport Google
+import register, { metricsMiddleware } from './metrics.js';
 
 // port
 const PORT = process.env.PORT_BACK || 4000;
@@ -67,6 +68,13 @@ prisma.$connect();
 const app = express();
 app.use(cors()); // applique CORS au serveur
 app.use(express.json({ limit: '5mb' })); // traduit les JSON en JS directement
+app.use(metricsMiddleware); // observe chaque requête pour Prometheus
+
+// Métriques pour Prometheus (accès interne uniquement, non exposé via nginx)
+app.get('/metrics', async (req, res) => {
+	res.set('Content-Type', register.contentType);
+	res.end(await register.metrics());
+});
 
 // Session nécessaire pour passport OAuth
 app.use(session({
