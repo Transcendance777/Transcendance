@@ -32,6 +32,8 @@ model Users {
 	playingList		PlayingList[]
 	favoriteGames FavoriteGame[]
 	reviewComments ReviewComment[]
+	chatParticipants ConversationParticipant[]
+	sentMessages ChatMessage[] @relation("ChatMessageSender")
 
 	// Self-referencing Many-to-Many for Friendships
 	friendsInitiated	Friendship[] @relation("FriendshipsInitiated")
@@ -186,4 +188,46 @@ model FavoriteGame {
   @@id([userId, gameId])
   @@unique([userId, position])
   @@map("favorite_games")
+}
+
+model Conversation {
+  id        Int      @id @default(autoincrement())
+  type      String   @default("direct") @db.VarChar(20)
+  directKey String?  @unique @map("direct_key")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  participants ConversationParticipant[]
+  messages     ChatMessage[]
+
+  @@map("conversations")
+}
+
+model ConversationParticipant {
+  conversationId Int       @map("conversation_id")
+  userId         Int       @map("user_id")
+  joinedAt       DateTime  @default(now()) @map("joined_at")
+  lastReadAt     DateTime? @map("last_read_at")
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user         Users        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([conversationId, userId])
+  @@index([userId])
+  @@map("conversation_participants")
+}
+
+model ChatMessage {
+  id             Int      @id @default(autoincrement())
+  conversationId Int      @map("conversation_id")
+  senderId       Int      @map("sender_id")
+  body           String   @db.Text
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       Users        @relation("ChatMessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt])
+  @@index([senderId])
+  @@map("chat_messages")
 }

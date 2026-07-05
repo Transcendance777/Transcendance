@@ -9,6 +9,7 @@ import gamesRouter from './routes/games.js';
 import prisma from './init/initPrisma.js'; // instance singleton de prisma
 import authRouter from './routes/auth.js';
 import userRouter from './routes/user.js';
+import chatRouter from './routes/chat.js';
 import './config/passport.js'; // configuration passport Google
 
 // port
@@ -83,6 +84,7 @@ app.use(passport.session());
 app.use('/api/games', gamesRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/user', userRouter);
+app.use('/api/chat', chatRouter);
 
 // Route POST de test -> si des données sont reçues sur /api/login, voici le traitement :
 app.post('/api/login', async (req, res) => {
