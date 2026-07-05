@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import prisma from '../init/initPrisma.js';
 
 const apiKeyAuth = async (req, res, next) => {
@@ -12,9 +13,12 @@ const apiKeyAuth = async (req, res, next) => {
     });
   }
 
+  // additionnal step: hash the key first
+  const hashed = crypto.createHash('sha256').update(apiKey).digest('hex');
+
   // 3. Chercher la clé en DB
   const keyRecord = await prisma.apiKey.findUnique({
-    where: { key: apiKey },
+    where: { key: hashed },
     include: { user: true } // récupère aussi les infos du user lié
   });
 
