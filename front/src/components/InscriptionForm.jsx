@@ -18,12 +18,13 @@ const InscriptionForm = () => {
 	const [showForgotPassword, setShowForgotPassword] = useState(false)
 	const [forgotEmail, setForgotEmail] = useState('')
 	const [forgotStep, setForgotStep] = useState(1)
+	const [forgotMsg, setForgotMsg] = useState('')
 	const [verifCode, setVerifCode] = useState('')
 	const [newPassword1, setNewPassword1] = useState('')
 	const [newPassword2, setNewPassword2] = useState('')
 	const [showNewPass1, setShowNewPass1] = useState(false)
 	const [showNewPass2, setShowNewPass2] = useState(false)
-
+	const [resetting, setResetting] = useState(false)
 
 	const ERROR_MAP = {
 		'All fields are required.': 'login.err_all_fields',
@@ -32,14 +33,15 @@ const InscriptionForm = () => {
 		'This username is already taken.': 'login.err_username_taken',
 		'Incorrect credentials.': 'login.err_credentials',
 		'This account uses Google Sign-In.': 'login.err_google_account',
-		'Email/username and password required.': 'login.err_identifier_required'
+		'Email/username and password required.': 'login.err_identifier_required',
+		'No account found with this email.': 'login.err_no_account',
 	}
 
 	const translateError = (msg) => {
 		const key = ERROR_MAP[msg]
 		return key ? t(key) : msg
 	}
-	
+
 	useEffect(() => {
 		setEmail('')
 		setPassword('')
@@ -89,6 +91,75 @@ const InscriptionForm = () => {
 		} catch (error) {
 			const msg = error.response?.data?.error || t('login.error')
 			setErrorMsg(translateError(msg))
+		}
+	}
+
+	const handleForgotPassword = async () => {
+		setForgotMsg('')
+		if (!forgotEmail) return setForgotMsg(t('login.email_required'))
+		try {
+			const res = await fetch('/api/auth/forgot-password', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ email: forgotEmail })
+			})
+			const data = await res.json()
+			if (!res.ok) return setForgotMsg(translateError(data.error))
+			setForgotStep(2)
+		} catch {
+			setForgotMsg(t('login.server_error'))
+		}
+	}
+
+	const handleVerifyCode = async () => {
+		setForgotMsg('')
+		if (!verifCode) return setForgotMsg(t('login.code_required'))
+		try {
+			const res = await fetch('/api/auth/verify-code', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ email: forgotEmail, code: verifCode })
+			})
+			const data = await res.json()
+			if (!res.ok) return setForgotMsg(data.error)
+			setForgotStep(3)
+		} catch {
+			setForgotMsg(t('login.server_error'))
+		}
+	}
+
+	const handleResetPassword = async () => {
+		setForgotMsg('')
+		if (resetting) return
+		if (!newPassword1 || !newPassword2) return setForgotMsg(t('login.fill_fields'))
+		if (newPassword1 !== newPassword2) return setForgotMsg(t('login.passwords_match'))
+		if (newPassword1.length < 6) return setForgotMsg(t('login.password_length'))
+		setResetting(true)
+		try {
+			const res = await fetch('/api/auth/reset-password', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ email: forgotEmail, code: verifCode, newPassword: newPassword1 })
+			})
+			const data = await res.json()
+			if (!res.ok) {
+				setResetting(false)
+				return setForgotMsg(data.error)
+			}
+			setForgotMsg('✓ ' + t('login.password_reset_success'))
+			setTimeout(() => {
+				setShowForgotPassword(false)
+				setForgotStep(1)
+				setForgotEmail('')
+				setVerifCode('')
+				setNewPassword1('')
+				setNewPassword2('')
+				setForgotMsg('')
+				setResetting(false)
+			}, 2000)
+		} catch {
+			setResetting(false)
+			setForgotMsg(t('login.server_error'))
 		}
 	}
 
@@ -208,9 +279,10 @@ const InscriptionForm = () => {
 									value={forgotEmail}
 									onChange={(e) => setForgotEmail(e.target.value)}
 								/>
+								{forgotMsg && <p style={{ color: '#f44336', fontFamily: 'policeConthrax', fontSize: '12px', textAlign: 'center' }}>{forgotMsg}</p>}
 								<div className="forgot-modal-btns">
 									<button className="forgot-cancel-btn" onClick={() => setShowForgotPassword(false)}>{t('login.cancel')}</button>
-									<button className="forgot-submit-btn" onClick={() => setForgotStep(2)}>{t('login.send')}</button>
+									<button className="forgot-submit-btn" onClick={handleForgotPassword}>{t('login.send')}</button>
 								</div>
 							</>
 						)}
@@ -226,9 +298,10 @@ const InscriptionForm = () => {
 									value={verifCode}
 									onChange={(e) => setVerifCode(e.target.value)}
 								/>
+								{forgotMsg && <p style={{ color: '#f44336', fontFamily: 'policeConthrax', fontSize: '12px', textAlign: 'center' }}>{forgotMsg}</p>}
 								<div className="forgot-modal-btns">
 									<button className="forgot-cancel-btn" onClick={() => setForgotStep(1)}>{t('login.back')}</button>
-									<button className="forgot-submit-btn" onClick={() => setForgotStep(3)}>{t('login.verify')}</button>
+									<button className="forgot-submit-btn" onClick={handleVerifyCode}>{t('login.verify')}</button>
 								</div>
 							</>
 						)}
@@ -260,9 +333,10 @@ const InscriptionForm = () => {
 										{showNewPass2 ? <FiEyeOff /> : <FiEye />}
 									</button>
 								</div>
+								{forgotMsg && <p style={{ color: forgotMsg.includes('✓') ? '#4caf50' : '#f44336', fontFamily: 'policeConthrax', fontSize: '12px', textAlign: 'center' }}>{forgotMsg}</p>}
 								<div className="forgot-modal-btns">
 									<button className="forgot-cancel-btn" onClick={() => setForgotStep(2)}>{t('login.back')}</button>
-									<button className="forgot-submit-btn" onClick={() => setShowForgotPassword(false)}>{t('login.confirm')}</button>
+									<button className="forgot-submit-btn" onClick={handleResetPassword} disabled={resetting}>{t('login.confirm')}</button>
 								</div>
 							</>
 						)}

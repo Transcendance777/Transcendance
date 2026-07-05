@@ -2,6 +2,8 @@
 	padding: 20px 40px;
 	position: relative;
 	z-index: 1;
+	min-width: 0;
+	overflow: hidden;
 }
 
 .profile-section-title {
@@ -13,15 +15,17 @@
 
 .favorites-grid {
 	display: flex;
-	gap: 20px;
+	flex-wrap: nowrap;
+	gap: 16px;
 }
 
 /* Carte avec un jeu */
 .favorite-card {
 	cursor: pointer;
 	transition: transform 0.2s ease;
-	width: clamp(100px, 10vw, 160px);
 	position: relative;
+	width: 120px;
+	flex-shrink: 0;
 }
 
 .favorite-card:hover {
@@ -29,10 +33,11 @@
 }
 
 .favorite-img {
-	width: 100%;
+	width: 120px;
+	height: 160px;
 	border-radius: 10px;
 	object-fit: cover;
-	height: clamp(140px, 14vw, 220px);
+	display: block;
 }
 
 .favorite-title {
@@ -61,7 +66,6 @@
 	z-index: 2;
 	transition: background 0.2s ease, opacity 0.2s ease;
 	opacity: 0;
-	/* caché par défaut */
 }
 
 .favorite-remove-btn:hover {
@@ -70,17 +74,17 @@
 
 .favorite-card:hover .favorite-remove-btn {
 	opacity: 1;
-	/* visible au hover de la carte */
 }
 
 /* Slot vide cliquable (editable) */
 .favorite-empty {
 	cursor: pointer;
+	flex-shrink: 0;
 }
 
 .favorite-add-placeholder {
-	width: 100%;
-	height: clamp(140px, 14vw, 220px);
+	width: 120px;
+	height: 160px;
 	border: 2px dashed rgba(231, 231, 231, 0.3);
 	border-radius: 10px;
 	display: flex;
@@ -97,8 +101,8 @@
 
 /* Slot vide lecture seule (OtherProfilePage) */
 .favorite-empty-slot {
-	width: 100%;
-	height: clamp(140px, 14vw, 220px);
+	width: 120px;
+	height: 160px;
 	border: 2px dashed rgba(231, 231, 231, 0.1);
 	border-radius: 10px;
 }
@@ -230,27 +234,69 @@
 	}
 }
 
-@media (max-width: 480px) {
-	.favorites-grid {
-		display: grid;
-		grid-template-columns: repeat(2, 1fr);
-		gap: 12px;
-		justify-content: center;
+/* Entre 481px et 900px : 4 colonnes fixes centrées */
+@media (max-width: 900px) {
+	.profile-favorites {
+		padding: 20px;
 	}
 
-	.favorite-card {
+	.favorites-grid {
+		display: grid;
+		grid-template-columns: repeat(4, 90px);
+		gap: 12px;
+		justify-content: center;
 		width: 100%;
 	}
 
+	.favorite-card {
+		width: 90px;
+	}
+
 	.favorite-img {
-		height: 130px;
-		object-fit: contain;
-		background: rgba(0, 0, 0, 0.3);
+		width: 90px;
+		height: 120px;
+		object-fit: cover;
 	}
 
 	.favorite-add-placeholder,
 	.favorite-empty-slot {
-		height: 130px;
+		width: 90px;
+		height: 120px;
+	}
+
+	.favorite-title {
+		font-size: 10px;
+	}
+}
+
+/* Mobile : 2x2 centrée */
+@media (max-width: 480px) {
+	.profile-favorites {
+		padding: 15px;
+	}
+
+	.favorites-grid {
+		display: grid;
+		grid-template-columns: repeat(2, 120px);
+		gap: 12px;
+		justify-content: center;
+		width: 100%;
+	}
+
+	.favorite-card {
+		width: 120px;
+	}
+
+	.favorite-img {
+		width: 120px;
+		height: 160px;
+		object-fit: cover;
+	}
+
+	.favorite-add-placeholder,
+	.favorite-empty-slot {
+		width: 120px;
+		height: 160px;
 	}
 
 	.favorite-title {

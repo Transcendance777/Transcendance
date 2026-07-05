@@ -42,7 +42,15 @@
 		"err_username_taken": "This username is already taken.",
 		"err_credentials": "Incorrect credentials.",
 		"err_google_account": "This account uses Google Sign-In.",
-		"err_identifier_required": "Email/username and password required."
+		"err_identifier_required": "Email/username and password required.",
+		"email_required": "Please enter your email.",
+		"code_required": "Please enter the code.",
+		"fill_fields": "Please fill all fields.",
+		"passwords_match": "Passwords do not match.",
+		"password_length": "Password must be at least 6 characters.",
+		"password_reset_success": "Password updated successfully!",
+		"server_error": "Server error.",
+		"err_no_account": "No account found with this email."
 	},
 	"home": {
 		"new_releases": "New releases →",

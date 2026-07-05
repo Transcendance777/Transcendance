@@ -187,3 +187,14 @@ model FavoriteGame {
   @@unique([userId, position])
   @@map("favorite_games")
 }
+
+model PasswordReset {
+  id        Int      @id @default(autoincrement())
+  email     String
+  code      String   @db.VarChar(6)
+  expiresAt DateTime @map("expires_at")
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("password_resets")
+}

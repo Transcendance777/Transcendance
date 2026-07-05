@@ -42,7 +42,15 @@
 		"err_username_taken": "Este nombre de usuario ya está en uso.",
 		"err_credentials": "Credenciales incorrectas.",
 		"err_google_account": "Esta cuenta usa inicio de sesión con Google.",
-		"err_identifier_required": "Email/nombre de usuario y contraseña requeridos."
+		"err_identifier_required": "Email/nombre de usuario y contraseña requeridos.",
+		"email_required": "Por favor ingresa tu email.",
+		"code_required": "Por favor ingresa el código.",
+		"fill_fields": "Por favor completa todos los campos.",
+		"passwords_match": "Las contraseñas no coinciden.",
+		"password_length": "La contraseña debe tener al menos 6 caracteres.",
+		"password_reset_success": "¡Contraseña actualizada con éxito!",
+		"server_error": "Error del servidor.",
+		"err_no_account": "No se encontró ninguna cuenta con este email."
 	},
 	"home": {
 		"new_releases": "Nuevos lanzamientos →",
