@@ -53,13 +53,23 @@ const InscriptionForm = () => {
 		const params = new URLSearchParams(window.location.search)
 		const token = params.get('token')
 		const user = params.get('user')
+		const error = params.get('error')
+
 		if (token && user) {
 			localStorage.setItem('token', token)
 			localStorage.setItem('user', user)
 			window.history.replaceState({}, '', '/')
 			navigate('/home')
+		} else if (error === 'email_conflict') {
+			window.history.replaceState({}, '', '/')
+			setErrorMsg(t('login.err_email_conflict'))
+			setTimeout(() => setErrorMsg(''), 2000)
+		} else if (error === 'google') {
+			window.history.replaceState({}, '', '/')
+			setErrorMsg(t('login.err_google_failed'))
+			setTimeout(() => setErrorMsg(''), 2000)
 		}
-	}, [navigate])
+	}, [navigate, t])
 
 	const handleSubmit = async (e) => {
 		e.preventDefault()

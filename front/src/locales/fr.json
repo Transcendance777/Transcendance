@@ -50,7 +50,8 @@
 		"password_length": "Le mot de passe doit contenir au moins 6 caractères.",
 		"password_reset_success": "Mot de passe mis à jour avec succès !",
 		"server_error": "Erreur serveur.",
-		"err_no_account": "Aucun compte trouvé avec cet email."
+		"err_no_account": "Aucun compte trouvé avec cet email.",
+		"err_email_conflict": "Cet email est déjà associé à un compte existant."
 	},
 	"home": {
 		"new_releases": "Nouvelles sorties →",

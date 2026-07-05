@@ -50,7 +50,8 @@
 		"password_length": "La contraseña debe tener al menos 6 caracteres.",
 		"password_reset_success": "¡Contraseña actualizada con éxito!",
 		"server_error": "Error del servidor.",
-		"err_no_account": "No se encontró ninguna cuenta con este email."
+		"err_no_account": "No se encontró ninguna cuenta con este email.",
+		"err_email_conflict": "Este email ya está asociado a una cuenta existente."
 	},
 	"home": {
 		"new_releases": "Nuevos lanzamientos →",

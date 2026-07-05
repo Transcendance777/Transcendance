@@ -30,6 +30,9 @@ passport.use(new GoogleStrategy({
 					avatarUrl: 'default_avatar.png'
 				}
 			})
+		} else if (user.passwordHash !== 'google_oauth') {
+			// L'email existe déjà avec un compte classique → on bloque
+			return done(null, false, { message: 'email_conflict' })
 		} else if (user.avatarUrl && user.avatarUrl.startsWith('data:')) {
 			// Si l'avatarUrl en DB est un base64 → on le remet à default
 			user = await prisma.users.update({

@@ -209,7 +209,7 @@ router.get('/google/callback',
 		console.log('Google callback reçu')
 		next()
 	},
-	passport.authenticate('google', { failureRedirect: '/?error=google' }),
+	passport.authenticate('google', { failureRedirect: '/?error=email_conflict' }),
 	(req, res) => {
 		console.log('User authentifié:', req.user)
 		// Génère un JWT comme pour le login normal

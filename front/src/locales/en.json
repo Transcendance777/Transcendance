@@ -50,7 +50,8 @@
 		"password_length": "Password must be at least 6 characters.",
 		"password_reset_success": "Password updated successfully!",
 		"server_error": "Server error.",
-		"err_no_account": "No account found with this email."
+		"err_no_account": "No account found with this email.",
+		"err_email_conflict": "This email is already linked to an existing account."
 	},
 	"home": {
 		"new_releases": "New releases →",
