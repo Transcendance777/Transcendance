@@ -20,7 +20,12 @@ export const httpRequestDuration = new client.Histogram({
 export function metricsMiddleware(req, res, next) {
 	const start = process.hrtime.bigint();
 	res.on('finish', () => {
-		const route = req.route ? `${req.baseUrl}${req.route.path}` : req.path;
+		let route;
+		if (req.route) {
+			route = `${req.baseUrl}${req.route.path}`;
+		} else {
+			route = req.path;
+		}
 		const labels = { method: req.method, route, status: res.statusCode };
 		httpRequestsTotal.inc(labels);
 		const durationSeconds = Number(process.hrtime.bigint() - start) / 1e9;
