@@ -94,3 +94,7 @@
 		flex-direction: column;
 	}
 }
+
+.friend-card:hover .unfollow-btn {
+	opacity: 1 !important;
+}

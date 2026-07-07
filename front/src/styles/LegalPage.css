@@ -1,0 +1,51 @@
+.legal-page {
+	min-height: 100vh;
+	background-color: black;
+	width: 100%;
+	padding-top: 90px;
+}
+
+.legal-content {
+	width: 100%;
+	max-width: 800px;
+	margin: 0 auto;
+	padding: 40px;
+	z-index: 1;
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	gap: 30px;
+}
+
+.legal-title {
+	font-family: "policePS3", sans-serif;
+	color: #ffffff;
+	font-size: clamp(24px, 3vw, 40px);
+	border-bottom: 1px solid rgba(231, 231, 231, 0.2);
+	padding-bottom: 15px;
+}
+
+.legal-date {
+	font-family: "policeConthrax", sans-serif;
+	color: rgba(231, 231, 231, 0.4);
+	font-size: 12px;
+}
+
+.legal-section {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.legal-subtitle {
+	font-family: "policeConthrax", sans-serif;
+	color: #ffffff;
+	font-size: clamp(13px, 1.5vw, 18px);
+}
+
+.legal-text {
+	font-family: "policeConthrax", sans-serif;
+	color: rgba(231, 231, 231, 0.7);
+	font-size: clamp(11px, 1.1vw, 14px);
+	line-height: 1.8;
+}

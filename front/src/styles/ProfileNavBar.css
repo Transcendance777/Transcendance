@@ -65,15 +65,17 @@
 	background: none;
 	border: none;
 	color: #e7e7e7;
-	font-size: 22px;
 	cursor: pointer;
-	transition: transform 0.2s ease;
+	font-size: 26px;
 	display: flex;
 	align-items: center;
+	justify-content: center;
+	padding: 0;
+	transition: transform 0.2s ease;
 }
 
 .profile-settings-btn:hover {
-	transform: scale(1.15) rotate(45deg);
+	transform: scale(1.1);
 }
 
 .profile-dropdown {
@@ -112,5 +114,40 @@
 @media (max-width: 900px) {
 	.profile-profil-link {
 		display: none !important;
+	}
+}
+
+
+@media (max-width: 600px) {
+	.search-icon {
+		font-size: 18px;
+	}
+
+	.search-input {
+		width: 120px;
+		font-size: 11px;
+		padding: 3px 10px;
+	}
+
+	.profile-navbar-right {
+		gap: 6px;
+	}
+
+	.profile-hamburger {
+		font-size: 20px;
+	}
+
+	.profile-navbar-center {
+		flex: 2;
+	}
+
+	.home-icon-link {
+		width: 28px;
+		height: 28px;
+		font-size: 14px;
+	}
+
+	.profile-navbar-title {
+		font-size: 16px;
 	}
 }

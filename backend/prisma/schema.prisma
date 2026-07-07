@@ -20,7 +20,7 @@ model Users {
 	email			String		@unique
 	username  		String		@unique
 	passwordHash	String		@map("password_hash") //map: relier passwordHash dans le back a password_hash ds la DB (convention de nom)
-	avatarUrl     	String?		@default("default_avatar.png") @map("avatar_url") //'?': can be NULL
+	avatarUrl     	String?		@default("default_avatar.png") @map("avatar_url") @db.Text
 	bio				String?
 	createdAt		DateTime	@default(now()) @map("created_at")
 
@@ -28,6 +28,10 @@ model Users {
 	reviews			Review[]
 	reviewLikes		ReviewLike[]
 	apiKey    		ApiKey?
+	likedGames		LikedGame[]
+	playingList		PlayingList[]
+	favoriteGames FavoriteGame[]
+	reviewComments ReviewComment[]
 
 	// Self-referencing Many-to-Many for Friendships
 	friendsInitiated	Friendship[] @relation("FriendshipsInitiated")
@@ -66,6 +70,9 @@ model Game {
   
   // Relations
   reviews       Review[]
+  likedBy       LikedGame[]
+  inPlayingList PlayingList[]
+  favoritedBy FavoriteGame[]
 
   @@map("games")
 }
@@ -84,6 +91,7 @@ model Review {
   user       Users 			@relation(fields: [userId], references: [id], onDelete: Cascade)
   game       Game			@relation(fields: [gameId], references: [id], onDelete: Cascade)
   likes      ReviewLike[]
+  comments ReviewComment[]
 
   // Constraints
   @@unique([userId, gameId], name: "unique_user_game_review")
@@ -94,15 +102,60 @@ model Review {
 model ReviewLike {
   userId   Int      @map("user_id")
   reviewId Int      @map("review_id")
+  type     String   @default("like") @db.VarChar(10) // 'like' ou 'dislike'
+  likedAt  DateTime @default(now()) @map("liked_at")
+
+  user   Users  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  review Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+
+  @@id([userId, reviewId])
+  @@map("review_likes")
+}
+
+model ReviewComment {
+  id        Int      @id @default(autoincrement())
+  reviewId  Int      @map("review_id")
+  userId    Int      @map("user_id")
+  text      String
+  parentId  Int?     @map("parent_id") // null = commentaire racine, sinon = réponse à un comment
+  createdAt DateTime @default(now()) @map("created_at")
+
+  review   Review          @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  user     Users           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent   ReviewComment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies  ReviewComment[] @relation("CommentReplies")
+
+  @@map("review_comments")
+}
+
+// Table des Jeux Likés par les utilisateurs
+model LikedGame {
+  userId   Int      @map("user_id")
+  gameId   Int      @map("game_id")
   likedAt  DateTime @default(now()) @map("liked_at")
 
   // Relations
-  user   Users		@relation(fields: [userId], references: [id], onDelete: Cascade)
-  review Review		@relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  user Users @relation(fields: [userId], references: [id], onDelete: Cascade)
+  game Game  @relation(fields: [gameId], references: [id], onDelete: Cascade)
 
   // Constraints
-  @@id([userId, reviewId])
-  @@map("review_likes")
+  @@id([userId, gameId])
+  @@map("liked_games")
+}
+
+// Table de la Playing List (jeux en cours) des utilisateurs
+model PlayingList {
+  userId   Int      @map("user_id")
+  gameId   Int      @map("game_id")
+  addedAt  DateTime @default(now()) @map("added_at")
+
+  // Relations
+  user Users @relation(fields: [userId], references: [id], onDelete: Cascade)
+  game Game  @relation(fields: [gameId], references: [id], onDelete: Cascade)
+
+  // Constraints
+  @@id([userId, gameId])
+  @@map("playing_list")
 }
 
 // Table du Système d'Amis (Relation réflexive explicite)
@@ -119,4 +172,18 @@ model Friendship {
   // Constraints
   @@id([userId1, userId2])
   @@map("friendships")
+}
+
+model FavoriteGame {
+  userId    Int      @map("user_id")
+  gameId    Int      @map("game_id")
+  position  Int      // 1, 2, 3 ou 4
+  addedAt   DateTime @default(now()) @map("added_at")
+
+  user Users @relation(fields: [userId], references: [id], onDelete: Cascade)
+  game Game  @relation(fields: [gameId], references: [id], onDelete: Cascade)
+
+  @@id([userId, gameId])
+  @@unique([userId, position])
+  @@map("favorite_games")
 }
