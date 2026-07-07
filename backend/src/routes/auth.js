@@ -35,6 +35,12 @@ router.post('/register', async (req, res) => {
 		return res.status(400).json({ error: 'Password must be at least 6 characters.' });
 	}
 
+	const allowedDomains = ['gmail.com', 'hotmail.com', 'yahoo.com', 'outlook.com', 'yahoo.fr', 'hotmail.fr']
+	const emailDomain = email.split('@')[1]?.toLowerCase()
+	if (!emailDomain || !allowedDomains.includes(emailDomain)) {
+		return res.status(400).json({ error: 'Please use a valid email address (Gmail, Hotmail, Yahoo or Outlook).' })
+	}
+
 	try {
 		const existing = await prisma.users.findFirst({
 			where: { OR: [{ email }, { username }] }

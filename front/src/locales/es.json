@@ -51,7 +51,9 @@
 		"password_reset_success": "¡Contraseña actualizada con éxito!",
 		"server_error": "Error del servidor.",
 		"err_no_account": "No se encontró ninguna cuenta con este email.",
-		"err_email_conflict": "Este email ya está asociado a una cuenta existente."
+		"err_email_conflict": "Este email ya está asociado a una cuenta existente.",
+		"err_email_domain": "Por favor usa una dirección de email válida (Gmail, Hotmail, Yahoo u Outlook).",
+		"err_google_failed": "El inicio de sesión con Google ha fallado. Inténtalo de nuevo."
 	},
 	"home": {
 		"new_releases": "Nuevos lanzamientos →",

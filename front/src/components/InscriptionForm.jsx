@@ -35,11 +35,17 @@ const InscriptionForm = () => {
 		'This account uses Google Sign-In.': 'login.err_google_account',
 		'Email/username and password required.': 'login.err_identifier_required',
 		'No account found with this email.': 'login.err_no_account',
+		'Please use a valid email address (Gmail, Hotmail, Yahoo or Outlook).': 'login.err_email_domain',
 	}
 
 	const translateError = (msg) => {
 		const key = ERROR_MAP[msg]
 		return key ? t(key) : msg
+	}
+
+	const showError = (msg) => {
+		setErrorMsg(msg)
+		setTimeout(() => setErrorMsg(''), 2000)
 	}
 
 	useEffect(() => {
@@ -62,12 +68,10 @@ const InscriptionForm = () => {
 			navigate('/home')
 		} else if (error === 'email_conflict') {
 			window.history.replaceState({}, '', '/')
-			setErrorMsg(t('login.err_email_conflict'))
-			setTimeout(() => setErrorMsg(''), 2000)
+			showError(t('login.err_email_conflict'))
 		} else if (error === 'google') {
 			window.history.replaceState({}, '', '/')
-			setErrorMsg(t('login.err_google_failed'))
-			setTimeout(() => setErrorMsg(''), 2000)
+			showError(t('login.err_google_failed'))
 		}
 	}, [navigate, t])
 
@@ -86,7 +90,7 @@ const InscriptionForm = () => {
 				navigate('/home')
 			} else {
 				if (!username || !email || !password) {
-					setErrorMsg(t('login.all_fields'))
+					showError(t('login.all_fields'))
 					return
 				}
 				const response = await axios.post('/api/auth/register', {
@@ -100,7 +104,7 @@ const InscriptionForm = () => {
 			}
 		} catch (error) {
 			const msg = error.response?.data?.error || t('login.error')
-			setErrorMsg(translateError(msg))
+			showError(translateError(msg))
 		}
 	}
 
@@ -247,7 +251,17 @@ const InscriptionForm = () => {
 				)}
 
 				{errorMsg && (
-					<p style={{ color: '#f44336', fontFamily: 'policeConthrax', fontSize: '13px', marginTop: '10px', textAlign: 'center' }}>
+					<p style={{
+						color: '#f44336',
+						fontFamily: 'policeConthrax',
+						fontSize: '13px',
+						marginTop: '10px',
+						textAlign: 'center',
+						maxWidth: '250px',
+						margin: '10px auto 0',
+						lineHeight: '1.5',
+						wordWrap: 'break-word'
+					}}>
 						{errorMsg}
 					</p>
 				)}

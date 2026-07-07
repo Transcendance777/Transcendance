@@ -51,7 +51,9 @@
 		"password_reset_success": "Mot de passe mis à jour avec succès !",
 		"server_error": "Erreur serveur.",
 		"err_no_account": "Aucun compte trouvé avec cet email.",
-		"err_email_conflict": "Cet email est déjà associé à un compte existant."
+		"err_email_conflict": "Cet email est déjà associé à un compte existant.",
+		"err_email_domain": "Veuillez utiliser une adresse email valide (Gmail, Hotmail, Yahoo ou Outlook).",
+		"err_google_failed": "La connexion avec Google a échoué. Réessaie."
 	},
 	"home": {
 		"new_releases": "Nouvelles sorties →",

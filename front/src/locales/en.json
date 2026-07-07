@@ -51,7 +51,9 @@
 		"password_reset_success": "Password updated successfully!",
 		"server_error": "Server error.",
 		"err_no_account": "No account found with this email.",
-		"err_email_conflict": "This email is already linked to an existing account."
+		"err_email_conflict": "This email is already linked to an existing account.",
+		"err_email_domain": "Please use a valid email address (Gmail, Hotmail, Yahoo or Outlook).",
+		"err_google_failed": "Google sign-in failed. Please try again."
 	},
 	"home": {
 		"new_releases": "New releases →",
