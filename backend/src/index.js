@@ -16,6 +16,8 @@ import publicReviewsRouter from './routes/publicReviews.js'; //routes externes
 import publicGamesRouter from './routes/publicGames.js';
 import apiKeyAuth from './middlewares/apiKeyAuth.js';
 import apiLimiter from './middlewares/rateLimiter.js';
+import swaggerUi from 'swagger-ui-express'; //swagger
+import swaggerDocs from './tools/swagger.js'; 
 
 import { syncDatabaseSchema, seedDatabase } from './init/initDatabase.js'; //fonctions DB
 
@@ -53,45 +55,9 @@ app.use('/api/api-key', apiKeyRouter);
 app.use('/api/public/games', apiLimiter, apiKeyAuth, publicGamesRouter);
 app.use('/api/public/reviews', apiLimiter, apiKeyAuth, publicReviewsRouter);
 
-// ? API DOC
-import swaggerUi from 'swagger-ui-express';
-import swaggerJsdoc from 'swagger-jsdoc';
-
-// 1. Options de configuration de Swagger
-const swaggerOptions = {
-  definition: {
-    openapi: '3.0.0',
-    info: {
-      title: 'Public API Documentation',
-      version: '1.0.0',
-      description: 'How to use Gamerev\'s public API',
-    },
-    servers: [
-      {
-        url: 'http://localhost:8443', // Modifie le port si nécessaire
-      },
-    ],
-    // Configuration pour la clé API demandée par ton énoncé
-    components: {
-      securitySchemes: {
-        ApiKeyAuth: {
-          type: 'apiKey',
-          in: 'header',
-          name: 'x-api-key', // Le nom du header que ton API attend
-        },
-      },
-    },
-  },
-  // 2. Chemin vers les fichiers qui contiennent les routes à documenter
-  apis: ['./src/routes/publicGames.js', './src/routes/publicReviews.js'],
-};
-
-// 3. Initialisation de swagger-jsdoc
-const swaggerDocs = swaggerJsdoc(swaggerOptions);
-
-// 4. Création de la route pour la page de doc
+// Page /api-docs for API documentation
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
-// ? API DOC
+
 
 //infinite loop that listens to connections arriving on the backend port
 app.listen(PORT, () => console.log(`Backend actif sur le port ${PORT}`));

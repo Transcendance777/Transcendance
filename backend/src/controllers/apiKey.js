@@ -16,9 +16,13 @@ const generateApiKey = async (req, res) => {
 
 		await prisma.apiKey.create({
 			data: {
-			userId: req.user.id,
 			key: hashedKey,
-			isActive: true
+			isActive: true,
+			user: {
+				connect: {
+				  id: req.user.id
+				}
+			  }
 			}
 	  });
 
