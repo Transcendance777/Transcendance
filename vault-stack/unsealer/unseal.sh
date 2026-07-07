@@ -2,8 +2,8 @@
 set -eu
 
 VAULT_ADDR="http://vault:8200"
-KEYS_FILE="/vault/keys/keys.json"
-ROOT_KEYS_FILE="/vault/keys/root_keys.json"
+KEYS_FILE="/vault_keys/keys.json"
+ROOT_KEYS_FILE="/vault_keys/root_keys.json"
 
 wait_vault() {
   until curl -s -o /dev/null "$VAULT_ADDR/v1/sys/health" 2>/dev/null; do
@@ -20,7 +20,7 @@ init_vault() {
 		"$VAULT_ADDR/v1/sys/init")
 	echo "$RESPONSE" | jq '{keys: .keys}' > "$KEYS_FILE"
 	echo "$RESPONSE" | jq '{root_token: .root_token}' > "$ROOT_KEYS_FILE"
-	echo "✓ Keys saved — root token: $(jq -r '.root_token' "$ROOT_KEYS_FILE")"
+	echo "✓ Keys saved"
 }
 
 unseal_vault() {

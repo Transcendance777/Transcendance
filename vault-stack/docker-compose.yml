@@ -5,9 +5,9 @@ services:
     container_name: vault
     environment:
       - VAULT_ADDR=http://127.0.0.1:8200
-      - VAULT_SKIP_VERIFY=true  # dev only, TLS désactivé
+      - VAULT_SKIP_VERIFY=true
     cap_add:
-      - IPC_LOCK # empeche l'écriture de donnée dans la RAM
+      - IPC_LOCK
     ports:
       - "8200:8200"
       - "8201:8201"
@@ -15,13 +15,12 @@ services:
       - vault_data:/vault/data
       - vault_logs:/vault/logs
       - vault_file:/vault/file
-      - ./vault/config:/vault/config
-      - ./vault/certs:/certs
-      - ./vault/keys:/vault/keys
-      - ./vault/policies:/vault/policies
+      - ./vault/config:/vault/config:ro
+      - ./vault/certs:/certs:ro
+      - ./vault/policies:/vault/policies:ro
     command: vault server -config=/vault/config/vault.hcl -log-level="info"
     healthcheck:
-      test: ["CMD", "sh", "-c", "curl -s -o /dev/null http://127.0.0.1:8200/v1/sys/health"]
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8200/v1/sys/health?standbyok=true&sealedcode=200&uninitcode=200"]
       interval: 5s
       timeout: 3s
       retries: 10
@@ -29,9 +28,11 @@ services:
   unsealer:
     image: alpine:3.19
     container_name: vault-unsealer
+    depends_on:
+      - vault
     volumes:
-      - ./unsealer/unseal.sh:/unseal.sh
-      - ./vault/keys/keys.json:/vault/keys/keys.json
+      - ./unsealer/unseal.sh:/unseal.sh:ro
+      - ./vault_keys:/vault/keys
     command: sh -c "apk add --no-cache curl jq && sh /unseal.sh"
     restart: on-failure
 
@@ -41,7 +42,7 @@ services:
     depends_on:
       - vault
     volumes:
-      - ./healthcheck/check.sh:/check.sh
+      - ./healthcheck/check.sh:/check.sh:ro
     command: sh -c "apk add --no-cache curl jq && sh /check.sh"
     restart: unless-stopped
 
