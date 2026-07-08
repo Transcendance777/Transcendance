@@ -7,13 +7,6 @@ datasource db {
   provider = "postgresql"
 }
 
-// table de test pour la communication back-front
-model login_test {
-  id       Int    @id @default(autoincrement())
-  email    String @db.VarChar(100)
-  password String @db.VarChar(255)
-}
-
 // table des utilisateurs
 model Users {
 	id				Int			@id @default(autoincrement())
@@ -25,13 +18,13 @@ model Users {
 	createdAt		DateTime	    @default(now()) @map("created_at")
 
 	//relations
-	reviews			Review[]
-	reviewLikes		ReviewLike[]
-	apiKey    		ApiKey?
-	likedGames		LikedGame[]
-	playingList		PlayingList[]
-	favoriteGames FavoriteGame[]
-	reviewComments ReviewComment[]
+	reviews			    Review[]
+	reviewLikes		  ReviewLike[]
+	apiKey    		  ApiKey?
+	likedGames		  LikedGame[]
+	playingList		  PlayingList[]
+	favoriteGames   FavoriteGame[]
+	reviewComments  ReviewComment[]
 
 	// Self-referencing Many-to-Many for Friendships
 	friendsInitiated	Friendship[] @relation("FriendshipsInitiated")
@@ -73,7 +66,7 @@ model Game {
   reviews       Review[]
   likedBy       LikedGame[]
   inPlayingList PlayingList[]
-  favoritedBy FavoriteGame[]
+  favoritedBy   FavoriteGame[]
 
   @@map("games")
 }
@@ -83,16 +76,16 @@ model Review {
   id         Int          @id @default(autoincrement())
   userId     Int          @map("user_id")
   gameId     Int          @map("game_id")
-  rating     Int // Note: Prisma handles application-level validation, or you can validate 1-5 in your backend code.
+  rating     Int
   reviewText String?      @map("review_text")
   createdAt  DateTime     @default(now()) @map("created_at")
   updatedAt  DateTime     @default(now()) @updatedAt @map("updated_at")
 
   // Relations
-  user       Users 			@relation(fields: [userId], references: [id], onDelete: Cascade)
-  game       Game       @relation(fields: [gameId], references: [id], onDelete: Cascade)
-  likes      ReviewLike[]
-  comments ReviewComment[]
+  user        Users 		  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  game        Game        @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  likes       ReviewLike[]
+  comments    ReviewComment[]
 
   // Constraints
   @@unique([userId, gameId], name: "unique_user_game_review")

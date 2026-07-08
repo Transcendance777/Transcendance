@@ -189,13 +189,13 @@ const SettingsPage = () => {
 	const handleGenerateApiKey = async () => {
 		const token = localStorage.getItem('token')
 		try {
-			const res = await fetch('/api/apikey', {
+			const res = await fetch('/api/api-key/generate', {
 				method: 'POST',
 				headers: { Authorization: `Bearer ${token}` }
 			})
 			const data = await res.json()
 			if (!res.ok) return setApiKeyMsg(data.error)
-			setApiKey(data.key)
+			setApiKey(data.apiKey)
 			setShowApiKey(true)
 			setApiKeyMsg(t('settings.generate_key') + ' ✓')
 		} catch (err) {
@@ -206,7 +206,7 @@ const SettingsPage = () => {
 	const handleRevokeApiKey = async () => {
 		const token = localStorage.getItem('token')
 		try {
-			const res = await fetch('/api/apikey', {
+			const res = await fetch('/api/api-key/revoke', {
 				method: 'DELETE',
 				headers: { Authorization: `Bearer ${token}` }
 			})
