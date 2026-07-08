@@ -16,3 +16,6 @@ tr.subject.pdf
 vault-stack/vault/keys/keys.json
 vault-stack/vault/keys/root_keys.json
 
+Reste.md
+
+vault-stack/vault_keys/*

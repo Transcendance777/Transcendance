@@ -1,4 +1,13 @@
 services:
+
+  vault-init:
+    image: alpine:3.19
+    volumes:
+      - vault_data:/vault/data
+      - vault_logs:/vault/logs
+      - vault_file:/vault/file
+    command: chown -R 100:100 /vault/data /vault/logs /vault/file
+
   vault:
     image: hashicorp/vault:1.17
     restart: unless-stopped
@@ -16,27 +25,43 @@ services:
       - vault_logs:/vault/logs
       - vault_file:/vault/file
       - ./vault/config:/vault/config:ro
-      - ./vault/certs:/certs:ro
-      - ./vault/policies:/vault/policies:ro
+      # - ./vault/certs:/certs:ro
     command: vault server -config=/vault/config/vault.hcl -log-level="info"
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8200/v1/sys/health?standbyok=true&sealedcode=200&uninitcode=200"]
       interval: 5s
       timeout: 3s
       retries: 10
+    depends_on:
+      vault-init:
+        condition: service_completed_successfully
 
-  unsealer:
+  vault-unsealer:
     image: alpine:3.19
     container_name: vault-unsealer
     depends_on:
       - vault
     volumes:
       - ./unsealer/unseal.sh:/unseal.sh:ro
-      - ./vault_keys:/vault/keys
+      - ./vault_keys:/vault_keys
     command: sh -c "apk add --no-cache curl jq && sh /unseal.sh"
     restart: on-failure
 
-  healthcheck:
+  vault-bootstrap:
+    container_name: vault-bootstrap
+    image: alpine:3.19
+    environment:
+      - VAULT_TOKEN=${VAULT_TOKEN}
+      - CYBER_PASSWORD=${CYBER_PASSWORD}
+    volumes:
+      - ./vault/bootstrap.sh:/bootstrap.sh:ro
+      - ./vault/policies:/vault/policies:ro
+    command: sh -c "apk add --no-cache curl jq && sh /bootstrap.sh"
+    depends_on:
+      vault-unsealer:
+        condition: service_completed_successfully
+
+  vault-healthcheck:
     image: alpine:3.19
     container_name: vault-healthcheck
     depends_on:
