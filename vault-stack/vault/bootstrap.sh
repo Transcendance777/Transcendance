@@ -98,8 +98,10 @@ create_approle "devops"       "devops"           "8h"  "24h" "720h"
 # ── Userpass ───────────────────────────────────────────────────────────────────
 
 echo "==> Creating userpass for cyber admin..."
-echo "    Enter password for 'cyber' user:"
-read -r CYBER_PASSWORD
+if [ -z "${CYBER_PASSWORD:-}" ]; then
+  echo "CYBER_PASSWORD non défini (variable d'environnement requise)"
+  exit 1
+fi
 
 vault_cmd -X POST \
   -d "{\"password\":\"$CYBER_PASSWORD\",\"token_policies\":\"devops\"}" \
@@ -120,4 +122,4 @@ else
 fi
 
 echo ""
-echo "✅ Bootstrap terminé"
+echo "Bootstrap terminé"
