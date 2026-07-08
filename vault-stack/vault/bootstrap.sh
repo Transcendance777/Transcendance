@@ -14,6 +14,11 @@ vault_cmd() {
     "$@"
 }
 
+if ! vault_cmd "$VAULT_ADDR/v1/auth/token/lookup-self" > /dev/null 2>&1; then
+  echo "Root token invalide ou déjà révoqué — bootstrap déjà effectué précédemment, rien à refaire."
+  exit 0
+fi
+
 already_enabled() {
   PATH_CHECK="$1"
   vault_cmd "$VAULT_ADDR/v1/sys/mounts" | jq -e ".[\"$PATH_CHECK/\"]" > /dev/null 2>&1
