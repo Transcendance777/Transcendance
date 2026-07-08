@@ -34,37 +34,6 @@ services:
       retries: 3
       start_period: 60s
 
-  waf:
-    build: waf
-    container_name: waf
-    env_file:
-      - .env
-    environment:
-      - BACKEND=${WAF_BACKEND}
-      - MODSEC_RULE_ENGINE=${WAF_RULE_ENGINE}
-      - PARANOIA=${WAF_PARANOIA}
-      - ANOMALY_INBOUND=${WAF_ANOMALY_INBOUND}
-      - ANOMALY_OUTBOUND=${WAF_ANOMALY_OUTBOUND}
-      - BLOCKING_PARANOIA=${WAF_BLOCKING_PARANOIA}
-      - MODSEC_AUDIT_LOG=/var/log/modsec_audit.log
-      - MODSEC_AUDIT_LOG_FORMAT=JSON
-      - PROXY_SSL=${PROXY_SSL}
-      - PROXY_SSL_CERT=${PROXY_SSL_CERT}
-      - PROXY_SSL_CERT_KEY=${PROXY_SSL_CERT_KEY}
-      - SSL_PORT=${WAF_SSL_PORT}
-      - PORT=${WAF_PORT}
-      - TIMEOUT=${WAF_TIMEOUT}
-      - DNS_SERVER=${WAF_DNS_SERVER}
-    ports:
-      - "8080:8080"   # HTTP (redirect vers HTTPS géré par le WAF)
-      - "8443:8443"   # HTTPS
-    volumes:
-      - ./waf/certs:/etc/waf/certs:ro
-    depends_on:
-      - nginx
-    networks:
-      - gamerev
-
   nginx:
     image: nginx:alpine
     volumes:
@@ -124,6 +93,135 @@ services:
     depends_on:
       - nginx
 
+#-----------CYBER------------
+
+  waf:
+    build: waf
+    container_name: waf
+    env_file:
+      - .env
+    environment:
+      - BACKEND=${WAF_BACKEND}
+      - MODSEC_RULE_ENGINE=${WAF_RULE_ENGINE}
+      - PARANOIA=${WAF_PARANOIA}
+      - ANOMALY_INBOUND=${WAF_ANOMALY_INBOUND}
+      - ANOMALY_OUTBOUND=${WAF_ANOMALY_OUTBOUND}
+      - BLOCKING_PARANOIA=${WAF_BLOCKING_PARANOIA}
+      - MODSEC_AUDIT_LOG=/var/log/modsec_audit.log
+      - MODSEC_AUDIT_LOG_FORMAT=JSON
+      - PROXY_SSL=${PROXY_SSL}
+      - PROXY_SSL_CERT=${PROXY_SSL_CERT}
+      - PROXY_SSL_CERT_KEY=${PROXY_SSL_CERT_KEY}
+      - SSL_PORT=${WAF_SSL_PORT}
+      - PORT=${WAF_PORT}
+      - TIMEOUT=${WAF_TIMEOUT}
+      - DNS_SERVER=${WAF_DNS_SERVER}
+    ports:
+      - "8080:8080"   # HTTP (redirect vers HTTPS géré par le WAF)
+      - "8443:8443"   # HTTPS
+    volumes:
+      - ./waf/certs:/etc/waf/certs:ro
+    depends_on:
+      - nginx
+    networks:
+      - gamerev
+
+  vault-init:
+    image: alpine:3.19
+    volumes:
+      - vault_data:/vault/data
+      - vault_logs:/vault/logs
+      - vault_file:/vault/file
+    command: chown -R 100:100 /vault/data /vault/logs /vault/file
+    networks:
+      - gamerev
+
+  vault:
+    image: hashicorp/vault:1.17
+    restart: unless-stopped
+    container_name: vault
+    environment:
+      - VAULT_ADDR=http://127.0.0.1:8200
+      - VAULT_SKIP_VERIFY=true
+    cap_add:
+      - IPC_LOCK
+    ports:
+      - "8200:8200"
+      - "8201:8201"
+    volumes:
+      - vault_data:/vault/data
+      - vault_logs:/vault/logs
+      - vault_file:/vault/file
+      - ./vault-stack/vault/config:/vault/config:ro
+      # - ./vault-stack/vault/certs:/certs:ro
+    command: vault server -config=/vault/config/vault.hcl -log-level="info"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8200/v1/sys/health?standbyok=true&sealedcode=200&uninitcode=200"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks:
+      - gamerev
+    depends_on:
+      vault-init:
+        condition: service_completed_successfully
+
+  vault-unsealer:
+    image: alpine:3.19
+    container_name: vault-unsealer
+    depends_on:
+      - vault
+    volumes:
+      - ./vault-stack/unsealer/unseal.sh:/unseal.sh:ro
+      - ./vault-stack/vault_keys:/vault_keys
+    command: sh -c "apk add --no-cache curl jq && sh /unseal.sh"
+    networks:
+      - gamerev
+    restart: on-failure
+
+  vault-bootstrap:
+    container_name: vault-bootstrap
+    image: alpine:3.19
+    environment:
+      - CYBER_PASSWORD=${CYBER_PASSWORD}
+    volumes:
+      - ./vault-stack/vault/bootstrap.sh:/bootstrap.sh:ro
+      - ./vault-stack/vault/policies:/vault/policies:ro
+      - ./vault-stack/vault_keys/root_keys.json:/vault_keys/root_keys.json:ro
+      - ./vault-stack/approle_id:/approle_id
+    command: sh -c "apk add --no-cache curl jq && sh /bootstrap.sh"
+    networks:
+      - gamerev
+    depends_on:
+      vault-unsealer:
+        condition: service_completed_successfully
+
+  vault-seeder:
+    container_name: vault-seeder
+    image: alpine:3.19
+    env_file:
+      - .env
+    volumes:
+      - ./vault-stack/seeder/seed-secrets.sh:/seed-secrets.sh:ro
+    command: sh -c "apk add --no-cache curl jq && sh /seed-secrets.sh"
+    networks:
+      - gamerev
+    depends_on:
+      vault-bootstrap:
+        condition: service_completed_successfully
+
+  vault-healthcheck:
+    image: alpine:3.19
+    container_name: vault-healthcheck
+    depends_on:
+      - vault
+    volumes:
+      - ./vault-stack/healthcheck/check.sh:/check.sh:ro
+    command: sh -c "apk add --no-cache curl jq && sh /check.sh"
+    networks:
+      - gamerev
+    restart: unless-stopped
+
 networks:
   gamerev:
     driver: bridge
@@ -133,3 +231,8 @@ volumes:
     driver: local
   grafana-data:
     driver: local
+  vault_data:
+    driver: local
+  vault_logs:
+    driver: local
+  vault_file:
