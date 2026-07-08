@@ -3,3 +3,4 @@
 keys/
 
 vault_keys/*
+approle_id/*
