@@ -11,6 +11,7 @@ import gamesRouter from './routes/games.js'; //routes internes
 import authRouter from './routes/auth.js';
 import userRouter from './routes/user.js';
 import apiKeyRouter from './routes/apiKey.js';
+import statsRouter from './routes/stats.js';
 
 import publicReviewsRouter from './routes/publicReviews.js'; //routes externes
 import publicGamesRouter from './routes/publicGames.js';
@@ -49,7 +50,8 @@ app.use(passport.session());
 app.use('/api/games', gamesRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/user', userRouter);
-app.use('/api/api-key', apiKeyRouter);
+app.use('/api/api-key', apiKeyRouter); // API key routes
+app.use('/api/stats', statsRouter); // Stats routes
 
 // Public API routes
 app.use('/api/public/games', apiLimiter, apiKeyAuth, publicGamesRouter);
