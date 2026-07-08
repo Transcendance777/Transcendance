@@ -62,4 +62,25 @@ const revokeApiKey = async (req, res) => {
 	}
 };
 
-export default { generateApiKey, revokeApiKey };
+// GET /api/api-key
+// Does not return the secret key value; only tells if the user has an active key.
+const getApiKeyStatus = async (req, res) => {
+	try {
+		const userId = Number(req.user.id);
+		const keyRecord = await prisma.apiKey.findUnique({ where: { userId } });
+
+		if (!keyRecord || !keyRecord.isActive) {
+			return res.json({ hasApiKey: false });
+		}
+
+		return res.json({
+			hasApiKey: true,
+			scope: keyRecord.scope,
+		});
+	} catch (err) {
+		console.error(err);
+		res.status(500).json({ error: 'Error fetching API key status' });
+	}
+};
+
+export default { generateApiKey, revokeApiKey, getApiKeyStatus };
