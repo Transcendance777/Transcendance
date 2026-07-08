@@ -2,5 +2,4 @@
 .env
 keys/
 
-vault/keys/keys.json
-vault/keys/root_keys.json
+vault_keys/*
