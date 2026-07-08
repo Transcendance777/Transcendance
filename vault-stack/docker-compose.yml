@@ -51,11 +51,12 @@ services:
     container_name: vault-bootstrap
     image: alpine:3.19
     environment:
-      - VAULT_TOKEN=${VAULT_TOKEN}
       - CYBER_PASSWORD=${CYBER_PASSWORD}
     volumes:
       - ./vault/bootstrap.sh:/bootstrap.sh:ro
       - ./vault/policies:/vault/policies:ro
+      - ./vault_keys/root_keys.json:/vault_keys/root_keys.json:ro
+      - ./approle_id:/approle_id
     command: sh -c "apk add --no-cache curl jq && sh /bootstrap.sh"
     depends_on:
       vault-unsealer:

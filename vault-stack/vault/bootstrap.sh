@@ -3,6 +3,8 @@ set -eu
 
 VAULT_ADDR="http://vault:8200"
 POLICIES_DIR="/vault/policies"
+VAULT_TOKEN=$(jq -r .root_token /vault_keys/root_keys.json)
+OUT_DIR="/approle_id"
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -71,6 +73,8 @@ done
 # ── AppRoles ───────────────────────────────────────────────────────────────────
 
 echo "==> Creating AppRoles..."
+mkdir -p "$OUT_DIR"
+chmod 700 "$OUT_DIR"
 
 create_approle() {
   NAME="$1"
@@ -86,12 +90,15 @@ create_approle() {
   ROLE_ID=$(vault_cmd "$VAULT_ADDR/v1/auth/approle/role/$NAME/role-id" | jq -r '.data.role_id')
   SECRET_ID=$(vault_cmd -X POST "$VAULT_ADDR/v1/auth/approle/role/$NAME/secret-id" | jq -r '.data.secret_id')
 
-  echo "    ✓ AppRole $NAME created"
-  echo "      role_id   : $ROLE_ID"
-  echo "      secret_id : $SECRET_ID"
+  OUT_FILE="$OUT_DIR/${NAME}.json"
+  jq -n --arg role_id "$ROLE_ID" --arg secret_id "$SECRET_ID" \
+    '{role_id: $role_id, secret_id: $secret_id}' > "$OUT_FILE"
+  chmod 600 "$OUT_FILE"
+
+  echo "    ✓ AppRole $NAME created (credentials écrites dans $OUT_FILE, non affichées)"
 }
 
-create_approle "backend-prod" "backend-app-prod" "1h"  "4h"  "24h"
+create_approle "backend-api" "backend-app-prod" "1h"  "4h"  "24h"
 create_approle "backend-dev"  "backend-dev"      "8h"  "24h" "720h"
 create_approle "devops"       "devops"           "8h"  "24h" "720h"
 
@@ -121,5 +128,15 @@ else
   echo "    ✓ Audit log enabled → /vault/logs/audit.log"
 fi
 
+
+# ── Révocation du root token ────────────────────────────────────────────────────
+# Ne doit servir qu'au bootstrap. Plus aucune opération après ce point ne
+# devrait nécessiter un accès root permanent.
+
+echo "==> Revoking root token used for bootstrap..."
+vault_cmd -X POST "$VAULT_ADDR/v1/auth/token/revoke-self" || true
+unset VAULT_TOKEN
+echo "    ✓ Root token revoked"
+
 echo ""
-echo "Bootstrap terminé"
+echo "✅ Bootstrap terminé"
