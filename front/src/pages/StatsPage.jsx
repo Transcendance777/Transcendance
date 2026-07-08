@@ -4,9 +4,11 @@ import { useTranslation } from 'react-i18next'
 import ProfileNavBar from '../components/ProfileNavBar'
 import Background from '../components/Background'
 import Footer from '../components/Footer'
+import PlayingListStatsChart from '../components/PlayingListStatsChart'
 import '../styles/ProfilePage.css'
+import '../styles/StatsPage.css'
 
-const Stats = () => {
+const StatsPage = () => {
 	const { t } = useTranslation()
 	const navigate = useNavigate()
 
@@ -21,6 +23,7 @@ const Stats = () => {
 			<Background style={{ alignItems: 'flex-start' }}>
 				<div className="profile-content">
 					<h2 className="profile-section-title">{t('profile.stats')}</h2>
+					<PlayingListStatsChart />
 				</div>
 			</Background>
 			<Footer />
@@ -28,4 +31,4 @@ const Stats = () => {
 	)
 }
 
-export default Stats
+export default StatsPage

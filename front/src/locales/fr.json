@@ -98,6 +98,12 @@
 		"already_favorite": "Ce jeu est déjà dans vos favoris.",
 		"add_favorite": "Ajouter un jeu favori"
 	},
+	"stats": {
+		"playing_list_title": "Liste en cours — {{year}}",
+		"games": "Jeux",
+		"loading": "Chargement des stats...",
+		"load_error": "Impossible de charger les stats."
+	},
 	"settings": {
 		"account": "Compte",
 		"username": "Nom d'utilisateur",

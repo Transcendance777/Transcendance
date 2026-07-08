@@ -98,6 +98,12 @@
 		"already_favorite": "This game is already in your favorites.",
 		"add_favorite": "Add a Favorite Game"
 	},
+	"stats": {
+		"playing_list_title": "Playing list — {{year}}",
+		"games": "Games",
+		"loading": "Loading stats...",
+		"load_error": "Unable to load stats."
+	},
 	"settings": {
 		"account": "Account",
 		"username": "Username",
