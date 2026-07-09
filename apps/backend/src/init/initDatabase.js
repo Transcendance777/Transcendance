@@ -1,5 +1,14 @@
 import prisma from './initPrisma.js';
+import { Prisma } from '@prisma/client';
 import { execSync } from 'child_process'; //for execSync function
+
+function quotePgIdentifier(name) {
+    return `"${name.replace(/"/g, '""')}"`;
+}
+
+function quotePgLiteral(value) {
+    return `'${String(value).replace(/'/g, "''")}'`;
+}
 
 /**
  * checks if DB schema has been changed, if so, update the DB
@@ -49,5 +58,54 @@ async function seedDatabase() {
     }
 }
 
-export { syncDatabaseSchema, seedDatabase };
+/**
+ * Creates (or updates) the Vault PostgreSQL role and grants CONNECT on the app database.
+ * Uses Prisma raw queries — Prisma ORM has no built-in API for role management.
+ */
+async function ensureVaultDbRole() {
+    const roleName = process.env.ROLE_VAULT_DB;
+    const password = process.env.VAULT_DB_PW;
+    const dbName = process.env.DB_NAME;
+
+    if (!roleName || !password) {
+        console.log('⏭️  Vault DB role setup skipped (ROLE_VAULT_DB or VAULT_DB_PW not set).');
+        return;
+    }
+
+    if (!dbName) {
+        console.warn('⚠️  Vault DB role setup skipped (DB_NAME not set).');
+        return;
+    }
+
+    try {
+        const existing = await prisma.$queryRaw`
+            SELECT 1 FROM pg_roles WHERE rolname = ${roleName}
+        `;
+
+        const quotedRole = Prisma.raw(quotePgIdentifier(roleName));
+        const quotedDb = Prisma.raw(quotePgIdentifier(dbName));
+        const quotedPassword = Prisma.raw(quotePgLiteral(password));
+
+        if (existing.length === 0) {
+            await prisma.$executeRaw`
+                CREATE ROLE ${quotedRole} WITH LOGIN PASSWORD ${quotedPassword} CREATEROLE
+            `;
+            console.log(`✅ Vault DB role created.`);
+        } else {
+            await prisma.$executeRaw`
+                ALTER ROLE ${quotedRole} WITH PASSWORD ${quotedPassword}
+            `;
+            console.log(`✅ Vault DB role already exists (password updated).`);
+        }
+
+        await prisma.$executeRaw`
+            GRANT CONNECT ON DATABASE ${quotedDb} TO ${quotedRole}
+        `;
+        console.log(`✅ CONNECT granted on database "${dbName}" to Vault role.`);
+    } catch (error) {
+        console.error(`❌ Failed to ensure Vault DB role:`, error);
+    }
+}
+
+export { syncDatabaseSchema, seedDatabase, ensureVaultDbRole };
 

@@ -20,13 +20,14 @@ import apiLimiter from './middlewares/rateLimiter.js';
 import swaggerUi from 'swagger-ui-express'; //swagger
 import swaggerDocs from './tools/swagger.js'; 
 
-import { syncDatabaseSchema, seedDatabase } from './init/initDatabase.js'; //fonctions DB
+import { syncDatabaseSchema, seedDatabase, ensureVaultDbRole } from './init/initDatabase.js'; //fonctions DB
 
 // port du back
 const PORT = process.env.PORT_BACK || 4000;
 
 //setup database
 syncDatabaseSchema();
+await ensureVaultDbRole();
 await seedDatabase();
 
 // démarrage de l'application
