@@ -1,5 +1,6 @@
-COMPOSE = docker compose -f $(COMPOSE_FILE) --env-file $(ENV_FILE)
+COMPOSE = docker compose -f $(COMPOSE_FILE) -f $(COMPOSE_OVERRIDE) --env-file $(ENV_FILE)
 COMPOSE_FILE = infra/docker-compose.yaml
+COMPOSE_OVERRIDE = infra/docker-compose.override.yaml
 ENV_FILE = .env
 
 all: up
