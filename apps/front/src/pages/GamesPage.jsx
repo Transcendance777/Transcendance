@@ -1,54 +1,52 @@
 import { useSearchParams } from 'react-router-dom'
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import GamesNavBar from '../components/GamesNavBar'
 import GamesCarousel from '../components/GamesCarousel'
 import Background from '../components/Background'
 import '../styles/GamesPage.css'
 import Footer from '../components/Footer'
 
-// Toutes les catégories disponibles
-const ALL_CATEGORIES = [
-	{ id: "shooter", title: "Shooter", endpoint: "/api/games/category/shooter" },
-	{ id: "rpg", title: "RPG", endpoint: "/api/games/category/rpg" },
-	{ id: "adventure", title: "Adventure", endpoint: "/api/games/category/adventure" },
-	{ id: "fighting", title: "Fighting", endpoint: "/api/games/category/fighting" },
-	{ id: "strategy", title: "Strategy", endpoint: "/api/games/category/strategy" },
-	{ id: "simulator", title: "Simulator", endpoint: "/api/games/category/simulator" },
-	{ id: "racing", title: "Racing", endpoint: "/api/games/category/racing" },
-	{ id: "indie", title: "Indie", endpoint: "/api/games/category/indie" },
-	{ id: "platform", title: "Platformer", endpoint: "/api/games/category/platform" },
-	{ id: "sport", title: "Sports", endpoint: "/api/games/category/sport" },
-	{ id: "horror", title: "Horror", endpoint: "/api/games/category/horror" },
-	{ id: "survival", title: "Survival", endpoint: "/api/games/category/survival" },
-	{ id: "openworld", title: "Open World", endpoint: "/api/games/category/openworld" },
-	{ id: "action", title: "Action", endpoint: "/api/games/category/action" },
-	{ id: "scifi", title: "Sci-Fi", endpoint: "/api/games/category/scifi" },
-	{ id: "fantasy", title: "Fantasy", endpoint: "/api/games/category/fantasy" },
-	{ id: "stealth", title: "Stealth", endpoint: "/api/games/category/stealth" },
-	{ id: "multiplayer", title: "Multiplayer", endpoint: "/api/games/category/multiplayer" },
-	{ id: "solo", title: "Singleplayer", endpoint: "/api/games/category/solo" },
-	{ id: "coop", title: "Co-op", endpoint: "/api/games/category/coop" },
-]
-
-// Catégories toujours présentes en haut
-const BASE_CATEGORIES = [
-	{ id: "new-releases", title: "New releases", endpoint: "/api/games/new-releases" },
-	{ id: "highly-praised", title: "Highly praised", endpoint: "/api/games/highly-praised" },
-	{ id: "recent-acclaimed", title: "Recent hits", endpoint: "/api/games/recent-acclaimed" },
-	{ id: "popular", title: "Popular this week", endpoint: "/api/games/popular" },
-	{ id: "coming-soon", title: "Coming soon", endpoint: "/api/games/coming-soon" },
-]
-
-// Mélange un tableau
 const shuffle = (arr) => [...arr].sort(() => Math.random() - 0.5)
 
 const GamesPage = () => {
+	const { t } = useTranslation()
 	const [searchParams] = useSearchParams()
 	const [categories, setCategories] = useState([])
 
+	const ALL_CATEGORIES = [
+		{ id: "shooter", title: t('game.cat_shooter'), endpoint: "/api/games/category/shooter" },
+		{ id: "rpg", title: t('game.cat_rpg'), endpoint: "/api/games/category/rpg" },
+		{ id: "adventure", title: t('game.cat_adventure'), endpoint: "/api/games/category/adventure" },
+		{ id: "fighting", title: t('game.cat_fighting'), endpoint: "/api/games/category/fighting" },
+		{ id: "strategy", title: t('game.cat_strategy'), endpoint: "/api/games/category/strategy" },
+		{ id: "simulator", title: t('game.cat_simulator'), endpoint: "/api/games/category/simulator" },
+		{ id: "racing", title: t('game.cat_racing'), endpoint: "/api/games/category/racing" },
+		{ id: "indie", title: t('game.cat_indie'), endpoint: "/api/games/category/indie" },
+		{ id: "platform", title: t('game.cat_platform'), endpoint: "/api/games/category/platform" },
+		{ id: "sport", title: t('game.cat_sport'), endpoint: "/api/games/category/sport" },
+		{ id: "horror", title: t('game.cat_horror'), endpoint: "/api/games/category/horror" },
+		{ id: "survival", title: t('game.cat_survival'), endpoint: "/api/games/category/survival" },
+		{ id: "openworld", title: t('game.cat_openworld'), endpoint: "/api/games/category/openworld" },
+		{ id: "action", title: t('game.cat_action'), endpoint: "/api/games/category/action" },
+		{ id: "scifi", title: t('game.cat_scifi'), endpoint: "/api/games/category/scifi" },
+		{ id: "fantasy", title: t('game.cat_fantasy'), endpoint: "/api/games/category/fantasy" },
+		{ id: "stealth", title: t('game.cat_stealth'), endpoint: "/api/games/category/stealth" },
+		{ id: "multiplayer", title: t('game.cat_multiplayer'), endpoint: "/api/games/category/multiplayer" },
+		{ id: "solo", title: t('game.cat_solo'), endpoint: "/api/games/category/solo" },
+		{ id: "coop", title: t('game.cat_coop'), endpoint: "/api/games/category/coop" },
+	]
+
+	const BASE_CATEGORIES = [
+		{ id: "new-releases", title: t('home.new_releases').replace(' →', ''), endpoint: "/api/games/new-releases" },
+		{ id: "highly-praised", title: t('game.cat_highly_praised'), endpoint: "/api/games/highly-praised" },
+		{ id: "recent-acclaimed", title: t('home.recent_hits').replace(' →', ''), endpoint: "/api/games/recent-acclaimed" },
+		{ id: "popular", title: t('home.popular'), endpoint: "/api/games/popular" },
+		{ id: "coming-soon", title: t('home.coming_soon'), endpoint: "/api/games/coming-soon" },
+	]
+
 	useEffect(() => {
 		const fetchAll = async () => {
-			// Choisit 6 catégories aléatoires parmi toutes
 			const randomCats = shuffle(ALL_CATEGORIES)
 			const selectedCats = [...BASE_CATEGORIES, ...randomCats]
 
@@ -71,7 +69,6 @@ const GamesPage = () => {
 				})
 			)
 
-			// Garde seulement les catégories qui ont des jeux
 			setCategories(results.filter(c => c.games.length > 0))
 		}
 		fetchAll()
@@ -100,7 +97,6 @@ const GamesPage = () => {
 						</div>
 					))}
 				</div>
-				
 			</Background>
 			<Footer />
 		</div>

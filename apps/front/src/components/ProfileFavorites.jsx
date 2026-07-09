@@ -16,6 +16,7 @@ const ProfileFavorites = ({ editable = false, externalFavorites = null }) => {
 	const [searchMsg, setSearchMsg] = useState('')
 	const [isTouchDevice, setIsTouchDevice] = useState(false)
 	const displayFavorites = externalFavorites !== null ? externalFavorites : favorites
+	const [addMsg, setAddMsg] = useState('')
 
 	useEffect(() => {
 		setIsTouchDevice('ontouchstart' in window || navigator.maxTouchPoints > 0)
@@ -61,7 +62,11 @@ const ProfileFavorites = ({ editable = false, externalFavorites = null }) => {
 				headers: { Authorization: `Bearer ${token}` }
 			})
 			const data = await res.json()
-			if (!res.ok) return console.error(data.error)
+			if (!res.ok) {
+				setAddMsg(data.error === 'Already in favorites.' ? t('profile.already_favorite') : data.error)
+				return
+			}
+			setAddMsg('')
 			setFavorites(prev => [...prev, data].sort((a, b) => a.position - b.position))
 			setShowModal(false)
 			setSearch('')
@@ -136,7 +141,7 @@ const ProfileFavorites = ({ editable = false, externalFavorites = null }) => {
 				<div className="favorite-modal-overlay" onClick={handleClose}>
 					<div className="favorite-modal" onClick={(e) => e.stopPropagation()}>
 						<div className="favorite-modal-header">
-							<h3 className="favorite-modal-title">Add a Favorite Game</h3>
+							<h3 className="favorite-modal-title">{t('profile.add_favorite')}</h3>
 							<button className="favorite-modal-close" onClick={handleClose}>
 								<FiX size={20} />
 							</button>
@@ -158,6 +163,7 @@ const ProfileFavorites = ({ editable = false, externalFavorites = null }) => {
 								</div>
 							))}
 						</div>
+						{addMsg && <p style={{ color: '#f44336', fontFamily: '"policeConthrax", sans-serif', fontSize: '12px', textAlign: 'center' }}>{addMsg}</p>}
 					</div>
 				</div>
 			)}

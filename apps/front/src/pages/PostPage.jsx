@@ -28,9 +28,14 @@ const PostPage = () => {
 		}
 	}, [location.state])
 
+	const showError = (msg) => {
+		setSubmitMsg(msg)
+		setTimeout(() => setSubmitMsg(''), 2000)
+	}
+
 	const handleSubmit = async () => {
-		if (!selectedGame) return setSubmitMsg(t('post.choose_game_msg'))
-		if (!rating) return setSubmitMsg(t('post.choose_rating'))
+		if (!selectedGame) return showError(t('post.choose_game_msg'))
+		if (!rating) return showError(t('post.choose_rating'))
 
 		const token = localStorage.getItem('token')
 		setSubmitting(true)
@@ -49,7 +54,11 @@ const PostPage = () => {
 				})
 			})
 			const data = await res.json()
-			if (!res.ok) return setSubmitMsg(data.error)
+			if (!res.ok) {
+				const errorKey = data.error === 'You already posted a review for this game.' ? 'post.already_reviewed' : 'post.server_error'
+				showError(t(errorKey))
+				return
+			}
 
 			setReview('')
 			setRating(null)
@@ -58,7 +67,7 @@ const PostPage = () => {
 			setSubmitted(true)
 			setTimeout(() => setSubmitted(false), 2000)
 		} catch (err) {
-			setSubmitMsg(t('post.server_error'))
+			showError(t('post.server_error'))
 		} finally {
 			setSubmitting(false)
 		}

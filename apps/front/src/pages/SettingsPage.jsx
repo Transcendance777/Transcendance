@@ -41,6 +41,7 @@ const SettingsPage = () => {
 	const [isGoogleAccount, setIsGoogleAccount] = useState(false)
 	const [hasCustomAvatar, setHasCustomAvatar] = useState(false)
 	const [apiKey, setApiKey] = useState(null)
+	const [hasApiKey, setHasApiKey] = useState(false)
 	const [apiKeyMsg, setApiKeyMsg] = useState('')
 	const [showApiKey, setShowApiKey] = useState(false)
 	const [currentLang, setCurrentLang] = useState(localStorage.getItem('language') || 'en')
@@ -56,6 +57,27 @@ const SettingsPage = () => {
 			if (user.isGoogle) setIsGoogleAccount(true)
 			if (user.avatarUrl && user.avatarUrl !== 'default_avatar.png') setHasCustomAvatar(true)
 		}
+	}, [])
+
+	// Check with the backend whether the current user already has
+	// an active API key, so the revoke button stays visible.
+	useEffect(() => {
+		const token = localStorage.getItem('token')
+		if (!token) return
+
+		;(async () => {
+			try {
+				const res = await fetch('/api/api-key', {
+					method: 'GET',
+					headers: { Authorization: `Bearer ${token}` },
+				})
+				if (!res.ok) return setHasApiKey(false)
+				const data = await res.json()
+				setHasApiKey(!!data.hasApiKey)
+			} catch (err) {
+				setHasApiKey(false)
+			}
+		})()
 	}, [])
 
 	const handleLanguageChange = (code) => {
@@ -189,13 +211,14 @@ const SettingsPage = () => {
 	const handleGenerateApiKey = async () => {
 		const token = localStorage.getItem('token')
 		try {
-			const res = await fetch('/api/apikey', {
+			const res = await fetch('/api/api-key/generate', {
 				method: 'POST',
 				headers: { Authorization: `Bearer ${token}` }
 			})
 			const data = await res.json()
 			if (!res.ok) return setApiKeyMsg(data.error)
-			setApiKey(data.key)
+			setApiKey(data.apiKey)
+			setHasApiKey(true)
 			setShowApiKey(true)
 			setApiKeyMsg(t('settings.generate_key') + ' ✓')
 		} catch (err) {
@@ -206,12 +229,13 @@ const SettingsPage = () => {
 	const handleRevokeApiKey = async () => {
 		const token = localStorage.getItem('token')
 		try {
-			const res = await fetch('/api/apikey', {
+			const res = await fetch('/api/api-key/revoke', {
 				method: 'DELETE',
 				headers: { Authorization: `Bearer ${token}` }
 			})
 			if (!res.ok) return setApiKeyMsg('Server error.')
 			setApiKey(null)
+			setHasApiKey(false)
 			setShowApiKey(false)
 			setApiKeyMsg('API key revoked.')
 		} catch (err) {
@@ -408,17 +432,19 @@ const SettingsPage = () => {
 								<button className="settings-save-btn" onClick={handleGenerateApiKey}>
 									{t('settings.generate_key')}
 								</button>
-								{apiKey && (
+								{hasApiKey && (
 									<>
-										<button
-											className="settings-save-btn"
-											onClick={() => { navigator.clipboard.writeText(apiKey); setApiKeyMsg(t('settings.copied')) }}
-										>
-											{t('settings.copy')}
-										</button>
 										<button className="settings-danger-btn" onClick={handleRevokeApiKey}>
 											{t('settings.revoke')}
 										</button>
+										{apiKey && (
+											<button
+												className="settings-save-btn"
+												onClick={() => { navigator.clipboard.writeText(apiKey); setApiKeyMsg(t('settings.copied')) }}
+											>
+												{t('settings.copy')}
+											</button>
+										)}
 									</>
 								)}
 							</div>

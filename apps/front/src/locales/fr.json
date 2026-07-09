@@ -42,7 +42,18 @@
 		"err_username_taken": "Ce nom d'utilisateur est déjà pris.",
 		"err_credentials": "Identifiants incorrects.",
 		"err_google_account": "Ce compte utilise la connexion Google.",
-		"err_identifier_required": "Email/nom d'utilisateur et mot de passe requis."
+		"err_identifier_required": "Email/nom d'utilisateur et mot de passe requis.",
+		"email_required": "Veuillez entrer votre email.",
+		"code_required": "Veuillez entrer le code.",
+		"fill_fields": "Veuillez remplir tous les champs.",
+		"passwords_match": "Les mots de passe ne correspondent pas.",
+		"password_length": "Le mot de passe doit contenir au moins 6 caractères.",
+		"password_reset_success": "Mot de passe mis à jour avec succès !",
+		"server_error": "Erreur serveur.",
+		"err_no_account": "Aucun compte trouvé avec cet email.",
+		"err_email_conflict": "Cet email est déjà associé à un compte existant.",
+		"err_email_domain": "Veuillez utiliser une adresse email valide (Gmail, Hotmail, Yahoo ou Outlook).",
+		"err_google_failed": "La connexion avec Google a échoué. Réessaie."
 	},
 	"home": {
 		"new_releases": "Nouvelles sorties →",
@@ -82,7 +93,9 @@
 		"no_following": "Vous ne suivez personne.",
 		"remove": "Retirer",
 		"unfollow": "Se désabonner",
-		"favorite_games": "Jeux favoris"
+		"favorite_games": "Jeux favoris",
+		"already_favorite": "Ce jeu est déjà dans vos favoris.",
+		"add_favorite": "Ajouter un jeu favori"
 	},
 	"settings": {
 		"account": "Compte",
@@ -153,7 +166,8 @@
 		"click_to_choose": "Cliquez pour choisir",
 		"choose_game_msg": "Choisissez un jeu.",
 		"choose_rating": "Donnez une note.",
-		"server_error": "Erreur serveur."
+		"server_error": "Erreur serveur.",
+		"already_reviewed": "Vous avez déjà posté un avis pour ce jeu."
 	},
 	"friends": {
 		"recent_activity": "Activité récente",
@@ -180,7 +194,28 @@
 		"reviews": "Avis",
 		"no_reviews": "Aucun avis pour l'instant.",
 		"loading": "Chargement...",
-		"not_found": "Jeu introuvable."
+		"not_found": "Jeu introuvable.",
+		"cat_shooter": "Shooter",
+		"cat_rpg": "RPG",
+		"cat_adventure": "Aventure",
+		"cat_fighting": "Combat",
+		"cat_strategy": "Stratégie",
+		"cat_simulator": "Simulateur",
+		"cat_racing": "Course",
+		"cat_indie": "Indépendant",
+		"cat_platform": "Plateforme",
+		"cat_sport": "Sport",
+		"cat_horror": "Horreur",
+		"cat_survival": "Survie",
+		"cat_openworld": "Monde ouvert",
+		"cat_action": "Action",
+		"cat_scifi": "Science-fiction",
+		"cat_fantasy": "Fantaisie",
+		"cat_stealth": "Infiltration",
+		"cat_multiplayer": "Multijoueur",
+		"cat_solo": "Solo",
+		"cat_coop": "Coopératif",
+		"cat_highly_praised": "Très appréciés"
 	},
 	"footer": {
 		"credits": "Créé par Mario, Daniya, Ugo, Yasser & Rydom · École 42"

@@ -22,6 +22,7 @@
 	flex-direction: column;
 	gap: 15px;
 	flex: 1;
+	min-width: 0;
 }
 
 .review-game-title {
@@ -37,6 +38,8 @@
 	color: #e7e7e7;
 	font-size: clamp(14px, 1.5vw, 18px);
 	font-weight: bold;
+	word-wrap: break-word;
+	overflow-wrap: break-word;
 }
 
 .review-text {
@@ -44,6 +47,9 @@
 	color: #e7e7e7;
 	font-size: clamp(12px, 1.2vw, 15px);
 	line-height: 1.6;
+	word-wrap: break-word;
+	overflow-wrap: break-word;
+	white-space: pre-wrap;
 }
 
 .review-footer {
@@ -234,6 +240,9 @@
 	font-family: "policeConthrax", sans-serif;
 	color: #e7e7e7;
 	font-size: clamp(11px, 1vw, 13px);
+	word-wrap: break-word;
+	overflow-wrap: break-word;
+	white-space: pre-wrap;
 }
 
 @media (max-width: 480px) {

@@ -5,7 +5,7 @@ import prisma from '../init/initPrisma.js';
 passport.use(new GoogleStrategy({
 	clientID: process.env.GOOGLE_CLIENT_ID,
 	clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-	callbackURL: 'https://localhost/api/auth/google/callback',
+	callbackURL: 'https://localhost:8443/api/auth/google/callback',
 	proxy: true
 }, async (accessToken, refreshToken, profile, done) => {
 	try {
@@ -30,6 +30,9 @@ passport.use(new GoogleStrategy({
 					avatarUrl: 'default_avatar.png'
 				}
 			})
+		} else if (user.passwordHash !== 'google_oauth') {
+			// L'email existe déjà avec un compte classique → on bloque
+			return done(null, false, { message: 'email_conflict' })
 		} else if (user.avatarUrl && user.avatarUrl.startsWith('data:')) {
 			// Si l'avatarUrl en DB est un base64 → on le remet à default
 			user = await prisma.users.update({

@@ -42,7 +42,18 @@
 		"err_username_taken": "This username is already taken.",
 		"err_credentials": "Incorrect credentials.",
 		"err_google_account": "This account uses Google Sign-In.",
-		"err_identifier_required": "Email/username and password required."
+		"err_identifier_required": "Email/username and password required.",
+		"email_required": "Please enter your email.",
+		"code_required": "Please enter the code.",
+		"fill_fields": "Please fill all fields.",
+		"passwords_match": "Passwords do not match.",
+		"password_length": "Password must be at least 6 characters.",
+		"password_reset_success": "Password updated successfully!",
+		"server_error": "Server error.",
+		"err_no_account": "No account found with this email.",
+		"err_email_conflict": "This email is already linked to an existing account.",
+		"err_email_domain": "Please use a valid email address (Gmail, Hotmail, Yahoo or Outlook).",
+		"err_google_failed": "Google sign-in failed. Please try again."
 	},
 	"home": {
 		"new_releases": "New releases →",
@@ -82,7 +93,9 @@
 		"no_following": "You follow no one yet.",
 		"remove": "Remove",
 		"unfollow": "Unfollow",
-		"favorite_games": "Favorite Games"
+		"favorite_games": "Favorite Games",
+		"already_favorite": "This game is already in your favorites.",
+		"add_favorite": "Add a Favorite Game"
 	},
 	"settings": {
 		"account": "Account",
@@ -151,9 +164,10 @@
 		"write_here": "Write your review here...",
 		"choose_game": "Choose a game :",
 		"click_to_choose": "Click to choose",
-		"choose_game_msg": "Choisis un jeu.",
-		"choose_rating": "Donne une note.",
-		"server_error": "Erreur serveur."
+		"choose_game_msg": "Please choose a game.",
+		"choose_rating": "Please give a rating.",
+		"server_error": "Server error.",
+		"already_reviewed": "You already posted a review for this game."
 	},
 	"friends": {
 		"recent_activity": "Recent Activity",
@@ -180,7 +194,28 @@
 		"reviews": "Reviews",
 		"no_reviews": "No reviews yet.",
 		"loading": "Loading...",
-		"not_found": "Game not found."
+		"not_found": "Game not found.",
+		"cat_shooter": "Shooter",
+		"cat_rpg": "RPG",
+		"cat_adventure": "Adventure",
+		"cat_fighting": "Fighting",
+		"cat_strategy": "Strategy",
+		"cat_simulator": "Simulator",
+		"cat_racing": "Racing",
+		"cat_indie": "Indie",
+		"cat_platform": "Platformer",
+		"cat_sport": "Sports",
+		"cat_horror": "Horror",
+		"cat_survival": "Survival",
+		"cat_openworld": "Open World",
+		"cat_action": "Action",
+		"cat_scifi": "Sci-Fi",
+		"cat_fantasy": "Fantasy",
+		"cat_stealth": "Stealth",
+		"cat_multiplayer": "Multiplayer",
+		"cat_solo": "Singleplayer",
+		"cat_coop": "Co-op",
+		"cat_highly_praised": "Highly Praised"
 	},
 	"footer": {
 		"credits": "Made by Mario, Daniya, Ugo, Yasser & Rydom · École 42"

@@ -154,6 +154,13 @@ const GamePresentationPage = () => {
 		...(game.artworks || []).map(a => formatScreenshot(a.url)).filter(Boolean),
 	].slice(0, 6)
 
+	const avgRating = game.reviews?.length > 0
+		? game.reviews.reduce((sum, r) => sum + r.rating, 0) / game.reviews.length / 2
+		: null
+	const displayRating = avgRating !== null
+		? (avgRating % 1 === 0 ? avgRating.toFixed(0) : avgRating.toFixed(1))
+		: null
+
 	return (
 		<div className="gamepresentation-page">
 			<GamePresentationNavBar gameName={gameName} />
@@ -232,14 +239,12 @@ const GamePresentationPage = () => {
 								</div>
 							)}
 
-							{game.reviews?.length > 0 && (
+							{displayRating !== null && (
 								<div className="gamepresentation-info-block">
 									<h3 className="gamepresentation-info-title">{t('game.user_rating')}</h3>
 									<div className="gamepresentation-rating">
-										{renderStars(game.reviews.reduce((sum, r) => sum + r.rating, 0) / game.reviews.length * 20)}
-										<span className="gamepresentation-rating-number">
-											{(game.reviews.reduce((sum, r) => sum + r.rating, 0) / game.reviews.length).toFixed(1)}/5
-										</span>
+										{renderStars(avgRating * 20)}
+										<span className="gamepresentation-rating-number">{displayRating}/5</span>
 									</div>
 								</div>
 							)}

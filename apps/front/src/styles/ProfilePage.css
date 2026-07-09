@@ -182,12 +182,15 @@
 	width: clamp(60px, 6vw, 90px);
 	border-radius: 8px;
 	object-fit: cover;
+	flex-shrink: 0;
 }
 
 .profile-review-info {
 	display: flex;
 	flex-direction: column;
 	gap: 8px;
+	min-width: 0;
+	flex: 1;
 }
 
 .profile-review-game {
@@ -195,12 +198,17 @@
 	color: #e7e7e7;
 	font-size: clamp(12px, 1.3vw, 16px);
 	font-weight: bold;
+	word-wrap: break-word;
+	overflow-wrap: break-word;
 }
 
 .profile-review-text {
 	font-family: "policeConthrax", sans-serif;
 	color: rgba(231, 231, 231, 0.8);
 	font-size: clamp(11px, 1.1vw, 14px);
+	word-wrap: break-word;
+	overflow-wrap: break-word;
+	white-space: pre-wrap;
 }
 
 .profile-see-more-btn {
@@ -260,6 +268,7 @@
 	width: 80px;
 	border-radius: 8px;
 	object-fit: cover;
+	flex-shrink: 0;
 }
 
 .modal-review-game {
@@ -268,12 +277,17 @@
 	font-size: 14px;
 	font-weight: bold;
 	margin-bottom: 5px;
+	word-wrap: break-word;
+	overflow-wrap: break-word;
 }
 
 .modal-review-text {
 	font-family: "policeConthrax", sans-serif;
 	color: rgba(231, 231, 231, 0.8);
 	font-size: 12px;
+	word-wrap: break-word;
+	overflow-wrap: break-word;
+	white-space: pre-wrap;
 }
 
 .modal-activity-item {
@@ -296,6 +310,8 @@
 	color: #e7e7e7;
 	font-size: 12px;
 	flex: 1;
+	word-wrap: break-word;
+	overflow-wrap: break-word;
 }
 
 .modal-activity-date {
@@ -361,35 +377,35 @@
 		box-sizing: border-box;
 		padding: 15px 20px;
 	}
-		
+
 	.favorites-grid {
 		display: grid;
 		grid-template-columns: repeat(2, 1fr);
 		gap: 12px;
 		justify-content: center;
 	}
-	
+
 	.profile-review-item {
 		gap: 12px;
 		padding: 12px 0;
 	}
-		
+
 	.profile-review-img {
 		width: 70px;
 		flex-shrink: 0;
 	}
-		
+
 	.profile-review-info {
 		min-width: 0;
 		flex: 1;
 	}
-		
+
 	.profile-review-game,
 	.profile-review-text {
 		word-wrap: break-word;
 		overflow-wrap: break-word;
 	}
-		
+
 	.profile-review-text {
 		font-size: 11px;
 	}

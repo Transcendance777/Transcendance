@@ -3,7 +3,11 @@ import Background from '../components/Background'
 import InscriptionForm from '../components/InscriptionForm'
 
 const LoginPage = () => {
-	const [showForm, setShowForm] = useState(false)
+	const params = new URLSearchParams(window.location.search)
+	const hasError = params.get('error')
+	const hasToken = params.get('token')
+	const [showForm, setShowForm] = useState(!!(hasError || hasToken))
+
 	return (
 		<div onClick={() => setShowForm(true)}>
 			<Background style={{ justifyContent: "center", alignItems: "center" }}>
