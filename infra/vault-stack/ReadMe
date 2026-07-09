@@ -8,8 +8,8 @@ NGINX        →  reverse proxy (certs TLS potentiellement)
 
 disable_mlock = true #a activer en production
 
-podman-compose down
-podman-compose up
+docker compose down
+docker compose up
 
 https://blog.stephane-robert.info/docs/securiser/secrets/hashicorp-vault/installation/
 

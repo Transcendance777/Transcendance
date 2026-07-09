@@ -2,7 +2,7 @@
 
 set -e
 # Dossier de stockage certificats
-CERT_DIR="./waf/certs"
+CERT_DIR="$(dirname "$0")/../waf/certs"
 
 mkdir -p $CERT_DIR
 

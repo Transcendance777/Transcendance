@@ -1,18 +1,20 @@
 # Commenter les ports une fois en production pour reduire les risques d'attaques
 # et faire le nginx.conf pour faire le reverse proxy
 
+name: transcendance
+
 services:
   frontend:
-    build: front
+    build: ../apps/front
     networks:
       - gamerev
 
   backend:
-    build: backend
+    build: ../apps/backend
     networks:
       - gamerev
     env_file:
-      - .env
+      - ../.env
     depends_on:
       postgres:
         condition: service_healthy
@@ -59,7 +61,7 @@ services:
     container_name: grafana
     image: grafana/grafana:12.4
     env_file:
-      - .env
+      - ../.env
     networks:
       - gamerev
     volumes:
@@ -99,7 +101,7 @@ services:
     build: waf
     container_name: waf
     env_file:
-      - .env
+      - ../.env
     environment:
       - BACKEND=${WAF_BACKEND}
       - MODSEC_RULE_ENGINE=${WAF_RULE_ENGINE}
@@ -200,7 +202,7 @@ services:
     container_name: vault-seeder
     image: alpine:3.19
     env_file:
-      - .env
+      - ../.env
     volumes:
       - ./vault-stack/seeder/seed-secrets.sh:/seed-secrets.sh:ro
     command: sh -c "apk add --no-cache curl jq && sh /seed-secrets.sh"

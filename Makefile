@@ -1,36 +1,36 @@
-COMPOSE = docker compose
-COMPOSE_FILE = docker-compose.yaml
+COMPOSE = docker compose -f $(COMPOSE_FILE) --env-file $(ENV_FILE)
+COMPOSE_FILE = infra/docker-compose.yaml
 ENV_FILE = .env
 
 all: up
 
 up: $(ENV_FILE) certs
-	$(COMPOSE) -f $(COMPOSE_FILE) up -d
+	$(COMPOSE) up -d
 
 certs:
-	@if [ ! -f waf/certs/cert.crt ]; then \
-		bash scripts/generate_certs.sh; \
+	@if [ ! -f infra/waf/certs/cert.crt ]; then \
+		bash infra/scripts/generate_certs.sh; \
 	fi
 
 down:
-	$(COMPOSE) -f $(COMPOSE_FILE) down
+	$(COMPOSE) down
 
 re: down
-	$(COMPOSE) -f $(COMPOSE_FILE) up -d --build
+	$(COMPOSE) up -d --build
 
 logs:
-	$(COMPOSE) -f $(COMPOSE_FILE) logs -f
+	$(COMPOSE) logs -f
 
 ps:
-	$(COMPOSE) -f $(COMPOSE_FILE) ps
+	$(COMPOSE) ps
 
 # Attention, nettoyage des conteneurs et des volumes (efface la db)
 clean:
-	$(COMPOSE) -f $(COMPOSE_FILE) down -v
+	$(COMPOSE) down -v
 
 # Nettoyage complet + images construites + réseaux orphelins
 fclean: clean
-	$(COMPOSE) -f $(COMPOSE_FILE) down --rmi all --remove-orphans
+	$(COMPOSE) down --rmi all --remove-orphans
 	docker system prune -f
 
 # Garde fou
