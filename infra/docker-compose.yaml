@@ -139,7 +139,7 @@ services:
     restart: unless-stopped
     container_name: vault
     environment:
-      - VAULT_ADDR=http://127.0.0.1:8200
+      - VAULT_ADDR=https://127.0.0.1:8200
       - VAULT_SKIP_VERIFY=true
     cap_add:
       - IPC_LOCK
@@ -151,10 +151,10 @@ services:
       - vault_logs:/vault/logs
       - vault_file:/vault/file
       - ./vault-stack/vault/config:/vault/config:ro
-      # - ./vault-stack/vault/certs:/certs:ro
+      - ./vault-stack/vault/certs:/certs:ro
     command: vault server -config=/vault/config/vault.hcl -log-level="info"
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8200/v1/sys/health?standbyok=true&sealedcode=200&uninitcode=200"]
+      test: ["CMD", "wget", "--no-check-certificate", "-qO-", "https://127.0.0.1:8200/v1/sys/health?standbyok=true&sealedcode=200&uninitcode=200"]
       interval: 5s
       timeout: 3s
       retries: 10
