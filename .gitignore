@@ -7,6 +7,7 @@ keys/*
 DEVOPS_ROADMAP.MD
 infra/nginx/certs/*
 infra/waf/certs/*
+infra/waf/certs/cert.ctr
 /generated/prisma
 /apps/backend/node_modules
 /apps/front/node_modules
@@ -17,3 +18,5 @@ infra/vault-stack/vault/keys/root_keys.json
 Reste.md
 
 infra/vault-stack/vault_keys/*
+infra/vault-stack/approle_id/*
+infra/vault-stack/vault/certs/*

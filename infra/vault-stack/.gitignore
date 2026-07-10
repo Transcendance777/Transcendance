@@ -1,6 +1,0 @@
-*.env
-.env
-keys/
-
-vault_keys/*
-approle_id/*
