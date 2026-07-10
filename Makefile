@@ -42,7 +42,6 @@ clean:
 fclean: clean
 	$(COMPOSE) down --rmi all --remove-orphans
 	docker system prune -f
-	rm -rf infra/vault-stack/vault_keys/* infra/vault-stack/approle_id/*
 	rm -f infra/waf/certs/*.crt infra/waf/certs/*.key infra/nginx/certs/*.crt infra/nginx/certs/*.key infra/vault-stack/vault/certs/*.crt infra/vault-stack/vault/certs/*.key
 
 # Garde fou
