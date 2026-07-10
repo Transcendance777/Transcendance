@@ -68,7 +68,6 @@ services:
       - grafana-data:/var/lib/grafana
       - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
       - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
-
     depends_on:
       - prometheus
 
@@ -103,21 +102,18 @@ services:
     env_file:
       - ../.env
     environment:
+      - MODSEC_AUDIT_LOG=/var/log/modsec_audit.log
+      - MODSEC_AUDIT_LOG_FORMAT=JSON
       - BACKEND=${WAF_BACKEND}
       - MODSEC_RULE_ENGINE=${WAF_RULE_ENGINE}
       - PARANOIA=${WAF_PARANOIA}
       - ANOMALY_INBOUND=${WAF_ANOMALY_INBOUND}
       - ANOMALY_OUTBOUND=${WAF_ANOMALY_OUTBOUND}
       - BLOCKING_PARANOIA=${WAF_BLOCKING_PARANOIA}
-      - MODSEC_AUDIT_LOG=/var/log/modsec_audit.log
-      - MODSEC_AUDIT_LOG_FORMAT=JSON
-      - PROXY_SSL=${PROXY_SSL}
-      - PROXY_SSL_CERT=${PROXY_SSL_CERT}
-      - PROXY_SSL_CERT_KEY=${PROXY_SSL_CERT_KEY}
-      - SSL_PORT=${WAF_SSL_PORT}
       - PORT=${WAF_PORT}
       - TIMEOUT=${WAF_TIMEOUT}
       - DNS_SERVER=${WAF_DNS_SERVER}
+      - SSL_PORT=${WAF_SSL_PORT}
     ports:
       - "8080:8080"   # HTTP (redirect vers HTTPS géré par le WAF)
       - "8443:8443"   # HTTPS
