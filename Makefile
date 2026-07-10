@@ -9,7 +9,7 @@ up: $(ENV_FILE) certs
 	$(COMPOSE) up -d
 
 certs:
-	@if [ ! -f infra/waf/certs/cert.crt ]; then \
+	@if [ ! -f infra/waf/certs/cert.crt ] || [ ! -f infra/vault-stack/vault/certs/vault.crt ]; then \
 		bash infra/scripts/generate_certs.sh; \
 	fi
 
@@ -43,7 +43,7 @@ fclean: clean
 	$(COMPOSE) down --rmi all --remove-orphans
 	docker system prune -f
 	rm -rf infra/vault-stack/vault_keys/* infra/vault-stack/approle_id/*
-	rm -f infra/waf/certs/*.crt infra/waf/certs/*.key infra/nginx/certs/*.crt infra/nginx/certs/*.key
+	rm -f infra/waf/certs/*.crt infra/waf/certs/*.key infra/nginx/certs/*.crt infra/nginx/certs/*.key infra/vault-stack/vault/certs/*.crt infra/vault-stack/vault/certs/*.key
 
 # Garde fou
 $(ENV_FILE):
