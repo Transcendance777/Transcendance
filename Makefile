@@ -5,20 +5,13 @@ ENV_FILE = .env
 
 all: up
 
-up: $(ENV_FILE) certs vault-keys
+up: $(ENV_FILE) certs
 	$(COMPOSE) up -d
 
 certs:
 	@if [ ! -f infra/waf/certs/cert.crt ] || [ ! -f infra/vault-stack/vault/certs/vault.crt ]; then \
 		bash infra/scripts/generate_certs.sh; \
 	fi
-
-# root_keys.json doit exister comme vrai fichier AVANT le compose up, sinon
-# Docker le crée comme dossier vide au moment ou il materialise le bind-mount
-# de vault-bootstrap (mount fichier precis, pour ne pas exposer keys.json)
-vault-keys:
-	@mkdir -p infra/vault-stack/vault_keys infra/vault-stack/approle_id
-	@touch infra/vault-stack/vault_keys/root_keys.json
 
 down:
 	$(COMPOSE) down
@@ -57,4 +50,4 @@ $(ENV_FILE):
 	@echo "Erreur : fichier .env manquant. Copie .env.example vers .env."
 	@exit 1
 
-.PHONY: all up re rebuild logs ps clean fclean vault-keys
+.PHONY: all up re rebuild logs ps clean fclean
