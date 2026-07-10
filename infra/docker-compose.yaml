@@ -171,7 +171,7 @@ services:
       - vault
     volumes:
       - ./vault-stack/unsealer/unseal.sh:/unseal.sh:ro
-      - ./vault-stack/vault_keys:/vault_keys
+      - vault_keys_data:/vault_keys
     command: sh -c "apk add --no-cache curl jq && sh /unseal.sh"
     networks:
       - gamerev
@@ -185,8 +185,8 @@ services:
     volumes:
       - ./vault-stack/vault/bootstrap.sh:/bootstrap.sh:ro
       - ./vault-stack/vault/policies:/vault/policies:ro
-      - ./vault-stack/vault_keys:/vault_keys/:ro
-      - ./vault-stack/approle_id:/approle_id
+      - vault_keys_data:/vault_keys/:ro
+      - approle_id_data:/approle_id
     command: sh -c "apk add --no-cache curl jq && sh /bootstrap.sh"
     networks:
       - gamerev
@@ -234,3 +234,7 @@ volumes:
   vault_logs:
     driver: local
   vault_file:
+  vault_keys_data:
+    driver: local
+  approle_id_data:
+    driver: local 
