@@ -19,6 +19,15 @@ down:
 re: down
 	$(COMPOSE) up -d --build
 
+# Rebuild + relance un seul service, ex: make rebuild SERVICE=waf
+rebuild:
+	@if [ -z "$(SERVICE)" ]; then \
+		echo "Usage: make rebuild SERVICE=<nom_service>"; \
+		exit 1; \
+	fi
+	$(COMPOSE) build $(SERVICE)
+	$(COMPOSE) up -d $(SERVICE)
+
 logs:
 	$(COMPOSE) logs -f
 
@@ -41,4 +50,4 @@ $(ENV_FILE):
 	@echo "Erreur : fichier .env manquant. Copie .env.example vers .env."
 	@exit 1
 
-.PHONY: all up re logs ps clean fclean
+.PHONY: all up re rebuild logs ps clean fclean
