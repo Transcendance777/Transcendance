@@ -1,8 +1,8 @@
 #!/bin/sh
-VAULT_ADDR="http://vault:8200"
+VAULT_ADDR="https://vault:8200"
 
 while true; do  # ← manquait
-  HTTP_CODE=$(curl -s -o /tmp/vault_health -w "%{http_code}" "$VAULT_ADDR/v1/sys/health" 2>/dev/null)
+  HTTP_CODE=$(curl -sk -o /tmp/vault_health -w "%{http_code}" "$VAULT_ADDR/v1/sys/health" 2>/dev/null)
 
   if [ -z "$HTTP_CODE" ] || [ "$HTTP_CODE" = "000" ]; then
     echo "⚠ Vault unreachable"
