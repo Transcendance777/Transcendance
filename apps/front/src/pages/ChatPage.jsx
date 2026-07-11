@@ -7,6 +7,7 @@ import ConversationList from '../components/chat/ConversationList'
 import ChatWindow from '../components/chat/ChatWindow'
 import NewConversationModal from '../components/chat/NewConversationModal'
 import {
+	addChatFriend,
 	createDirectConversation,
 	getConversationMessages,
 	getConversations,
@@ -48,6 +49,7 @@ const ChatPage = () => {
 	const [typingUser, setTypingUser] = useState('')
 	const [error, setError] = useState(() => hasToken ? '' : t('chat.auth_required'))
 	const [newConversationOpen, setNewConversationOpen] = useState(false)
+	const [sentMessageVersion, setSentMessageVersion] = useState(0)
 
 	const selectedConversation = conversations.find(item => item.id === selectedId) || null
 
@@ -186,6 +188,15 @@ const ChatPage = () => {
 		}
 	}
 
+	const handleAddFriend = async (user) => {
+		try {
+			await addChatFriend(user.id)
+		} catch (requestError) {
+			setError(requestError.message || t('chat.add_friend_error'))
+			throw requestError
+		}
+	}
+
 	const handleSend = body => new Promise(resolve => {
 		if (!selectedId) return resolve(false)
 		const clientId = crypto.randomUUID()
@@ -194,6 +205,7 @@ const ChatPage = () => {
 				setError(response?.error?.message || t('chat.send_error'))
 				return resolve(false)
 			}
+			setSentMessageVersion(version => version + 1)
 			resolve(true)
 		})
 	})
@@ -241,6 +253,7 @@ const ChatPage = () => {
 							loading={loadingMessages}
 							connectionState={connectionState}
 							typingUser={typingUser}
+							sentMessageVersion={sentMessageVersion}
 							onBack={handleBack}
 							onSend={handleSend}
 							onTypingStart={handleTypingStart}
@@ -254,6 +267,7 @@ const ChatPage = () => {
 					onClose={() => setNewConversationOpen(false)}
 					onSearch={handleSearch}
 					onSelect={handleCreateConversation}
+					onAddFriend={handleAddFriend}
 				/>
 			)}
 		</div>

@@ -39,8 +39,8 @@ Navigateur -> WAF :8443 -> Nginx -> backend :4000
 | 3 - WebSocket backend | Implementee | Socket.IO, auth JWT Vault, rooms et events |
 | 4 - Proxy WAF/Nginx | Implementee | Route Nginx et exclusion CRS ciblee |
 | 5 - Front chat | Implementee | Page chat, REST initial et temps reel |
-| 6 - Tests E2E | A faire | Deux utilisateurs et verification DB |
-| 7 - Bonus | A faire plus tard | Presence, notifications et confort |
+| 6 - Tests E2E | Terminee | REST, Socket.IO, WAF, UI et PostgreSQL verifies |
+| 7 - Friends-only et confort | Terminee | DM proteges et scroll naturel |
 
 ## Phase 1 - Modele DB du chat - Terminee
 
@@ -222,7 +222,7 @@ Le projet utilise son CSS classique. Tailwind n'est pas requis pour le chat.
 
 Explication detaillee et analyse des assets : `docs/notes/PHASE_5_CHAT_FRONT_EXPLAINED.md`.
 
-## Phase 6 - Tests E2E - A faire
+## Phase 6 - Tests E2E - Terminee
 
 Tests minimum :
 
@@ -237,9 +237,44 @@ Tests minimum :
 9. un token invalide est refuse au handshake ;
 10. verifier le trajet HTTPS complet via le WAF.
 
-Les anciennes routes REST ne font pas partie de notre implementation, mais le raccord Socket.IO ne doit pas empecher leur demarrage.
+Tous ces controles ont ete executes avec trois utilisateurs de test et ont reussi.
 
-## Phase 7 - Bonus apres V1 stable
+Controles supplementaires valides :
+
+- conversation directe unique ;
+- conversation avec soi-meme refusee ;
+- message vide et message de plus de 2000 caracteres refuses ;
+- `typing:start`, `conversation:updated` et `message:read` recus en direct ;
+- envoi depuis l'interface puis persistance apres actualisation.
+
+Rapport detaille : `docs/notes/PHASE_6_CHAT_TEST_REPORT.md`.
+
+Les anciennes routes REST ne font pas partie de notre implementation. Aucun probleme exterieur au chat n'a ete corrige pendant cette phase.
+
+## Phase 7 - Friends-only et scroll - Terminee
+
+La creation d'une conversation et l'envoi de messages demandent maintenant une relation `Friendship` avec le statut `accepted`.
+
+Comme le projet enregistre actuellement les follows dans un seul sens, le chat considere le lien comme symetrique : si A suit B ou B suit A avec un statut accepte, A et B peuvent se repondre. Sans cette regle, la personne contactee ne pourrait pas repondre naturellement.
+
+La recherche de DM affiche :
+
+- les amis normalement avec une icone message ;
+- les non-amis grises avec une icone ajouter ;
+- apres l'ajout, le resultat devient immediatement contactable.
+
+La protection est verifiee dans REST et Socket.IO. Le front seul n'est jamais considere comme une protection suffisante.
+
+Le fil de messages :
+
+- descend au dernier message lors de l'ouverture ;
+- descend apres un message envoye par l'utilisateur ;
+- reste en place lorsqu'un utilisateur remonte lire l'historique ;
+- ne fait plus defiler toute la page.
+
+Rapport detaille : `docs/notes/PHASE_7_FRIENDS_ONLY_SCROLL.md`.
+
+## Bonus apres V1 stable
 
 - presence online/offline partagee ;
 - compteur non lu dans les autres pages ;

@@ -12,18 +12,43 @@ const ChatWindow = ({
 	loading,
 	connectionState,
 	typingUser,
+	sentMessageVersion,
 	onBack,
 	onSend,
 	onTypingStart,
 	onTypingStop,
 }) => {
 	const { t, i18n } = useTranslation()
-	const bottomRef = useRef(null)
+	const messageListRef = useRef(null)
+	const initialScrollConversationRef = useRef(null)
+	const shouldStickToBottomRef = useRef(true)
+	const sentMessageVersionRef = useRef(sentMessageVersion)
 	const otherUser = conversation ? getOtherUser(conversation, currentUserId) : null
 
 	useEffect(() => {
-		bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-	}, [messages, typingUser])
+		const messageList = messageListRef.current
+		if (!messageList || loading || !conversation) return
+
+		const isInitialScroll = initialScrollConversationRef.current !== conversation.id
+		const sentMessageChanged = sentMessageVersionRef.current !== sentMessageVersion
+		const distanceFromBottom = messageList.scrollHeight - messageList.scrollTop - messageList.clientHeight
+
+		if (sentMessageChanged) {
+			shouldStickToBottomRef.current = true
+			sentMessageVersionRef.current = sentMessageVersion
+		}
+
+		if (isInitialScroll || sentMessageChanged || shouldStickToBottomRef.current || distanceFromBottom < 160) {
+			messageList.scrollTo({ top: messageList.scrollHeight, behavior: isInitialScroll ? 'auto' : 'smooth' })
+			initialScrollConversationRef.current = conversation.id
+		}
+	}, [conversation, loading, messages, sentMessageVersion, typingUser])
+
+	const handleMessageScroll = (event) => {
+		const messageList = event.currentTarget
+		const distanceFromBottom = messageList.scrollHeight - messageList.scrollTop - messageList.clientHeight
+		shouldStickToBottomRef.current = distanceFromBottom < 80
+	}
 
 	if (!conversation) {
 		return (
@@ -51,7 +76,7 @@ const ChatWindow = ({
 				{connectionState !== 'connected' && <FiWifiOff className="socket-offline-icon" />}
 			</header>
 
-			<div className="message-list">
+			<div className="message-list" ref={messageListRef} onScroll={handleMessageScroll}>
 				{loading && <p className="chat-muted-state">{t('chat.loading_messages')}</p>}
 				{!loading && messages.length === 0 && <p className="chat-muted-state">{t('chat.first_message')}</p>}
 				{messages.map(message => (
@@ -63,7 +88,6 @@ const ChatWindow = ({
 					/>
 				))}
 				{typingUser && <p className="typing-indicator">{t('chat.typing', { username: typingUser })}</p>}
-				<div ref={bottomRef} />
 			</div>
 
 			<MessageComposer

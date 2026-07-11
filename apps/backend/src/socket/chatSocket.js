@@ -1,4 +1,5 @@
 import prisma from '../init/initPrisma.js';
+import { areChatFriends } from '../services/chatFriendship.js';
 
 const MAX_MESSAGE_LENGTH = 2000;
 const MESSAGE_RATE_WINDOW_MS = 10_000;
@@ -41,6 +42,11 @@ const getMembership = (conversationId, userId) => {
 	});
 };
 
+const canUseDirectConversation = async (membership, userId) => {
+	const otherParticipant = membership.conversation.participants.find(participant => participant.userId !== userId);
+	return otherParticipant ? areChatFriends(userId, otherParticipant.userId) : false;
+};
+
 const emitToParticipants = (io, participantIds, event, payload) => {
 	for (const userId of new Set(participantIds)) {
 		io.to(userRoom(userId)).emit(event, payload);
@@ -79,6 +85,9 @@ export const registerChatSocket = (io, socket) => {
 		try {
 			const membership = await getMembership(conversationId, socket.user.id);
 			if (!membership) return rejectEvent(callback, 'FORBIDDEN', 'You are not a conversation participant.');
+			if (!await canUseDirectConversation(membership, socket.user.id)) {
+				return rejectEvent(callback, 'FRIENDS_ONLY', 'You can only message friends.');
+			}
 
 			await socket.join(conversationRoom(conversationId));
 			return acknowledge(callback, { ok: true, conversationId });
@@ -111,6 +120,9 @@ export const registerChatSocket = (io, socket) => {
 		try {
 			const membership = await getMembership(conversationId, socket.user.id);
 			if (!membership) return rejectEvent(callback, 'FORBIDDEN', 'You are not a conversation participant.');
+			if (!await canUseDirectConversation(membership, socket.user.id)) {
+				return rejectEvent(callback, 'FRIENDS_ONLY', 'You can only message friends.');
+			}
 
 			const updatedAt = new Date();
 			const [message] = await prisma.$transaction([

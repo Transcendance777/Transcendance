@@ -1,6 +1,7 @@
 import express from 'express';
 import prisma from '../init/initPrisma.js';
 import { authMiddleware } from '../middlewares/auth.js';
+import { areChatFriends, getChatFriendIds } from '../services/chatFriendship.js';
 
 const router = express.Router();
 
@@ -99,6 +100,29 @@ router.get('/conversations', authMiddleware, async (req, res) => {
 	}
 });
 
+// Recherche tous les users et indique lesquels sont joignables par le chat.
+router.get('/users/search', authMiddleware, async (req, res) => {
+	const query = typeof req.query.q === 'string' ? req.query.q.trim() : '';
+	if (!query) return res.status(400).json({ error: 'Empty query.' });
+
+	try {
+		const users = await prisma.users.findMany({
+			where: {
+				username: { contains: query, mode: 'insensitive' },
+				NOT: { id: req.user.id },
+			},
+			select: USER_SELECT,
+			take: 10,
+		});
+		const friendIds = await getChatFriendIds(req.user.id, users.map(user => user.id));
+
+		res.json(users.map(user => ({ ...user, isFriend: friendIds.has(user.id) })));
+	} catch (error) {
+		console.error('Erreur search chat users:', error);
+		res.status(500).json({ error: 'Server error.' });
+	}
+});
+
 // Cree ou recupere une conversation directe avec un autre utilisateur.
 router.post('/conversations/direct/:userId', authMiddleware, async (req, res) => {
 	const targetId = parseId(req.params.userId);
@@ -112,6 +136,9 @@ router.post('/conversations/direct/:userId', authMiddleware, async (req, res) =>
 			select: USER_SELECT,
 		});
 		if (!targetUser) return res.status(404).json({ error: 'User not found.' });
+		if (!await areChatFriends(req.user.id, targetId)) {
+			return res.status(403).json({ error: 'You can only message friends.' });
+		}
 
 		const directKey = getDirectKey(req.user.id, targetId);
 		let conversation = await prisma.conversation.findUnique({

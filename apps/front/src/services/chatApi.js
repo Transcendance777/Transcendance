@@ -38,5 +38,9 @@ export const markConversationRead = conversationId => (
 )
 
 export const searchChatUsers = query => (
-	chatRequest(`/api/user/search?q=${encodeURIComponent(query)}`)
+	chatRequest(`/api/chat/users/search?q=${encodeURIComponent(query)}`)
+)
+
+export const addChatFriend = userId => (
+	chatRequest(`/api/user/friend-request/${userId}`, { method: 'POST' })
 )
