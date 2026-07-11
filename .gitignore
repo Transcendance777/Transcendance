@@ -1,13 +1,22 @@
+*.env
+env
+keys/*
 
 .DS_Store
 .env
 DEVOPS_ROADMAP.MD
-nginx/certs/*
-waf/certs/*
-
-tr.subject.pdf
-
+infra/nginx/certs/*
+infra/waf/certs/*
+infra/waf/certs/cert.ctr
 /generated/prisma
-/backend/node_modules
+/apps/backend/node_modules
+/apps/front/node_modules
 
+infra/vault-stack/vault/keys/keys.json
+infra/vault-stack/vault/keys/root_keys.json
 
+Reste.md
+
+infra/vault-stack/vault_keys/*
+infra/vault-stack/approle_id/*
+infra/vault-stack/vault/certs/*

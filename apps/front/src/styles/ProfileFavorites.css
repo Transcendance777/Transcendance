@@ -1,0 +1,305 @@
+.profile-favorites {
+	padding: 20px 40px;
+	position: relative;
+	z-index: 1;
+	min-width: 0;
+	overflow: hidden;
+}
+
+.profile-section-title {
+	font-family: "policeConthrax", sans-serif;
+	color: #e7e7e7;
+	font-size: clamp(14px, 1.5vw, 20px);
+	margin-bottom: 20px;
+}
+
+.favorites-grid {
+	display: flex;
+	flex-wrap: nowrap;
+	gap: 16px;
+}
+
+/* Carte avec un jeu */
+.favorite-card {
+	cursor: pointer;
+	transition: transform 0.2s ease;
+	position: relative;
+	width: 120px;
+	flex-shrink: 0;
+}
+
+.favorite-card:hover {
+	transform: scale(1.05);
+}
+
+.favorite-img {
+	width: 120px;
+	height: 160px;
+	border-radius: 10px;
+	object-fit: cover;
+	display: block;
+}
+
+.favorite-title {
+	font-family: "policeConthrax", sans-serif;
+	color: #e7e7e7;
+	font-size: 11px;
+	text-align: center;
+	margin-top: 8px;
+}
+
+/* Bouton supprimer */
+.favorite-remove-btn {
+	position: absolute;
+	top: 6px;
+	right: 6px;
+	background: rgba(0, 0, 0, 0.7);
+	border: none;
+	color: #e7e7e7;
+	border-radius: 50%;
+	width: 24px;
+	height: 24px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
+	z-index: 2;
+	transition: background 0.2s ease, opacity 0.2s ease;
+	opacity: 0;
+}
+
+.favorite-remove-btn:hover {
+	background: #f44336;
+}
+
+.favorite-card:hover .favorite-remove-btn {
+	opacity: 1;
+}
+
+/* Slot vide cliquable (editable) */
+.favorite-empty {
+	cursor: pointer;
+	flex-shrink: 0;
+}
+
+.favorite-add-placeholder {
+	width: 120px;
+	height: 160px;
+	border: 2px dashed rgba(231, 231, 231, 0.3);
+	border-radius: 10px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: rgba(231, 231, 231, 0.3);
+	transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.favorite-empty:hover .favorite-add-placeholder {
+	border-color: #e7e7e7;
+	color: #e7e7e7;
+}
+
+/* Slot vide lecture seule (OtherProfilePage) */
+.favorite-empty-slot {
+	width: 120px;
+	height: 160px;
+	border: 2px dashed rgba(231, 231, 231, 0.1);
+	border-radius: 10px;
+}
+
+/* ─── MODALE ─── */
+
+.favorite-modal-overlay {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: rgba(0, 0, 0, 0.85);
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	z-index: 1000;
+}
+
+.favorite-modal {
+	background-color: #111;
+	border-radius: 15px;
+	padding: 30px;
+	width: clamp(300px, 40vw, 500px);
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+}
+
+.favorite-modal-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.favorite-modal-title {
+	font-family: "policeConthrax", sans-serif;
+	color: #e7e7e7;
+	font-size: clamp(14px, 1.5vw, 20px);
+}
+
+.favorite-modal-close {
+	background: none;
+	border: none;
+	color: #e7e7e7;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	padding: 0;
+	transition: transform 0.2s ease;
+}
+
+.favorite-modal-close:hover {
+	transform: scale(1.15);
+}
+
+.favorite-modal-input {
+	background: rgba(255, 255, 255, 0.05);
+	border: 2px solid rgba(231, 231, 231, 0.3);
+	border-radius: 10px;
+	padding: 10px 15px;
+	color: #e7e7e7;
+	font-family: "policeConthrax", sans-serif;
+	font-size: 13px;
+	outline: none;
+	transition: border-color 0.2s ease;
+}
+
+.favorite-modal-input:focus {
+	border-color: #e7e7e7;
+}
+
+.favorite-modal-input::placeholder {
+	color: rgba(231, 231, 231, 0.4);
+}
+
+.favorite-modal-results {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	max-height: 300px;
+	overflow-y: auto;
+}
+
+.favorite-modal-msg {
+	font-family: "policeConthrax", sans-serif;
+	color: rgba(231, 231, 231, 0.5);
+	font-size: 13px;
+	text-align: center;
+}
+
+.favorite-modal-result-item {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 8px;
+	border-radius: 10px;
+	background: rgba(255, 255, 255, 0.03);
+	cursor: pointer;
+	transition: background 0.2s ease;
+}
+
+.favorite-modal-result-item:hover {
+	background: rgba(255, 255, 255, 0.1);
+}
+
+.favorite-modal-result-img {
+	width: 35px;
+	height: 48px;
+	object-fit: cover;
+	border-radius: 4px;
+	flex-shrink: 0;
+}
+
+.favorite-modal-result-title {
+	font-family: "policeConthrax", sans-serif;
+	color: #e7e7e7;
+	font-size: 13px;
+	flex: 1;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+@media (max-width: 600px) {
+	.favorite-modal {
+		width: 95vw;
+		padding: 20px;
+	}
+}
+
+/* Entre 481px et 900px : 4 colonnes fixes centrées */
+@media (max-width: 900px) {
+	.profile-favorites {
+		padding: 20px;
+	}
+
+	.favorites-grid {
+		display: grid;
+		grid-template-columns: repeat(4, 90px);
+		gap: 12px;
+		justify-content: center;
+		width: 100%;
+	}
+
+	.favorite-card {
+		width: 90px;
+	}
+
+	.favorite-img {
+		width: 90px;
+		height: 120px;
+		object-fit: cover;
+	}
+
+	.favorite-add-placeholder,
+	.favorite-empty-slot {
+		width: 90px;
+		height: 120px;
+	}
+
+	.favorite-title {
+		font-size: 10px;
+	}
+}
+
+/* Mobile : 2x2 centrée */
+@media (max-width: 480px) {
+	.profile-favorites {
+		padding: 15px;
+	}
+
+	.favorites-grid {
+		display: grid;
+		grid-template-columns: repeat(2, 120px);
+		gap: 12px;
+		justify-content: center;
+		width: 100%;
+	}
+
+	.favorite-card {
+		width: 120px;
+	}
+
+	.favorite-img {
+		width: 120px;
+		height: 160px;
+		object-fit: cover;
+	}
+
+	.favorite-add-placeholder,
+	.favorite-empty-slot {
+		width: 120px;
+		height: 160px;
+	}
+
+	.favorite-title {
+		font-size: 10px;
+	}
+}
