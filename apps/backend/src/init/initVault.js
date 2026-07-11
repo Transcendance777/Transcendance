@@ -88,4 +88,25 @@ const authenticateVault = async () => {
 	};
 };
 
-export { authenticateVault };
+// dans initVault.js — exemple à ajouter
+const getVaultSecrets = async (path = 'prod/backend') => {
+	// path = 'prod/backend';
+	const { token } = await authenticateVault();
+
+	const vaultAddr = (process.env.VAULT_ADDR || 'https://vault:8200').replace(/\/$/, '');
+	const client = await getVaultClient();
+
+	const res = await client.get(`${vaultAddr}/v1/secret/data/${path}`, {
+		headers: { 'X-Vault-Token': token },
+	});
+
+	if (res.status < 200 || res.status >= 300) {
+		throw new Error(res.data?.errors?.[0] ?? 'Failed to read Vault secrets');
+	}
+
+	return res.data.data.data; // { DB_PASS, JWT_SECRET, GOOGLE_CLIENT_SECRET, ... }
+};
+
+const vaultSecrets = await getVaultSecrets();
+
+export { vaultSecrets };

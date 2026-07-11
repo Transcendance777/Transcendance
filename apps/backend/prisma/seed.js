@@ -1,6 +1,7 @@
 import axios from 'axios';
 import 'dotenv/config';
 import prisma from '../src/init/initPrisma.js'
+import { vaultSecrets } from '../src/init/initVault.js'; //secrets Vault
 
 /**
  * Authentification Twitch / IGDB
@@ -101,8 +102,8 @@ async function insertGames(rawGames) {
 async function main() {
 	console.log("🚀 [SEED] Début du peuplement de la base de données...");
 
-	const clientId = process.env.TWITCH_CLIENT_ID;
-	const clientSecret = process.env.TWITCH_CLIENT_SECRET;
+	const clientId = vaultSecrets.TWITCH_CLIENT_ID;
+	const clientSecret = vaultSecrets.TWITCH_CLIENT_SECRET;
 
 	const accessToken = await connectToIGDB(clientId, clientSecret);
 	const rawGames = await getGames(clientId, accessToken);
