@@ -21,18 +21,9 @@ import swaggerUi from 'swagger-ui-express'; //swagger
 import swaggerDocs from './tools/swagger.js'; 
 
 import { syncDatabaseSchema, seedDatabase, ensureVaultDbRole } from './init/initDatabase.js'; //fonctions DB
-import { vaultSecrets } from './init/initVault.js'; //secrets Vault
 
 // port du back
 const PORT = process.env.PORT_BACK || 4000;
-
-//authentification Vault
-// const vaultAuth = await authenticateVault();
-// console.log('Vault authenticated:', vaultAuth);
-
-// //récupération des secrets Vault
-// const vaultSecrets = await getVaultSecrets();
-// console.log('Vault secrets:', vaultSecrets);
 
 //setup database
 syncDatabaseSchema();
