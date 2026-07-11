@@ -33,6 +33,7 @@ const HomeNavBar = () => {
 				<a onClick={() => navigate('/games')} className="nav-link nav-link-desktop" style={{ cursor: 'pointer' }}>{t('nav.games')}</a>
 				<a onClick={() => navigate('/reviews')} className="nav-link nav-link-desktop" style={{ cursor: 'pointer' }}>{t('nav.reviews')}</a>
 				<a onClick={() => navigate('/friends')} className="nav-link nav-link-desktop" style={{ cursor: 'pointer' }}>{t('nav.friends')}</a>
+				<a onClick={() => navigate('/chat')} className="nav-link nav-link-desktop" style={{ cursor: 'pointer' }}>{t('nav.messages')}</a>
 				<a onClick={() => navigate('/post')} className="nav-link plus nav-link-desktop" style={{ cursor: 'pointer' }}>+</a>
 			</div>
 			<div className="navbar-center">
@@ -48,6 +49,7 @@ const HomeNavBar = () => {
 					<a onClick={() => navigate('/games')} className="nav-link" style={{ cursor: 'pointer' }}>{t('nav.games')}</a>
 					<a onClick={() => navigate('/reviews')} className="nav-link" style={{ cursor: 'pointer' }}>{t('nav.reviews')}</a>
 					<a onClick={() => navigate('/friends')} className="nav-link" style={{ cursor: 'pointer' }}>{t('nav.friends')}</a>
+					<a onClick={() => navigate('/chat')} className="nav-link" style={{ cursor: 'pointer' }}>{t('nav.messages')}</a>
 					<a onClick={() => navigate('/post')} className="nav-link" style={{ cursor: 'pointer' }}>{t('nav.post')}</a>
 				</div>
 			)}

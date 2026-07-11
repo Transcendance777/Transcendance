@@ -38,7 +38,7 @@ Navigateur -> WAF :8443 -> Nginx -> backend :4000
 | 2 - API REST chat | Terminee | Conversations, historique et lecture |
 | 3 - WebSocket backend | Implementee | Socket.IO, auth JWT Vault, rooms et events |
 | 4 - Proxy WAF/Nginx | Implementee | Route Nginx et exclusion CRS ciblee |
-| 5 - Front chat | A faire | Page chat, REST initial et temps reel |
+| 5 - Front chat | Implementee | Page chat, REST initial et temps reel |
 | 6 - Tests E2E | A faire | Deux utilisateurs et verification DB |
 | 7 - Bonus | A faire plus tard | Presence, notifications et confort |
 
@@ -195,7 +195,7 @@ Explication detaillee : `docs/notes/PHASE_4_SOCKET_PROXY_EXPLAINED.md`.
 
 La validation fonctionnelle HTTPS avec deux utilisateurs reste dans la phase 6, apres creation du frontend.
 
-## Phase 5 - Front chat - A faire
+## Phase 5 - Front chat - Implementee
 
 Fichiers prevus :
 
@@ -219,6 +219,8 @@ Comportement :
 Raccord minimal : route `/chat` dans `apps/front/src/App.jsx`.
 
 Le projet utilise son CSS classique. Tailwind n'est pas requis pour le chat.
+
+Explication detaillee et analyse des assets : `docs/notes/PHASE_5_CHAT_FRONT_EXPLAINED.md`.
 
 ## Phase 6 - Tests E2E - A faire
 

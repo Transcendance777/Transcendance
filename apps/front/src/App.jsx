@@ -11,6 +11,7 @@ import GamePresentationPage from './pages/GamePresentationPage'
 import FriendsPage from './pages/FriendsPage'
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage'
 import TermsOfServicePage from './pages/TermsOfServicePage'
+import ChatPage from './pages/ChatPage'
 
 const App = () => {
 	return (
@@ -27,6 +28,8 @@ const App = () => {
 			<Route path="/friends" element={<FriendsPage />} />
 			<Route path="/privacy" element={<PrivacyPolicyPage />} />
 			<Route path="/terms" element={<TermsOfServicePage />} />
+			<Route path="/chat" element={<ChatPage />} />
+			<Route path="/chat/:conversationId" element={<ChatPage />} />
 		</Routes>
 	)
 }

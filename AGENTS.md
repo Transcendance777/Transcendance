@@ -234,6 +234,12 @@ Explication du proxy Socket.IO via WAF et Nginx :
 docs/notes/PHASE_4_SOCKET_PROXY_EXPLAINED.md
 ```
 
+Explication du frontend chat et de l'analyse visuelle :
+
+```text
+docs/notes/PHASE_5_CHAT_FRONT_EXPLAINED.md
+```
+
 Avant de poursuivre le chat, relire la roadmap V1 et traiter uniquement la phase indiquee comme en cours.
 
 ## Points de vigilance

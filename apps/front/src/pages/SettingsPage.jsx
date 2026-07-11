@@ -7,6 +7,7 @@ import SettingsNavBar from '../components/SettingsNavBar'
 import Background from '../components/Background'
 import '../styles/SettingsPage.css'
 import Footer from '../components/Footer'
+import { disconnectSocket } from '../services/socket'
 
 const getAvatar = (avatarUrl, username) => {
 	if (avatarUrl && avatarUrl !== 'default_avatar.png') return avatarUrl
@@ -149,6 +150,7 @@ const SettingsPage = () => {
 	}
 
 	const handleLogout = () => {
+		disconnectSocket()
 		localStorage.removeItem('token')
 		localStorage.removeItem('user')
 		navigate('/')
@@ -213,6 +215,7 @@ const SettingsPage = () => {
 			})
 			const data = await res.json()
 			if (!res.ok) return setDeletePasswordMsg(data.error)
+			disconnectSocket()
 			localStorage.removeItem('token')
 			localStorage.removeItem('user')
 			navigate('/')
