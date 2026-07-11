@@ -150,7 +150,7 @@ Nginx route actuellement :
 /grafana/ -> grafana:3000
 ```
 
-Pour des websockets Socket.IO, il faudra prevoir un proxy `/socket.io/` avec headers `Upgrade`.
+Socket.IO utilise maintenant le proxy `/socket.io/` avec headers `Upgrade` dans Nginx et une exclusion CRS ciblee dans le WAF.
 
 ## Base de donnees
 
@@ -228,13 +228,19 @@ Roadmap V1 actualisee et document de suivi principal :
 docs/notes/CHAT_WEBSOCKET_ROADMAP_V1.md
 ```
 
+Explication du proxy Socket.IO via WAF et Nginx :
+
+```text
+docs/notes/PHASE_4_SOCKET_PROXY_EXPLAINED.md
+```
+
 Avant de poursuivre le chat, relire la roadmap V1 et traiter uniquement la phase indiquee comme en cours.
 
 ## Points de vigilance
 
 - `socket.io-client` existe cote front et `socket.io` est installe cote backend.
 - Express et Socket.IO partagent maintenant un serveur HTTP dans `apps/backend/src/index.js`.
-- Nginx ne proxy pas encore les upgrades websocket.
+- Nginx proxy maintenant `/socket.io/` vers le backend avec les headers d'upgrade.
 - `.env.example` contient des valeurs qui ressemblent a des vrais secrets ; a traiter avec prudence.
 - `prisma db push` est lance au demarrage backend ; pratique en dev, plus risque en production.
 - Le backend recupere maintenant plusieurs secrets depuis Vault ; les tests complets demandent donc la stack d'infrastructure.

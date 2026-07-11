@@ -2,7 +2,7 @@
 
 Mise a jour : 2026-07-11  
 Branche : `ufalzone`  
-Base actuelle : `dev` integree jusqu'au commit `ec23e25`
+Base actuelle : `dev` integree jusqu'au commit `7bf7ef7`
 
 ## Resume
 
@@ -37,7 +37,7 @@ Navigateur -> WAF :8443 -> Nginx -> backend :4000
 | 1 - Modele DB | Terminee | Tables chat et relations Prisma |
 | 2 - API REST chat | Terminee | Conversations, historique et lecture |
 | 3 - WebSocket backend | Implementee | Socket.IO, auth JWT Vault, rooms et events |
-| 4 - Proxy WAF/Nginx | A faire | Transport Socket.IO via HTTPS |
+| 4 - Proxy WAF/Nginx | Implementee | Route Nginx et exclusion CRS ciblee |
 | 5 - Front chat | A faire | Page chat, REST initial et temps reel |
 | 6 - Tests E2E | A faire | Deux utilisateurs et verification DB |
 | 7 - Bonus | A faire plus tard | Presence, notifications et confort |
@@ -176,7 +176,7 @@ Limites V1 :
 
 Validation effectuee a cette etape : syntaxe Node, schema et generation Prisma, presence de Socket.IO et controle du diff. Le test avec deux vrais clients sera fait en phase 6, une fois le proxy et le frontend disponibles.
 
-## Phase 4 - Proxy WAF et Nginx - A faire
+## Phase 4 - Proxy WAF et Nginx - Implementee
 
 Le proxy ne concerne plus seulement Nginx. Il faut verifier les deux passages :
 
@@ -184,14 +184,16 @@ Le proxy ne concerne plus seulement Nginx. Il faut verifier les deux passages :
 Navigateur -> WAF -> Nginx -> Socket.IO
 ```
 
-Travail prevu :
+Travail realise :
 
-1. ajouter `location /socket.io/` dans `infra/nginx/nginx.conf` ;
-2. transmettre `Upgrade`, `Connection`, `Host` et les informations de proxy ;
-3. verifier que l'image WAF relaie bien le changement de protocole ;
-4. tester via `https://localhost:8443`, pas seulement sur le backend direct.
+1. ajout de `location /socket.io/` dans `infra/nginx/nginx.conf` ;
+2. transmission de `Upgrade`, `Connection`, `Host` et des informations de proxy ;
+3. exclusion de la seule regle CRS `920420`, uniquement pour les POST `/socket.io/` en `text/plain` ;
+4. conservation de toutes les autres protections WAF.
 
-Cette phase ne doit commencer qu'apres validation explicite de la phase 3.
+Explication detaillee : `docs/notes/PHASE_4_SOCKET_PROXY_EXPLAINED.md`.
+
+La validation fonctionnelle HTTPS avec deux utilisateurs reste dans la phase 6, apres creation du frontend.
 
 ## Phase 5 - Front chat - A faire
 
