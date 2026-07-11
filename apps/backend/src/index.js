@@ -1,5 +1,6 @@
 // bibliothèques et imports
 import 'dotenv/config'; // parse les variables d'environnement
+import http from 'http';
 import express from 'express'; // framework web
 import cors from 'cors'; // outil pour communiquer en sécurité avec un autre service
 
@@ -12,6 +13,7 @@ import gamesRouter from './routes/games.js'; //routes internes
 import authRouter from './routes/auth.js';
 import userRouter from './routes/user.js';
 import apiKeyRouter from './routes/apiKey.js';
+import chatRouter from './routes/chat.js';
 
 import publicReviewsRouter from './routes/publicReviews.js'; //routes externes
 import publicGamesRouter from './routes/publicGames.js';
@@ -19,6 +21,7 @@ import apiKeyAuth from './middlewares/apiKeyAuth.js';
 import apiLimiter from './middlewares/rateLimiter.js';
 import swaggerUi from 'swagger-ui-express'; //swagger
 import swaggerDocs from './tools/swagger.js'; 
+import { initSocketServer } from './socket/index.js';
 
 import { syncDatabaseSchema, seedDatabase, ensureVaultDbRole } from './init/initDatabase.js'; //fonctions DB
 
@@ -60,6 +63,7 @@ app.use('/api/games', gamesRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/user', userRouter);
 app.use('/api/api-key', apiKeyRouter);
+app.use('/api/chat', chatRouter);
 
 // Public API routes
 app.use('/api/public/games', apiLimiter, apiKeyAuth, publicGamesRouter);
@@ -69,5 +73,8 @@ app.use('/api/public/reviews', apiLimiter, apiKeyAuth, publicReviewsRouter);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 
-//infinite loop that listens to connections arriving on the backend port
-app.listen(PORT, () => console.log(`Backend actif sur le port ${PORT}`));
+// Express et Socket.IO partagent le meme serveur HTTP et le meme port.
+const httpServer = http.createServer(app);
+initSocketServer(httpServer);
+
+httpServer.listen(PORT, () => console.log(`Backend actif sur le port ${PORT}`));
