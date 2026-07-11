@@ -64,6 +64,7 @@ body {
 
 @media (max-width: 600px) {
 	.home-icon-link {
+		display: none !important;;
 		width: 28px;
 		height: 28px;
 		font-size: 14px;

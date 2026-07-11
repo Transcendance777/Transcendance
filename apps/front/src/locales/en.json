@@ -139,7 +139,9 @@
 		"generate_key": "Generate key",
 		"copy": "Copy",
 		"revoke": "Revoke",
-		"copied": "Copied ✓"
+		"copied": "Copied ✓",
+		"api_key_revoked": "API key revoked.",
+		"server_error": "Server error."
 	},
 	"reviews": {
 		"users_reviews": "Users Reviews",
