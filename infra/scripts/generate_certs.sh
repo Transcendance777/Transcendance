@@ -20,7 +20,8 @@ chmod 644 "$CERT_DIR/key.key" "$CERT_DIR/cert.crt"
 openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
   -keyout "$VAULT_CERT_DIR/vault.key" \
   -out "$VAULT_CERT_DIR/vault.crt" \
-  -subj "/C=FR/ST=Paris/L=Paris/O=GameRev/CN=vault"
+  -subj "/C=FR/ST=Paris/L=Paris/O=GameRev/CN=vault" \
+  -addext "subjectAltName=DNS:vault,DNS:localhost,IP:127.0.0.1"
 
 chmod 644 "$VAULT_CERT_DIR/vault.key" "$VAULT_CERT_DIR/vault.crt"
 

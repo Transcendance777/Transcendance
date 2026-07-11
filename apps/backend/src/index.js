@@ -21,21 +21,31 @@ import swaggerUi from 'swagger-ui-express'; //swagger
 import swaggerDocs from './tools/swagger.js'; 
 
 import { syncDatabaseSchema, seedDatabase, ensureVaultDbRole } from './init/initDatabase.js'; //fonctions DB
+import { authenticateVault } from './init/initVault.js'; //fonctions Vault
 
 // port du back
 const PORT = process.env.PORT_BACK || 4000;
-
-//setup database
-syncDatabaseSchema();
-await ensureVaultDbRole();
-await seedDatabase();
 
 // démarrage de l'application
 const app = express();
 app.use(cors()); // applique CORS au serveur
 app.use(express.json({ limit: '5mb' })); // traduit les JSON en JS directement
 
+//authentification Vault
+const vaultAuth = await authenticateVault();
+console.log('Vault authenticated:', vaultAuth);
 
+//setup database
+syncDatabaseSchema();
+await ensureVaultDbRole();
+await seedDatabase();
+
+// // démarrage de l'application
+// const app = express();
+// app.use(cors()); // applique CORS au serveur
+// app.use(express.json({ limit: '5mb' })); // traduit les JSON en JS directement
+
+// prometheus
 app.use(metricsMiddleware); // observe chaque requête pour Prometheus
 // Métriques pour Prometheus (accès interne uniquement, non exposé via nginx)
 app.get('/metrics', async (req, res) => {

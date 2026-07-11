@@ -79,7 +79,7 @@ done
 
 echo "==> Creating AppRoles..."
 mkdir -p "$OUT_DIR"
-chmod 700 "$OUT_DIR"
+chmod 711 "$OUT_DIR"
 
 create_approle() {
   NAME="$1"
@@ -98,7 +98,7 @@ create_approle() {
   OUT_FILE="$OUT_DIR/${NAME}.json"
   jq -n --arg role_id "$ROLE_ID" --arg secret_id "$SECRET_ID" \
     '{role_id: $role_id, secret_id: $secret_id}' > "$OUT_FILE"
-  chmod 600 "$OUT_FILE"
+  chmod 644 "$OUT_FILE"
 
   echo "    ✓ AppRole $NAME created (credentials écrites dans $OUT_FILE, non affichées)"
 }

@@ -15,9 +15,14 @@ services:
       - gamerev
     env_file:
       - ../.env
+    volumes:
+      - approle_id_data:/approle_id:ro
+      - ./vault-stack/vault/certs:/certs:ro
     depends_on:
       postgres:
         condition: service_healthy
+      vault-bootstrap:
+        condition: service_completed_successfully
 
   postgres:
     image: postgres:18.4-alpine

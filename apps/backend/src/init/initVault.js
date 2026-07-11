@@ -1,49 +1,77 @@
 import { readFile } from 'fs/promises';
+import https from 'https';
+import axios from 'axios';
 
-const DEFAULT_VAULT_ADDR = 'http://vault:8200';
+const DEFAULT_VAULT_ADDR = 'https://vault:8200';
+const DEFAULT_VAULT_CACERT = '/certs/vault.crt';
 
-const getAppRoleCredentials = async () => {
-	if (process.env.VAULT_ROLE_ID && process.env.VAULT_SECRET_ID) {
-		return {
-			roleId: process.env.VAULT_ROLE_ID,
-			secretId: process.env.VAULT_SECRET_ID,
-		};
+let vaultClient;
+
+const createHttpsAgent = async () => {
+	const caPath = process.env.VAULT_CACERT ?? DEFAULT_VAULT_CACERT;
+
+	try {
+        const ca = await readFile(caPath);
+        // rejectUnauthorized defaults to true, enforcing strict matching against this CA
+        return new https.Agent({ ca });
+    } catch (error) {
+        throw new Error(`Unable to load Vault CA certificate (${caPath}): ${error.message}`);
+    }
+};
+
+const getVaultClient = async () => {
+	if (vaultClient) return vaultClient;
+
+	try {
+		vaultClient = axios.create({
+			httpsAgent: await createHttpsAgent(),
+			validateStatus: () => true,
+		});
+	} catch (error) {
+		const caPath = process.env.VAULT_CACERT ?? DEFAULT_VAULT_CACERT;
+		throw new Error(
+			`Unable to load Vault CA certificate (${caPath}): ${error.message}`,
+		);
 	}
 
-	const credentialsFile = process.env.VAULT_APPROLE_FILE;
-	if (credentialsFile) {
-		const raw = await readFile(credentialsFile, 'utf8');
-		const { role_id, secret_id } = JSON.parse(raw);
-
-		if (!role_id || !secret_id) {
-			throw new Error('Invalid AppRole credentials file: role_id and secret_id are required.');
-		}
-
-		return { roleId: role_id, secretId: secret_id };
-	}
-
-	throw new Error(
-		'Vault AppRole credentials missing (set VAULT_ROLE_ID/VAULT_SECRET_ID or VAULT_APPROLE_FILE).',
-	);
+	return vaultClient;
 };
 
 /**
- * Authentifie le backend sur Vault via AppRole.
+ * Récupère les credentials AppRole de Vault.
+ * @returns {Promise<{ roleId: string, secretId: string }>}
+ */
+const getAppRoleCredentials = async () => {
+	const credentialsFile =
+		process.env.VAULT_APPROLE_FILE ?? '/approle_id/backend-api.json';
+
+	const raw = await readFile(credentialsFile, 'utf8');
+	const { role_id, secret_id } = JSON.parse(raw);
+
+	if (!role_id || !secret_id) {
+		throw new Error('Invalid AppRole credentials file: role_id and secret_id are required.');
+	}
+
+	return { roleId: role_id, secretId: secret_id };
+};
+
+/**
+ * Authentifie le backend sur Vault via AppRole (HTTPS + vérification du certificat).
  * @returns {Promise<{ token: string, leaseDuration: number, renewable: boolean }>}
  */
 const authenticateVault = async () => {
-	const vaultAddr = process.env.VAULT_ADDR || DEFAULT_VAULT_ADDR;
+	const vaultAddr = (process.env.VAULT_ADDR || DEFAULT_VAULT_ADDR).replace(/\/$/, '');
 	const { roleId, secretId } = await getAppRoleCredentials();
+	const client = await getVaultClient();
 
-	const res = await fetch(`${vaultAddr}/v1/auth/approle/login`, {
-		method: 'POST',
-		headers: { 'Content-Type': 'application/json' },
-		body: JSON.stringify({ role_id: roleId, secret_id: secretId }),
+	const res = await client.post(`${vaultAddr}/v1/auth/approle/login`, {
+		role_id: roleId,
+		secret_id: secretId,
 	});
 
-	const body = await res.json();
+	const body = res.data;
 
-	if (!res.ok) {
+	if (res.status < 200 || res.status >= 300) {
 		const message = body?.errors?.[0] ?? `Vault AppRole login failed (${res.status})`;
 		throw new Error(message);
 	}
