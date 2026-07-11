@@ -68,7 +68,6 @@ services:
       - grafana-data:/var/lib/grafana
       - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
       - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
-
     depends_on:
       - prometheus
 
@@ -103,21 +102,18 @@ services:
     env_file:
       - ../.env
     environment:
+      - MODSEC_AUDIT_LOG=/var/log/modsec_audit.log
+      - MODSEC_AUDIT_LOG_FORMAT=JSON
       - BACKEND=${WAF_BACKEND}
       - MODSEC_RULE_ENGINE=${WAF_RULE_ENGINE}
       - PARANOIA=${WAF_PARANOIA}
       - ANOMALY_INBOUND=${WAF_ANOMALY_INBOUND}
       - ANOMALY_OUTBOUND=${WAF_ANOMALY_OUTBOUND}
       - BLOCKING_PARANOIA=${WAF_BLOCKING_PARANOIA}
-      - MODSEC_AUDIT_LOG=/var/log/modsec_audit.log
-      - MODSEC_AUDIT_LOG_FORMAT=JSON
-      - PROXY_SSL=${PROXY_SSL}
-      - PROXY_SSL_CERT=${PROXY_SSL_CERT}
-      - PROXY_SSL_CERT_KEY=${PROXY_SSL_CERT_KEY}
-      - SSL_PORT=${WAF_SSL_PORT}
       - PORT=${WAF_PORT}
       - TIMEOUT=${WAF_TIMEOUT}
       - DNS_SERVER=${WAF_DNS_SERVER}
+      - SSL_PORT=${WAF_SSL_PORT}
     ports:
       - "8080:8080"   # HTTP (redirect vers HTTPS géré par le WAF)
       - "8443:8443"   # HTTPS
@@ -143,7 +139,7 @@ services:
     restart: unless-stopped
     container_name: vault
     environment:
-      - VAULT_ADDR=http://127.0.0.1:8200
+      - VAULT_ADDR=https://127.0.0.1:8200
       - VAULT_SKIP_VERIFY=true
     cap_add:
       - IPC_LOCK
@@ -155,10 +151,10 @@ services:
       - vault_logs:/vault/logs
       - vault_file:/vault/file
       - ./vault-stack/vault/config:/vault/config:ro
-      # - ./vault-stack/vault/certs:/certs:ro
+      - ./vault-stack/vault/certs:/certs:ro
     command: vault server -config=/vault/config/vault.hcl -log-level="info"
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8200/v1/sys/health?standbyok=true&sealedcode=200&uninitcode=200"]
+      test: ["CMD", "wget", "--no-check-certificate", "-qO-", "https://127.0.0.1:8200/v1/sys/health?standbyok=true&sealedcode=200&uninitcode=200"]
       interval: 5s
       timeout: 3s
       retries: 10
@@ -175,7 +171,7 @@ services:
       - vault
     volumes:
       - ./vault-stack/unsealer/unseal.sh:/unseal.sh:ro
-      - ./vault-stack/vault_keys:/vault_keys
+      - vault_keys_data:/vault_keys
     command: sh -c "apk add --no-cache curl jq && sh /unseal.sh"
     networks:
       - gamerev
@@ -189,8 +185,8 @@ services:
     volumes:
       - ./vault-stack/vault/bootstrap.sh:/bootstrap.sh:ro
       - ./vault-stack/vault/policies:/vault/policies:ro
-      - ./vault-stack/vault_keys/root_keys.json:/vault_keys/root_keys.json:ro
-      - ./vault-stack/approle_id:/approle_id
+      - vault_keys_data:/vault_keys/:ro
+      - approle_id_data:/approle_id
     command: sh -c "apk add --no-cache curl jq && sh /bootstrap.sh"
     networks:
       - gamerev
@@ -238,3 +234,7 @@ volumes:
   vault_logs:
     driver: local
   vault_file:
+  vault_keys_data:
+    driver: local
+  approle_id_data:
+    driver: local 

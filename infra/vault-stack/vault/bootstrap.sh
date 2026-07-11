@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 
-VAULT_ADDR="http://vault:8200"
+VAULT_ADDR="https://vault:8200"
 POLICIES_DIR="/vault/policies"
 VAULT_TOKEN=$(jq -r .root_token /vault_keys/root_keys.json)
 OUT_DIR="/approle_id"
@@ -9,7 +9,7 @@ OUT_DIR="/approle_id"
 # ── Helpers ────────────────────────────────────────────────────────────────────
 
 vault_cmd() {
-  curl -sf \
+  curl -skf \
     -H "X-Vault-Token: $VAULT_TOKEN" \
     "$@"
 }
