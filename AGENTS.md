@@ -222,12 +222,18 @@ Analyse complete deja redigee :
 docs/notes/PROJECT_ANALYSIS_WEBSOCKET_CHAT_PLAN.md
 ```
 
-Avant de coder le chat, relire ce document.
+Roadmap V1 actualisee et document de suivi principal :
+
+```text
+docs/notes/CHAT_WEBSOCKET_ROADMAP_V1.md
+```
+
+Avant de poursuivre le chat, relire la roadmap V1 et traiter uniquement la phase indiquee comme en cours.
 
 ## Points de vigilance
 
-- `socket.io-client` existe cote front, mais `socket.io` manque cote backend.
-- `apps/backend/src/index.js` utilise `app.listen`; Socket.IO demandera un serveur HTTP partage.
+- `socket.io-client` existe cote front et `socket.io` est installe cote backend.
+- Express et Socket.IO partagent maintenant un serveur HTTP dans `apps/backend/src/index.js`.
 - Nginx ne proxy pas encore les upgrades websocket.
 - `.env.example` contient des valeurs qui ressemblent a des vrais secrets ; a traiter avec prudence.
 - `prisma db push` est lance au demarrage backend ; pratique en dev, plus risque en production.

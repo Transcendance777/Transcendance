@@ -1,5 +1,6 @@
 // bibliothèques et imports
 import 'dotenv/config'; // parse les variables d'environnement
+import http from 'http';
 import express from 'express'; // framework web
 import cors from 'cors'; // outil pour communiquer en sécurité avec un autre service
 
@@ -20,6 +21,7 @@ import apiKeyAuth from './middlewares/apiKeyAuth.js';
 import apiLimiter from './middlewares/rateLimiter.js';
 import swaggerUi from 'swagger-ui-express'; //swagger
 import swaggerDocs from './tools/swagger.js'; 
+import { initSocketServer } from './socket/index.js';
 
 import { syncDatabaseSchema, seedDatabase, ensureVaultDbRole } from './init/initDatabase.js'; //fonctions DB
 
@@ -71,5 +73,8 @@ app.use('/api/public/reviews', apiLimiter, apiKeyAuth, publicReviewsRouter);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 
-//infinite loop that listens to connections arriving on the backend port
-app.listen(PORT, () => console.log(`Backend actif sur le port ${PORT}`));
+// Express et Socket.IO partagent le meme serveur HTTP et le meme port.
+const httpServer = http.createServer(app);
+initSocketServer(httpServer);
+
+httpServer.listen(PORT, () => console.log(`Backend actif sur le port ${PORT}`));

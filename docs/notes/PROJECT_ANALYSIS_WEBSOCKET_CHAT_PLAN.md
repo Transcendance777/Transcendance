@@ -5,6 +5,39 @@ Branche creee : `ufalzone`
 Base de branche : `origin/dev`  
 Commit de depart observe : `1b08ab3` (`fix: correction OAuth Google...`)
 
+## Etat actuel apres integration de `dev`
+
+Mise a jour : 2026-07-11
+
+Le projet a ete reorganise en monorepo et notre travail chat a ete reintegre sur cette nouvelle base :
+
+```text
+apps/backend/
+apps/front/
+infra/
+docs/notes/
+```
+
+Etat des phases :
+
+| Phase | Etat | Contenu |
+| --- | --- | --- |
+| 1 - Modele DB | Terminee | `Conversation`, `ConversationParticipant`, `ChatMessage` |
+| 2 - REST chat | Terminee | conversations, historique et lecture |
+| 3 - Socket backend | Implementee | Socket.IO, JWT Vault, rooms et messages temps reel |
+| 4 - Proxy | A faire | trajet WAF -> Nginx -> Socket.IO |
+| 5 - Front chat | A faire | page, services REST/socket et composants |
+| 6 - Tests E2E | A faire | deux utilisateurs via HTTPS |
+
+Changements apportes par la nouvelle branche `dev` :
+
+- le JWT backend est lu dans `vaultSecrets.JWT_SECRET`, plus directement dans `process.env` ;
+- l'acces public traverse maintenant le WAF avant Nginx ;
+- le backend et le frontend vivent sous `apps/` ;
+- Docker Compose et Nginx vivent sous `infra/`.
+
+La phase 3 reste limitee au backend. Les modifications WAF/Nginx et le frontend ne sont pas inclus dans cette phase.
+
 ## Objectif du document
 
 Ce document resume l'etat du projet avant implementation des websockets. Il sert de carte technique pour comprendre :
@@ -15,7 +48,7 @@ Ce document resume l'etat du projet avant implementation des websockets. Il sert
 - les routes API et flux d'authentification ;
 - un plan d'implementation pour un systeme de chat temps reel entre utilisateurs.
 
-Pour l'instant, aucun code applicatif websocket/chat n'a ete ajoute.
+Les phases DB et REST du chat sont implementees. Le backend Socket.IO correspond a la phase 3.
 
 ## Vue globale
 
@@ -411,7 +444,7 @@ erDiagram
 
 ## Observations et risques avant websocket
 
-1. `socket.io-client` existe deja cote front, mais il manque `socket.io` cote backend.
+1. `socket.io-client` existe cote front et `socket.io` est maintenant installe cote backend.
 2. Le backend utilise `app.listen`; Socket.IO demande un serveur HTTP partage.
 3. Nginx ne gere pas encore explicitement les upgrades websocket.
 4. Les tokens sont en `localStorage`; le websocket devra les lire et les envoyer au handshake.
@@ -586,7 +619,7 @@ apps/backend/src/socket/chatSocket.js
 Pseudo-flux :
 
 1. Le client envoie `auth.token`.
-2. Le serveur verifie JWT avec `process.env.JWT_SECRET`.
+2. Le serveur verifie le JWT avec `vaultSecrets.JWT_SECRET`.
 3. Le serveur attache `socket.user = { id, username }`.
 4. Le socket rejoint :
    - `user:${userId}` pour les notifications globales ;
@@ -798,4 +831,3 @@ La v1 peut etre consideree terminee quand :
 - le websocket fonctionne derriere Nginx HTTPS ;
 - le logout coupe la connexion socket ;
 - aucun message HTML/script n'est rendu comme HTML.
-
