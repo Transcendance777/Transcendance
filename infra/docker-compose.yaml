@@ -15,9 +15,13 @@ services:
       - gamerev
     env_file:
       - ../.env
+    volumes:
+      - approle_id_data:/approle_id:ro
     depends_on:
       postgres:
         condition: service_healthy
+      vault-bootstrap:
+        condition: service_completed_successfully
 
   postgres:
     image: postgres:18.4-alpine
@@ -51,8 +55,6 @@ services:
     container_name: prometheus
     volumes:
       - ./monitoring/prometheus/prometheus.yaml:/etc/prometheus/prometheus.yml
-    ports:
-      - "9090:9090"
     networks:
       - gamerev
 
@@ -143,9 +145,6 @@ services:
       - VAULT_SKIP_VERIFY=true
     cap_add:
       - IPC_LOCK
-    ports:
-      - "8200:8200"
-      - "8201:8201"
     volumes:
       - vault_data:/vault/data
       - vault_logs:/vault/logs
@@ -237,4 +236,4 @@ volumes:
   vault_keys_data:
     driver: local
   approle_id_data:
-    driver: local 
+    driver: local
