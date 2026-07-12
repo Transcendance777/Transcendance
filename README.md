@@ -25,25 +25,7 @@ The application is a **monolith**: one `backend` service handles all business lo
 
 Each service runs in its own container. All containers communicate over a private Docker network, and only the reverse proxy is exposed to the outside.
 
-REPLACE BY PHOTO
-
-```
-              ┌────────────┐
-  Internet ── │  WAF/nginx │  ← only exposed entry point
-              └─────┬──────┘
-                     │
-        ┌────────────┼────────────┐
-        │            │            │
-   ┌─────────┐  ┌──────────┐  ┌────────┐
-   │ frontend│  │ backend  │  │ vault  │
-   └─────────┘  └────┬─────┘  └────────┘
-                      │
-                ┌───────────┐
-                │ postgres  │
-                └───────────┘
-
-   + prometheus / grafana (monitoring, internal only)
-```
+<img width="646" height="325" alt="Screenshot 2026-07-12 at 20 55 54" src="https://github.com/user-attachments/assets/8a71fa0e-8d95-49d3-be4d-ca9bfa46ba04" />
 
 - **WAF (ModSecurity) + nginx**: single public entry point, TLS termination, request filtering.
 - **Vault**: stores and injects secrets (DB credentials, API keys) into the backend at runtime instead of plain `.env` values.
