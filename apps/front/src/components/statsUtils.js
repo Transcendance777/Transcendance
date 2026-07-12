@@ -20,13 +20,13 @@ export const getStatsYearOptions = () => {
 export const DEFAULT_STATS_PLATFORM = 'all'
 export const DEFAULT_STATS_GENRE = 'all'
 
-export const buildStatsFilter = ({ period, fromYear, toYear }) => {
-	const hasYearRange = fromYear != null && toYear != null
+export const buildStatsFilter = ({ period, filterYear }) => {
+	const hasFilterYear = filterYear != null
 
 	return {
-		period: hasYearRange ? STATS_PERIODS.CUSTOM : period,
-		fromYear: hasYearRange ? Math.min(fromYear, toYear) : null,
-		toYear: hasYearRange ? Math.max(fromYear, toYear) : null,
+		period: hasFilterYear ? STATS_PERIODS.CUSTOM : period,
+		fromYear: hasFilterYear ? filterYear : null,
+		toYear: hasFilterYear ? filterYear : null,
 	}
 }
 
@@ -34,7 +34,7 @@ export const buildStatsUrl = (path, filter) => {
 	const { period, fromYear, toYear } = buildStatsFilter(filter)
 	const params = new URLSearchParams({ period })
 
-	if (fromYear != null && toYear != null) {
+	if (fromYear != null) {
 		params.set('fromYear', String(fromYear))
 		params.set('toYear', String(toYear))
 	}
@@ -68,16 +68,19 @@ export const buildRatingStatsUrl = (filter, genre = DEFAULT_STATS_GENRE) => {
 	return url
 }
 
-export const buildGenreStatsUrl = (filter, releaseFromYear = null, releaseToYear = null) => {
+export const buildGenreStatsUrl = (filter, releaseYear = null) => {
 	const url = buildStatsUrl('/api/stats/game-genre-distribution', filter)
 
-	if (releaseFromYear != null && releaseToYear != null) {
+	if (releaseYear != null) {
 		const [path, query] = url.split('?')
 		const params = new URLSearchParams(query)
-		params.set('releaseFromYear', String(releaseFromYear))
-		params.set('releaseToYear', String(releaseToYear))
+		params.set('releaseFromYear', String(releaseYear))
+		params.set('releaseToYear', String(releaseYear))
 		return `${path}?${params.toString()}`
 	}
 
 	return url
 }
+
+export const buildStatsExportUrl = (filter) =>
+	buildStatsUrl('/api/stats/export', filter)

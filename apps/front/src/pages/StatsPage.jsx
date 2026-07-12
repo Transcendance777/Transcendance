@@ -8,6 +8,7 @@ import PlayingListStatsChart from '../components/PlayingListStatsChart'
 import RatingDistributionChart from '../components/RatingDistributionChart'
 import GameGenreDistributionChart from '../components/GameGenreDistributionChart'
 import StatsFilters from '../components/StatsFilters'
+import StatsExportButton from '../components/StatsExportButton'
 import { DEFAULT_STATS_PERIOD } from '../components/statsUtils'
 import '../styles/ProfilePage.css'
 import '../styles/StatsPage.css'
@@ -16,12 +17,11 @@ const StatsPage = () => {
 	const { t } = useTranslation()
 	const navigate = useNavigate()
 	const [period, setPeriod] = useState(DEFAULT_STATS_PERIOD)
-	const [fromYear, setFromYear] = useState(null)
-	const [toYear, setToYear] = useState(null)
+	const [filterYear, setFilterYear] = useState(null)
 
 	const statsFilter = useMemo(
-		() => ({ period, fromYear, toYear }),
-		[period, fromYear, toYear],
+		() => ({ period, filterYear }),
+		[period, filterYear],
 	)
 
 	useEffect(() => {
@@ -31,13 +31,7 @@ const StatsPage = () => {
 
 	const handlePeriodChange = (nextPeriod) => {
 		setPeriod(nextPeriod)
-		setFromYear(null)
-		setToYear(null)
-	}
-
-	const handleYearRangeChange = (nextFromYear, nextToYear) => {
-		setFromYear(nextFromYear)
-		setToYear(nextToYear)
+		setFilterYear(null)
 	}
 
 	return (
@@ -49,14 +43,14 @@ const StatsPage = () => {
 					<div className="stats-charts">
 						<StatsFilters
 							period={period}
-							fromYear={fromYear}
-							toYear={toYear}
+							filterYear={filterYear}
 							onPeriodChange={handlePeriodChange}
-							onYearRangeChange={handleYearRangeChange}
+							onFilterYearChange={setFilterYear}
 						/>
 						<PlayingListStatsChart statsFilter={statsFilter} />
 						<RatingDistributionChart statsFilter={statsFilter} />
 						<GameGenreDistributionChart statsFilter={statsFilter} />
+						<StatsExportButton statsFilter={statsFilter} />
 					</div>
 				</div>
 			</Background>

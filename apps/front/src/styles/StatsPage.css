@@ -26,37 +26,12 @@
 	gap: 8px;
 }
 
-.stats-year-range-filter {
+.stats-year-filter {
 	display: flex;
 	flex-direction: column;
 	align-items: flex-end;
 	gap: 8px;
 	margin-left: auto;
-}
-
-.stats-year-range-inputs {
-	display: flex;
-	align-items: center;
-	gap: 10px;
-}
-
-.stats-year-range-field {
-	display: flex;
-	flex-direction: column;
-	gap: 6px;
-}
-
-.stats-year-range-field-label {
-	font-family: "policeConthrax", sans-serif;
-	color: rgba(231, 231, 231, 0.7);
-	font-size: 11px;
-}
-
-.stats-year-range-separator {
-	font-family: "policeConthrax", sans-serif;
-	color: #f5a623;
-	font-size: 18px;
-	padding-top: 18px;
 }
 
 .stats-period-label {
@@ -147,6 +122,44 @@
 	color: #ff6b6b;
 }
 
+.stats-export {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 12px;
+	padding-top: 8px;
+}
+
+.stats-export-btn {
+	background: rgba(245, 166, 35, 0.15);
+	border: 2px solid #f5a623;
+	color: #e7e7e7;
+	font-family: "policeConthrax", sans-serif;
+	font-size: clamp(12px, 1.2vw, 14px);
+	padding: 12px 32px;
+	border-radius: 20px;
+	cursor: pointer;
+	transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.stats-export-btn:hover:not(:disabled) {
+	transform: scale(1.05);
+	background-color: rgba(245, 166, 35, 0.3);
+}
+
+.stats-export-btn:disabled {
+	opacity: 0.6;
+	cursor: not-allowed;
+}
+
+.stats-export-error {
+	font-family: "policeConthrax", sans-serif;
+	color: #ff6b6b;
+	font-size: clamp(11px, 1.1vw, 13px);
+	margin: 0;
+	text-align: center;
+}
+
 @media (max-width: 600px) {
 	.stats-filters {
 		flex-direction: column;
@@ -157,19 +170,9 @@
 		align-items: stretch;
 	}
 
-	.stats-year-range-filter {
+	.stats-year-filter {
 		align-items: stretch;
 		margin-left: 0;
-	}
-
-	.stats-year-range-inputs {
-		flex-direction: column;
-		align-items: stretch;
-	}
-
-	.stats-year-range-separator {
-		padding-top: 0;
-		align-self: center;
 	}
 
 	.stats-period-select {

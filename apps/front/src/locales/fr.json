@@ -105,16 +105,12 @@
 		"period_year": "Cette année ({{year}})",
 		"period_six_months": "6 derniers mois",
 		"year_range_label": "Filtrer la date",
-		"year_from": "De",
-		"year_to": "À",
 		"year_select": "Année",
 		"platform_label": "Plateforme",
 		"platform_all": "Toutes les plateformes",
 		"genre_label": "Genre",
 		"genre_all": "Tous les genres",
 		"release_date_label": "Date de sortie",
-		"release_from": "De",
-		"release_to": "À",
 		"release_select": "Année",
 		"playing_list_title": "Nombre de jeux joués",
 		"rating_distribution_title": "Notes",
@@ -125,7 +121,10 @@
 		"unknown_genre": "Inconnu",
 		"no_genre_data": "Aucun jeu dans votre liste en cours.",
 		"loading": "Chargement des stats...",
-		"load_error": "Impossible de charger les stats."
+		"load_error": "Impossible de charger les stats.",
+		"export": "Exporter",
+		"export_loading": "Export en cours...",
+		"export_error": "Impossible d'exporter les stats."
 	},
 	"settings": {
 		"account": "Compte",
