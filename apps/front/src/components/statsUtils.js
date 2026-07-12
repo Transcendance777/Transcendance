@@ -18,6 +18,7 @@ export const getStatsYearOptions = () => {
 }
 
 export const DEFAULT_STATS_PLATFORM = 'all'
+export const DEFAULT_STATS_GENRE = 'all'
 
 export const buildStatsFilter = ({ period, fromYear, toYear }) => {
 	const hasYearRange = fromYear != null && toYear != null
@@ -48,6 +49,33 @@ export const buildPlayingListStatsUrl = (filter, platform = DEFAULT_STATS_PLATFO
 		const [path, query] = url.split('?')
 		const params = new URLSearchParams(query)
 		params.set('platform', platform)
+		return `${path}?${params.toString()}`
+	}
+
+	return url
+}
+
+export const buildRatingStatsUrl = (filter, genre = DEFAULT_STATS_GENRE) => {
+	const url = buildStatsUrl('/api/stats/rating-distribution', filter)
+
+	if (genre && genre !== DEFAULT_STATS_GENRE) {
+		const [path, query] = url.split('?')
+		const params = new URLSearchParams(query)
+		params.set('genre', genre)
+		return `${path}?${params.toString()}`
+	}
+
+	return url
+}
+
+export const buildGenreStatsUrl = (filter, releaseFromYear = null, releaseToYear = null) => {
+	const url = buildStatsUrl('/api/stats/game-genre-distribution', filter)
+
+	if (releaseFromYear != null && releaseToYear != null) {
+		const [path, query] = url.split('?')
+		const params = new URLSearchParams(query)
+		params.set('releaseFromYear', String(releaseFromYear))
+		params.set('releaseToYear', String(releaseToYear))
 		return `${path}?${params.toString()}`
 	}
 

@@ -8,7 +8,10 @@ import {
 	Legend,
 	ResponsiveContainer,
 } from 'recharts'
-import { buildStatsUrl } from './statsUtils'
+import {
+	buildGenreStatsUrl,
+	getStatsYearOptions,
+} from './statsUtils'
 
 const GENRE_COLORS = [
 	'#f5a623',
@@ -26,8 +29,11 @@ const GENRE_COLORS = [
 const GameGenreDistributionChart = ({ statsFilter }) => {
 	const { t } = useTranslation()
 	const [distribution, setDistribution] = useState([])
+	const [releaseFromYear, setReleaseFromYear] = useState(null)
+	const [releaseToYear, setReleaseToYear] = useState(null)
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState(null)
+	const yearOptions = getStatsYearOptions()
 
 	useEffect(() => {
 		const token = localStorage.getItem('token')
@@ -41,9 +47,10 @@ const GameGenreDistributionChart = ({ statsFilter }) => {
 				setLoading(true)
 				setError(null)
 
-				const res = await fetch(buildStatsUrl('/api/stats/game-genre-distribution', statsFilter), {
-					headers: { Authorization: `Bearer ${token}` },
-				})
+				const res = await fetch(
+					buildGenreStatsUrl(statsFilter, releaseFromYear, releaseToYear),
+					{ headers: { Authorization: `Bearer ${token}` } },
+				)
 
 				if (!res.ok) throw new Error('fetch_failed')
 
@@ -57,7 +64,26 @@ const GameGenreDistributionChart = ({ statsFilter }) => {
 		}
 
 		fetchStats()
-	}, [statsFilter, t])
+	}, [statsFilter, releaseFromYear, releaseToYear, t])
+
+	useEffect(() => {
+		setReleaseFromYear(null)
+		setReleaseToYear(null)
+	}, [statsFilter])
+
+	const handleReleaseFromChange = (value) => {
+		const nextFrom = Number(value)
+		const nextTo = releaseToYear ?? nextFrom
+		setReleaseFromYear(nextFrom)
+		setReleaseToYear(Math.max(nextFrom, nextTo))
+	}
+
+	const handleReleaseToChange = (value) => {
+		const nextTo = Number(value)
+		const nextFrom = releaseFromYear ?? nextTo
+		setReleaseFromYear(Math.min(nextFrom, nextTo))
+		setReleaseToYear(nextTo)
+	}
 
 	const chartData = useMemo(
 		() =>
@@ -78,12 +104,93 @@ const GameGenreDistributionChart = ({ statsFilter }) => {
 	}
 
 	if (chartData.length === 0) {
-		return <p className="stats-chart-message">{t('stats.no_genre_data')}</p>
+		return (
+			<div className="stats-chart-card">
+				<div className="stats-chart-header">
+					<h3 className="stats-chart-title">{t('stats.genre_distribution_title')}</h3>
+					<div className="stats-chart-filter stats-release-filter">
+						<span className="stats-period-label">{t('stats.release_date_label')}</span>
+						<div className="stats-year-range-inputs">
+							<label className="stats-year-range-field">
+								<span className="stats-year-range-field-label">{t('stats.release_from')}</span>
+								<select
+									className="stats-period-select"
+									value={releaseFromYear ?? ''}
+									onChange={(e) => handleReleaseFromChange(e.target.value)}
+								>
+									<option value="">{t('stats.release_select')}</option>
+									{yearOptions.map((year) => (
+										<option key={`release-from-${year}`} value={year}>
+											{year}
+										</option>
+									))}
+								</select>
+							</label>
+							<span className="stats-year-range-separator">—</span>
+							<label className="stats-year-range-field">
+								<span className="stats-year-range-field-label">{t('stats.release_to')}</span>
+								<select
+									className="stats-period-select"
+									value={releaseToYear ?? ''}
+									onChange={(e) => handleReleaseToChange(e.target.value)}
+								>
+									<option value="">{t('stats.release_select')}</option>
+									{yearOptions.map((year) => (
+										<option key={`release-to-${year}`} value={year}>
+											{year}
+										</option>
+									))}
+								</select>
+							</label>
+						</div>
+					</div>
+				</div>
+				<p className="stats-chart-message">{t('stats.no_genre_data')}</p>
+			</div>
+		)
 	}
 
 	return (
 		<div className="stats-chart-card">
-			<h3 className="stats-chart-title">{t('stats.genre_distribution_title')}</h3>
+			<div className="stats-chart-header">
+				<h3 className="stats-chart-title">{t('stats.genre_distribution_title')}</h3>
+				<div className="stats-chart-filter stats-release-filter">
+					<span className="stats-period-label">{t('stats.release_date_label')}</span>
+					<div className="stats-year-range-inputs">
+						<label className="stats-year-range-field">
+							<span className="stats-year-range-field-label">{t('stats.release_from')}</span>
+							<select
+								className="stats-period-select"
+								value={releaseFromYear ?? ''}
+								onChange={(e) => handleReleaseFromChange(e.target.value)}
+							>
+								<option value="">{t('stats.release_select')}</option>
+								{yearOptions.map((year) => (
+									<option key={`release-from-${year}`} value={year}>
+										{year}
+									</option>
+								))}
+							</select>
+						</label>
+						<span className="stats-year-range-separator">—</span>
+						<label className="stats-year-range-field">
+							<span className="stats-year-range-field-label">{t('stats.release_to')}</span>
+							<select
+								className="stats-period-select"
+								value={releaseToYear ?? ''}
+								onChange={(e) => handleReleaseToChange(e.target.value)}
+							>
+								<option value="">{t('stats.release_select')}</option>
+								{yearOptions.map((year) => (
+									<option key={`release-to-${year}`} value={year}>
+										{year}
+									</option>
+								))}
+							</select>
+						</label>
+					</div>
+				</div>
+			</div>
 			<div className="stats-chart-container stats-pie-chart-container">
 				<ResponsiveContainer width="100%" height="100%">
 					<PieChart>

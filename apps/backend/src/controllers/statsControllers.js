@@ -224,15 +224,71 @@ const getPlayingListStats = async (req, res) => {
 	}
 };
 
-const buildRatingDistribution = (grouped) => {
+const parseGenres = (genre) =>
+	genre
+		? genre.split(',').map((item) => item.trim()).filter(Boolean)
+		: [];
+
+const parseGenreFilter = (req) => {
+	const genre = req.query.genre?.trim();
+	return genre && genre !== 'all' ? genre : null;
+};
+
+const gameMatchesGenre = (game, genreFilter) => {
+	if (!genreFilter) return true;
+	return parseGenres(game.genre).some(
+		(genre) => genre.toLowerCase() === genreFilter.toLowerCase(),
+	);
+};
+
+const extractAvailableGenres = (games) => {
+	const genres = new Set();
+
+	for (const game of games) {
+		for (const genre of parseGenres(game.genre)) {
+			genres.add(genre);
+		}
+	}
+
+	return [...genres].sort((a, b) => a.localeCompare(b));
+};
+
+const parseReleaseYearRange = (req) => {
+	const releaseFromYear = parseYear(req.query.releaseFromYear);
+	const releaseToYear = parseYear(req.query.releaseToYear);
+
+	if (releaseFromYear === null || releaseToYear === null) {
+		return null;
+	}
+
+	const startYear = Math.min(releaseFromYear, releaseToYear);
+	const endYear = Math.max(releaseFromYear, releaseToYear);
+
+	return {
+		start: new Date(startYear, 0, 1),
+		end: new Date(endYear + 1, 0, 1),
+		releaseFromYear: startYear,
+		releaseToYear: endYear,
+	};
+};
+
+const gameMatchesReleaseRange = (game, releaseRange) => {
+	if (!releaseRange) return true;
+	if (!game.releaseDate) return false;
+
+	const releaseDate = new Date(game.releaseDate);
+	return releaseDate >= releaseRange.start && releaseDate < releaseRange.end;
+};
+
+const buildRatingDistributionFromReviews = (reviews) => {
 	const distribution = Array.from({ length: 5 }, (_, i) => ({
 		rating: i + 1,
 		count: 0,
 	}));
 
-	for (const row of grouped) {
-		if (row.rating >= 1 && row.rating <= 5) {
-			distribution[row.rating - 1].count = row._count.rating;
+	for (const review of reviews) {
+		if (review.rating >= 1 && review.rating <= 5) {
+			distribution[review.rating - 1].count++;
 		}
 	}
 
@@ -248,21 +304,28 @@ const getRatingDistribution = async (req, res) => {
 	try {
 		const userId = Number(req.user.id);
 		const { period, start, end, fromYear, toYear } = resolveStatsDateRange(req);
+		const genreFilter = parseGenreFilter(req);
 
-		const grouped = await prisma.review.groupBy({
-			by: ['rating'],
+		const reviews = await prisma.review.findMany({
 			where: {
 				userId,
 				...buildDateFilter('createdAt', start, end),
 			},
-			_count: { rating: true },
+			include: { game: true },
 		});
+
+		const availableGenres = extractAvailableGenres(reviews.map((review) => review.game));
+		const filteredReviews = reviews.filter((review) =>
+			gameMatchesGenre(review.game, genreFilter),
+		);
 
 		res.status(200).json({
 			period,
 			fromYear,
 			toYear,
-			data: buildRatingDistribution(grouped),
+			genre: genreFilter ?? 'all',
+			availableGenres,
+			data: buildRatingDistributionFromReviews(filteredReviews),
 		});
 	} catch (error) {
 		res.status(500).json({ error: 'Server error', details: error.message });
@@ -301,6 +364,7 @@ const getGameGenre = async (req, res) => {
 	try {
 		const userId = Number(req.user.id);
 		const { period, start, end, fromYear, toYear } = resolveStatsDateRange(req);
+		const releaseRange = parseReleaseYearRange(req);
 
 		const list = await prisma.playingList.findMany({
 			where: {
@@ -312,12 +376,17 @@ const getGameGenre = async (req, res) => {
 		});
 
 		const games = list.map((entry) => entry.game);
+		const filteredGames = games.filter((game) =>
+			gameMatchesReleaseRange(game, releaseRange),
+		);
 
 		res.status(200).json({
 			period,
 			fromYear,
 			toYear,
-			data: buildGenreDistribution(games),
+			releaseFromYear: releaseRange?.releaseFromYear ?? null,
+			releaseToYear: releaseRange?.releaseToYear ?? null,
+			data: buildGenreDistribution(filteredGames),
 		});
 	} catch (error) {
 		res.status(500).json({ error: 'Server error', details: error.message });

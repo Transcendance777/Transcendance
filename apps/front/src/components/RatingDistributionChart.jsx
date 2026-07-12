@@ -9,11 +9,16 @@ import {
 	Tooltip,
 	ResponsiveContainer,
 } from 'recharts'
-import { buildStatsUrl } from './statsUtils'
+import {
+	buildRatingStatsUrl,
+	DEFAULT_STATS_GENRE,
+} from './statsUtils'
 
 const RatingDistributionChart = ({ statsFilter }) => {
 	const { t } = useTranslation()
 	const [distribution, setDistribution] = useState([])
+	const [availableGenres, setAvailableGenres] = useState([])
+	const [genre, setGenre] = useState(DEFAULT_STATS_GENRE)
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState(null)
 
@@ -29,14 +34,16 @@ const RatingDistributionChart = ({ statsFilter }) => {
 				setLoading(true)
 				setError(null)
 
-				const res = await fetch(buildStatsUrl('/api/stats/rating-distribution', statsFilter), {
-					headers: { Authorization: `Bearer ${token}` },
-				})
+				const res = await fetch(
+					buildRatingStatsUrl(statsFilter, genre),
+					{ headers: { Authorization: `Bearer ${token}` } },
+				)
 
 				if (!res.ok) throw new Error('fetch_failed')
 
 				const json = await res.json()
 				setDistribution(json.data ?? [])
+				setAvailableGenres(json.availableGenres ?? [])
 			} catch {
 				setError(t('stats.load_error'))
 			} finally {
@@ -45,7 +52,11 @@ const RatingDistributionChart = ({ statsFilter }) => {
 		}
 
 		fetchStats()
-	}, [statsFilter, t])
+	}, [statsFilter, genre, t])
+
+	useEffect(() => {
+		setGenre(DEFAULT_STATS_GENRE)
+	}, [statsFilter])
 
 	const chartData = useMemo(
 		() =>
@@ -67,7 +78,27 @@ const RatingDistributionChart = ({ statsFilter }) => {
 
 	return (
 		<div className="stats-chart-card">
-			<h3 className="stats-chart-title">{t('stats.rating_distribution_title')}</h3>
+			<div className="stats-chart-header">
+				<h3 className="stats-chart-title">{t('stats.rating_distribution_title')}</h3>
+				<div className="stats-chart-filter">
+					<label className="stats-period-label" htmlFor="stats-genre-select">
+						{t('stats.genre_label')}
+					</label>
+					<select
+						id="stats-genre-select"
+						className="stats-period-select"
+						value={genre}
+						onChange={(e) => setGenre(e.target.value)}
+					>
+						<option value={DEFAULT_STATS_GENRE}>{t('stats.genre_all')}</option>
+						{availableGenres.map((item) => (
+							<option key={item} value={item}>
+								{item}
+							</option>
+						))}
+					</select>
+				</div>
+			</div>
 			<div className="stats-chart-container">
 				<ResponsiveContainer width="100%" height="100%">
 					<BarChart data={chartData} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
