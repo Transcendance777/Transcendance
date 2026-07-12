@@ -5,6 +5,8 @@ import ProfileNavBar from '../components/ProfileNavBar'
 import Background from '../components/Background'
 import Footer from '../components/Footer'
 import PlayingListStatsChart from '../components/PlayingListStatsChart'
+import RatingDistributionChart from '../components/RatingDistributionChart'
+import GameGenreDistributionChart from '../components/GameGenreDistributionChart'
 import '../styles/ProfilePage.css'
 import '../styles/StatsPage.css'
 
@@ -23,7 +25,11 @@ const StatsPage = () => {
 			<Background style={{ alignItems: 'flex-start' }}>
 				<div className="profile-content">
 					<h2 className="profile-section-title">{t('profile.stats')}</h2>
-					<PlayingListStatsChart />
+					<div className="stats-charts">
+						<PlayingListStatsChart />
+						<RatingDistributionChart />
+						<GameGenreDistributionChart />
+					</div>
 				</div>
 			</Background>
 			<Footer />

@@ -100,8 +100,14 @@
 		"add_favorite": "Añadir un juego favorito"
 	},
 	"stats": {
-		"playing_list_title": "Lista en curso — {{year}}",
+		"playing_list_title": "Juegos jugados",
+		"rating_distribution_title": "Clasificaciones",
+		"genre_distribution_title": "Géneros de videojuegos",
+		"rating_star": "{{rating}} ★",
 		"games": "Juegos",
+		"reviews": "Reseñas",
+		"unknown_genre": "Desconocido",
+		"no_genre_data": "No hay juegos en tu lista en curso.",
 		"loading": "Cargando estadísticas...",
 		"load_error": "No se pudieron cargar las estadísticas."
 	},

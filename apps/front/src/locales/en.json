@@ -100,8 +100,14 @@
 		"add_favorite": "Add a Favorite Game"
 	},
 	"stats": {
-		"playing_list_title": "Playing list — {{year}}",
+		"playing_list_title": "Games played",
+		"rating_distribution_title": "Ratings",
+		"genre_distribution_title": "Games genre",
+		"rating_star": "{{rating}} ★",
 		"games": "Games",
+		"reviews": "Reviews",
+		"unknown_genre": "Unknown",
+		"no_genre_data": "No games in your playing list yet.",
 		"loading": "Loading stats...",
 		"load_error": "Unable to load stats."
 	},

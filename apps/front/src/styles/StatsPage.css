@@ -1,9 +1,17 @@
+.stats-charts {
+	display: flex;
+	flex-direction: column;
+	gap: 24px;
+	width: 100%;
+	max-width: 900px;
+	margin: 0 auto;
+}
+
 .stats-chart-card {
 	background: rgba(0, 0, 0, 0.6);
 	border-radius: 15px;
 	padding: 24px;
-	max-width: 900px;
-	margin: 0 auto;
+	width: 100%;
 }
 
 .stats-chart-title {
@@ -19,6 +27,10 @@
 	height: 360px;
 }
 
+.stats-pie-chart-container {
+	height: 420px;
+}
+
 .stats-chart-message {
 	font-family: "policeConthrax", sans-serif;
 	color: rgba(231, 231, 231, 0.7);
@@ -26,8 +38,7 @@
 	padding: 40px 20px;
 	background: rgba(0, 0, 0, 0.6);
 	border-radius: 15px;
-	max-width: 900px;
-	margin: 0 auto;
+	width: 100%;
 }
 
 .stats-chart-error {
@@ -37,6 +48,10 @@
 @media (max-width: 600px) {
 	.stats-chart-container {
 		height: 300px;
+	}
+
+	.stats-pie-chart-container {
+		height: 360px;
 	}
 
 	.stats-chart-card {
