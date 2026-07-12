@@ -104,7 +104,7 @@
 		"period_all": "Tout le temps",
 		"period_year": "Cette année ({{year}})",
 		"period_six_months": "6 derniers mois",
-		"year_range_label": "Calendrier libre",
+		"year_range_label": "Filtrer la date",
 		"year_from": "De",
 		"year_to": "À",
 		"year_select": "Année",

@@ -104,7 +104,7 @@
 		"period_all": "All time",
 		"period_year": "This year ({{year}})",
 		"period_six_months": "Last 6 months",
-		"year_range_label": "Custom year range",
+		"year_range_label": "Filter year range",
 		"year_from": "From",
 		"year_to": "To",
 		"year_select": "Year",

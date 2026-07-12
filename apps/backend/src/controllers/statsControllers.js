@@ -280,15 +280,23 @@ const gameMatchesReleaseRange = (game, releaseRange) => {
 	return releaseDate >= releaseRange.start && releaseDate < releaseRange.end;
 };
 
+const toStoredRatingIndex = (storedRating) => {
+	if (storedRating >= 1 && storedRating <= 10) {
+		return storedRating - 1;
+	}
+	return null;
+};
+
 const buildRatingDistributionFromReviews = (reviews) => {
-	const distribution = Array.from({ length: 5 }, (_, i) => ({
-		rating: i + 1,
+	const distribution = Array.from({ length: 10 }, (_, i) => ({
+		rating: (i + 1) / 2,
 		count: 0,
 	}));
 
 	for (const review of reviews) {
-		if (review.rating >= 1 && review.rating <= 5) {
-			distribution[review.rating - 1].count++;
+		const index = toStoredRatingIndex(review.rating);
+		if (index !== null && index >= 0 && index < 10) {
+			distribution[index].count++;
 		}
 	}
 

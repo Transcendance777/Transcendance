@@ -58,11 +58,14 @@ const RatingDistributionChart = ({ statsFilter }) => {
 		setGenre(DEFAULT_STATS_GENRE)
 	}, [statsFilter])
 
+	const formatStarLabel = (rating) =>
+		Number.isInteger(rating) ? String(rating) : rating.toFixed(1)
+
 	const chartData = useMemo(
 		() =>
 			distribution.map(({ rating, count }) => ({
 				rating,
-				label: t('stats.rating_star', { rating }),
+				label: t('stats.rating_star', { rating: formatStarLabel(rating) }),
 				count,
 			})),
 		[distribution, t],

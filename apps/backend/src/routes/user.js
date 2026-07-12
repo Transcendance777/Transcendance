@@ -543,7 +543,7 @@ router.post('/review', authMiddleware, async (req, res) => {
 		})
 		if (existing) return res.status(409).json({ error: 'You already posted a review for this game.' })
 
-		const ratingInt = Math.round(rating)
+		const ratingInt = Math.round(rating * 2)
 		const review = await prisma.review.create({
 			data: { userId: req.user.id, gameId: game.id, rating: ratingInt, reviewText: reviewText?.trim() || null },
 			include: { game: true }

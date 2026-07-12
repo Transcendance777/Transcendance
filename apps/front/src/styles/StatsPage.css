@@ -10,9 +10,9 @@
 .stats-filters {
 	display: flex;
 	flex-wrap: wrap;
-	align-items: flex-end;
-	justify-content: flex-end;
-	gap: 16px 24px;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 24px;
 	width: 100%;
 	background: rgba(0, 0, 0, 0.6);
 	border-radius: 15px;
@@ -21,15 +21,17 @@
 
 .stats-period-filter {
 	display: flex;
-	align-items: center;
-	gap: 12px;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 8px;
 }
 
 .stats-year-range-filter {
 	display: flex;
 	flex-direction: column;
-	align-items: flex-start;
+	align-items: flex-end;
 	gap: 8px;
+	margin-left: auto;
 }
 
 .stats-year-range-inputs {
@@ -152,8 +154,12 @@
 	}
 
 	.stats-period-filter {
-		flex-direction: column;
 		align-items: stretch;
+	}
+
+	.stats-year-range-filter {
+		align-items: stretch;
+		margin-left: 0;
 	}
 
 	.stats-year-range-inputs {
