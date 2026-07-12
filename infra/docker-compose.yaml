@@ -17,6 +17,7 @@ services:
       - ../.env
     volumes:
       - approle_id_data:/approle_id:ro
+      - ./vault-stack/vault/certs/vault.crt:/certs/vault.crt:ro
     depends_on:
       postgres:
         condition: service_healthy

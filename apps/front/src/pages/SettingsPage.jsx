@@ -7,6 +7,7 @@ import SettingsNavBar from '../components/SettingsNavBar'
 import Background from '../components/Background'
 import '../styles/SettingsPage.css'
 import Footer from '../components/Footer'
+import { disconnectSocket } from '../services/socket'
 
 const getAvatar = (avatarUrl, username) => {
 	if (avatarUrl && avatarUrl !== 'default_avatar.png') return avatarUrl
@@ -47,6 +48,21 @@ const SettingsPage = () => {
 	const [currentLang, setCurrentLang] = useState(localStorage.getItem('language') || 'en')
 	const navigate = useNavigate()
 
+	const showUsernameMsg = (msg) => {
+		setUsernameMsg(msg)
+		setTimeout(() => setUsernameMsg(''), 2000)
+	}
+
+	const showPasswordMsg = (msg) => {
+		setPasswordMsg(msg)
+		setTimeout(() => setPasswordMsg(''), 2000)
+	}
+
+	const showApiMsg = (msg) => {
+		setApiKeyMsg(msg)
+		setTimeout(() => setApiKeyMsg(''), 2000)
+	}
+
 	useEffect(() => {
 		const stored = localStorage.getItem('user')
 		if (stored) {
@@ -59,25 +75,23 @@ const SettingsPage = () => {
 		}
 	}, [])
 
-	// Check with the backend whether the current user already has
-	// an active API key, so the revoke button stays visible.
 	useEffect(() => {
 		const token = localStorage.getItem('token')
 		if (!token) return
 
-		;(async () => {
-			try {
-				const res = await fetch('/api/api-key', {
-					method: 'GET',
-					headers: { Authorization: `Bearer ${token}` },
-				})
-				if (!res.ok) return setHasApiKey(false)
-				const data = await res.json()
-				setHasApiKey(!!data.hasApiKey)
-			} catch (err) {
-				setHasApiKey(false)
-			}
-		})()
+			; (async () => {
+				try {
+					const res = await fetch('/api/api-key', {
+						method: 'GET',
+						headers: { Authorization: `Bearer ${token}` },
+					})
+					if (!res.ok) return setHasApiKey(false)
+					const data = await res.json()
+					setHasApiKey(!!data.hasApiKey)
+				} catch (err) {
+					setHasApiKey(false)
+				}
+			})()
 	}, [])
 
 	const handleLanguageChange = (code) => {
@@ -136,13 +150,14 @@ const SettingsPage = () => {
 	}
 
 	const handleLogout = () => {
+		disconnectSocket()
 		localStorage.removeItem('token')
 		localStorage.removeItem('user')
 		navigate('/')
 	}
 
 	const handleSaveUsername = async () => {
-		if (!username.trim()) return setUsernameMsg(t('settings.enter_username'))
+		if (!username.trim()) return showUsernameMsg(t('settings.enter_username'))
 		const token = localStorage.getItem('token')
 		try {
 			const res = await fetch('/api/user/username', {
@@ -151,24 +166,24 @@ const SettingsPage = () => {
 				body: JSON.stringify({ username })
 			})
 			const data = await res.json()
-			if (!res.ok) return setUsernameMsg(data.error)
+			if (!res.ok) return showUsernameMsg(data.error)
 			const user = JSON.parse(localStorage.getItem('user'))
 			user.username = data.user.username
 			localStorage.setItem('user', JSON.stringify(user))
-			setUsernameMsg(t('settings.username_updated'))
+			showUsernameMsg(t('settings.username_updated'))
 			setUsername('')
 		} catch (err) {
-			setUsernameMsg('Server error.')
+			showUsernameMsg(t('settings.server_error'))
 		}
 	}
 
 	const handleUpdatePassword = async () => {
 		if (!currentPassword || !newPassword || !confirmPassword)
-			return setPasswordMsg(t('settings.fill_fields'))
+			return showPasswordMsg(t('settings.fill_fields'))
 		if (newPassword !== confirmPassword)
-			return setPasswordMsg(t('settings.passwords_match'))
+			return showPasswordMsg(t('settings.passwords_match'))
 		if (newPassword.length < 6)
-			return setPasswordMsg(t('settings.password_length'))
+			return showPasswordMsg(t('settings.password_length'))
 		const token = localStorage.getItem('token')
 		try {
 			const res = await fetch('/api/user/password', {
@@ -177,13 +192,13 @@ const SettingsPage = () => {
 				body: JSON.stringify({ currentPassword, newPassword })
 			})
 			const data = await res.json()
-			if (!res.ok) return setPasswordMsg(data.error)
-			setPasswordMsg(t('settings.password_updated'))
+			if (!res.ok) return showPasswordMsg(data.error)
+			showPasswordMsg(t('settings.password_updated'))
 			setCurrentPassword('')
 			setNewPassword('')
 			setConfirmPassword('')
 		} catch (err) {
-			setPasswordMsg('Server error.')
+			showPasswordMsg(t('settings.server_error'))
 		}
 	}
 
@@ -200,11 +215,12 @@ const SettingsPage = () => {
 			})
 			const data = await res.json()
 			if (!res.ok) return setDeletePasswordMsg(data.error)
+			disconnectSocket()
 			localStorage.removeItem('token')
 			localStorage.removeItem('user')
 			navigate('/')
 		} catch (err) {
-			setDeletePasswordMsg('Server error.')
+			setDeletePasswordMsg(t('settings.server_error'))
 		}
 	}
 
@@ -216,13 +232,13 @@ const SettingsPage = () => {
 				headers: { Authorization: `Bearer ${token}` }
 			})
 			const data = await res.json()
-			if (!res.ok) return setApiKeyMsg(data.error)
+			if (!res.ok) return showApiMsg(data.error)
 			setApiKey(data.apiKey)
 			setHasApiKey(true)
 			setShowApiKey(true)
-			setApiKeyMsg(t('settings.generate_key') + ' ✓')
+			showApiMsg(t('settings.generate_key') + ' ✓')
 		} catch (err) {
-			setApiKeyMsg('Server error.')
+			showApiMsg(t('settings.server_error'))
 		}
 	}
 
@@ -233,13 +249,13 @@ const SettingsPage = () => {
 				method: 'DELETE',
 				headers: { Authorization: `Bearer ${token}` }
 			})
-			if (!res.ok) return setApiKeyMsg('Server error.')
+			if (!res.ok) return showApiMsg(t('settings.server_error'))
 			setApiKey(null)
 			setHasApiKey(false)
 			setShowApiKey(false)
-			setApiKeyMsg('API key revoked.')
+			showApiMsg(t('settings.api_key_revoked'))
 		} catch (err) {
-			setApiKeyMsg('Server error.')
+			showApiMsg(t('settings.server_error'))
 		}
 	}
 
@@ -423,7 +439,7 @@ const SettingsPage = () => {
 							)}
 
 							{apiKeyMsg && (
-								<p style={{ color: apiKeyMsg.includes('✓') ? '#4caf50' : apiKeyMsg.includes('revoked') ? '#f5a623' : '#f44336', fontSize: '13px', fontFamily: '"policeConthrax", sans-serif', marginTop: '8px' }}>
+								<p style={{ color: apiKeyMsg.includes('✓') ? '#4caf50' : apiKeyMsg === t('settings.api_key_revoked') ? '#f5a623' : '#f44336', fontSize: '13px', fontFamily: '"policeConthrax", sans-serif', marginTop: '8px' }}>
 									{apiKeyMsg}
 								</p>
 							)}
@@ -440,7 +456,7 @@ const SettingsPage = () => {
 										{apiKey && (
 											<button
 												className="settings-save-btn"
-												onClick={() => { navigator.clipboard.writeText(apiKey); setApiKeyMsg(t('settings.copied')) }}
+												onClick={() => { navigator.clipboard.writeText(apiKey); showApiMsg(t('settings.copied')) }}
 											>
 												{t('settings.copy')}
 											</button>

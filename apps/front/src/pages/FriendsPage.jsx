@@ -58,6 +58,7 @@ const FriendsPage = () => {
 		setFriends(prev => prev.filter(f => f.id !== userId))
 		setActivities(prev => prev.filter(a => a.userId !== userId))
 		setLastRemovedId(userId)
+		setSentRequests(prev => prev.filter(id => id !== userId))
 	}
 
 	const handleSearch = async (value) => {

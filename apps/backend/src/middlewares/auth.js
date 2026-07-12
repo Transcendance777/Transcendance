@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken';
+import { vaultSecrets } from '../init/initVault.js'; //secrets Vault
 
 // Middleware qui vérifie le token JWT et identifie l'utilisateur
 export const authMiddleware = (req, res, next) => {
@@ -11,7 +12,7 @@ export const authMiddleware = (req, res, next) => {
 	const token = authHeader.split(' ')[1];
 
 	try {
-		const decoded = jwt.verify(token, process.env.JWT_SECRET);
+		const decoded = jwt.verify(token, vaultSecrets.JWT_SECRET);
 		req.user = decoded; // { id, username }
 		next();
 	} catch (error) {

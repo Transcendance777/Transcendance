@@ -1,10 +1,11 @@
 import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import prisma from '../init/initPrisma.js';
+import { vaultSecrets } from '../init/initVault.js'; //secrets Vault
 
 passport.use(new GoogleStrategy({
-	clientID: process.env.GOOGLE_CLIENT_ID,
-	clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+	clientID: vaultSecrets.GOOGLE_CLIENT_ID,
+	clientSecret: vaultSecrets.GOOGLE_CLIENT_SECRET,
 	callbackURL: 'https://localhost:8443/api/auth/google/callback',
 	proxy: true
 }, async (accessToken, refreshToken, profile, done) => {

@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import passport from 'passport';
 import prisma from '../init/initPrisma.js';
 import nodemailer from 'nodemailer'
+import { vaultSecrets } from '../init/initVault.js'; //secrets Vault
 
 const router = express.Router();
 
@@ -11,7 +12,7 @@ const router = express.Router();
 const generateToken = (user) => {
 	return jwt.sign(
 		{ id: user.id, username: user.username },
-		process.env.JWT_SECRET,
+		vaultSecrets.JWT_SECRET,
 		{ expiresIn: '7d' } // le token expire après 7 jours
 	);
 };
@@ -19,8 +20,8 @@ const generateToken = (user) => {
 const transporter = nodemailer.createTransport({
 	service: 'gmail',
 	auth: {
-		user: process.env.MAIL_USER,
-		pass: process.env.MAIL_PASS
+		user: vaultSecrets.MAIL_USER,
+		pass: vaultSecrets.MAIL_PASS
 	}
 })
 

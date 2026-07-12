@@ -2,6 +2,7 @@ let accessToken = null;
 let tokenExpiry = null;
 const cache = new Map();
 const CACHE_DURATION = 10 * 60 * 1000;
+import { vaultSecrets } from '../init/initVault.js'; //secrets Vault
 
 const getAccessToken = async () => {
 	if (accessToken && tokenExpiry && Date.now() < tokenExpiry) {
@@ -9,7 +10,7 @@ const getAccessToken = async () => {
 	}
 
 	const response = await fetch(
-		`https://id.twitch.tv/oauth2/token?client_id=${process.env.TWITCH_CLIENT_ID}&client_secret=${process.env.TWITCH_CLIENT_SECRET}&grant_type=client_credentials`,
+		`https://id.twitch.tv/oauth2/token?client_id=${vaultSecrets.TWITCH_CLIENT_ID}&client_secret=${process.env.TWITCH_CLIENT_SECRET}&grant_type=client_credentials`,
 		{ method: 'POST' }
 	);
 
@@ -34,7 +35,7 @@ const igdbQuery = async (endpoint, query) => {
 	const response = await fetch(`https://api.igdb.com/v4/${endpoint}`, {
 		method: 'POST',
 		headers: {
-			'Client-ID': process.env.TWITCH_CLIENT_ID,
+			'Client-ID': vaultSecrets.TWITCH_CLIENT_ID,
 			'Authorization': `Bearer ${token}`,
 			'Content-Type': 'text/plain',
 		},

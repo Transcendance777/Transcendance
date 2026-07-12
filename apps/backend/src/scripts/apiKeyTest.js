@@ -2,6 +2,7 @@ import prisma from '../init/initPrisma.js';
 import 'dotenv/config';
 import crypto from 'crypto';
 import bcrypt from 'bcrypt';
+import { vaultSecrets } from '../init/initVault.js'; //secrets Vault
 
 const saltRounds = 10;
 const hashToken = (token) =>
@@ -14,14 +15,14 @@ const ADMIN_EMAIL = 'capitan7849282342@gmail.com';
  * create 2 users and their API keys to test the public API
  */
 async function insertKeys() {
-  if (!process.env.TEST_API_KEY || !process.env.ADMIN_API_KEY) {
+  if (!vaultSecrets.TEST_API_KEY || !vaultSecrets.ADMIN_API_KEY) {
     throw new Error('TEST_API_KEY and ADMIN_API_KEY must be set in .env');
   }
-  if (!process.env.REGULAR_USER_PASSWORD || !process.env.ADMIN_USER_PASSWORD) {
+  if (!vaultSecrets.REGULAR_USER_PASSWORD || !vaultSecrets.ADMIN_USER_PASSWORD) {
     throw new Error('REGULAR_USER_PASSWORD and ADMIN_USER_PASSWORD must be set in .env');
   }
 
-  const pw = process.env.REGULAR_USER_PASSWORD;
+  const pw = vaultSecrets.REGULAR_USER_PASSWORD;
   const hashPw = await bcrypt.hash(pw, saltRounds);
 
   const { id } = await prisma.users.upsert({
@@ -35,7 +36,7 @@ async function insertKeys() {
     select: { id: true },
   });
 
-  const adminPw = process.env.ADMIN_USER_PASSWORD;
+  const adminPw = vaultSecrets.ADMIN_USER_PASSWORD;
   const adminHash = await bcrypt.hash(adminPw, saltRounds);
 
   const { id: adminId } = await prisma.users.upsert({
@@ -49,8 +50,8 @@ async function insertKeys() {
     select: { id: true },
   });
 
-  const apiKey = hashToken(process.env.TEST_API_KEY);
-  const adminApiKey = hashToken(process.env.ADMIN_API_KEY);
+  const apiKey = hashToken(vaultSecrets.TEST_API_KEY);
+  const adminApiKey = hashToken(vaultSecrets.ADMIN_API_KEY);
 
   await prisma.apiKey.upsert({
     where: { userId: id },
@@ -73,11 +74,11 @@ async function insertKeys() {
     },
   });
 
-  console.log('Test users and API keys ready.');
-  console.log('Regular user:', REGULAR_EMAIL, '| password: REGULAR_USER_PASSWORD from .env');
-  console.log('Admin user:', ADMIN_EMAIL, '| password: ADMIN_USER_PASSWORD from .env');
-  console.log('Regular user id:', id, '| API key: TEST_API_KEY from .env');
-  console.log('Admin user id:', adminId, '| API key: ADMIN_API_KEY from .env');
+  // console.log('Test users and API keys ready.');
+  // console.log('Regular user:', REGULAR_EMAIL, '| password: REGULAR_USER_PASSWORD from .env');
+  // console.log('Admin user:', ADMIN_EMAIL, '| password: ADMIN_USER_PASSWORD from .env');
+  // console.log('Regular user id:', id, '| API key: TEST_API_KEY from .env');
+  // console.log('Admin user id:', adminId, '| API key: ADMIN_API_KEY from .env');
 }
 
 insertKeys()

@@ -16,7 +16,9 @@ const FriendsList = ({ friends, loading, onUnfollow, onAddFriend }) => {
 	const { t } = useTranslation()
 	const [startRow, setStartRow] = useState(0)
 	const [friendsPerRow, setFriendsPerRow] = useState(6)
-	const [isTouchDevice, setIsTouchDevice] = useState(false)
+	const [isTouchDevice, setIsTouchDevice] = useState(
+		'ontouchstart' in window || navigator.maxTouchPoints > 0
+	)
 
 	useEffect(() => {
 		setIsTouchDevice('ontouchstart' in window || navigator.maxTouchPoints > 0)
