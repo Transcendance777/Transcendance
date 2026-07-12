@@ -17,6 +17,8 @@ export const getStatsYearOptions = () => {
 	)
 }
 
+export const DEFAULT_STATS_PLATFORM = 'all'
+
 export const buildStatsFilter = ({ period, fromYear, toYear }) => {
 	const hasYearRange = fromYear != null && toYear != null
 
@@ -37,4 +39,17 @@ export const buildStatsUrl = (path, filter) => {
 	}
 
 	return `${path}?${params.toString()}`
+}
+
+export const buildPlayingListStatsUrl = (filter, platform = DEFAULT_STATS_PLATFORM) => {
+	const url = buildStatsUrl('/api/stats/playinglist', filter)
+
+	if (platform && platform !== DEFAULT_STATS_PLATFORM) {
+		const [path, query] = url.split('?')
+		const params = new URLSearchParams(query)
+		params.set('platform', platform)
+		return `${path}?${params.toString()}`
+	}
+
+	return url
 }

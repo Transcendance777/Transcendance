@@ -56,6 +56,7 @@ router.post('/like/:gameId', authMiddleware, async (req, res) => {
 					releaseDate: g.first_release_date ? new Date(g.first_release_date * 1000) : null,
 					coverImageUrl: g.cover?.url ? `https:${g.cover.url.replace('t_thumb', 't_cover_big')}` : null,
 					developer: g.involved_companies?.[0]?.company?.name || null,
+					platforms: g.platforms?.map((p) => p.name).join(', ') || null,
 				}
 			})
 		}
@@ -104,6 +105,7 @@ router.post('/playing/:gameId', authMiddleware, async (req, res) => {
 					releaseDate: g.first_release_date ? new Date(g.first_release_date * 1000) : null,
 					coverImageUrl: g.cover?.url ? `https:${g.cover.url.replace('t_thumb', 't_cover_big')}` : null,
 					developer: g.involved_companies?.[0]?.company?.name || null,
+					platforms: g.platforms?.map((p) => p.name).join(', ') || null,
 				}
 			})
 		}
@@ -167,6 +169,7 @@ router.post('/favorites/:gameId', authMiddleware, async (req, res) => {
 					releaseDate: g.first_release_date ? new Date(g.first_release_date * 1000) : null,
 					coverImageUrl: g.cover?.url ? `https:${g.cover.url.replace('t_thumb', 't_cover_big')}` : null,
 					developer: g.involved_companies?.[0]?.company?.name || null,
+					platforms: g.platforms?.map((p) => p.name).join(', ') || null,
 				}
 			})
 		}
@@ -530,6 +533,7 @@ router.post('/review', authMiddleware, async (req, res) => {
 					releaseDate: g.first_release_date ? new Date(g.first_release_date * 1000) : null,
 					coverImageUrl: g.cover?.url ? `https:${g.cover.url.replace('t_thumb', 't_cover_big')}` : null,
 					developer: g.involved_companies?.[0]?.company?.name || null,
+					platforms: g.platforms?.map((p) => p.name).join(', ') || null,
 				}
 			})
 		}

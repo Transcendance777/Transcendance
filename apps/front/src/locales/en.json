@@ -108,6 +108,8 @@
 		"year_from": "From",
 		"year_to": "To",
 		"year_select": "Year",
+		"platform_label": "Platform",
+		"platform_all": "All platforms",
 		"playing_list_title": "Games played",
 		"rating_distribution_title": "Ratings",
 		"genre_distribution_title": "Games genre",

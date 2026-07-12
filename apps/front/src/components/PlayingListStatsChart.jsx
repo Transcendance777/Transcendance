@@ -9,7 +9,10 @@ import {
 	Tooltip,
 	ResponsiveContainer,
 } from 'recharts'
-import { buildStatsUrl } from './statsUtils'
+import {
+	buildPlayingListStatsUrl,
+	DEFAULT_STATS_PLATFORM,
+} from './statsUtils'
 
 const formatMonthLabel = (month, locale, year, showYear) => {
 	const date = new Date(year, month - 1, 1)
@@ -22,6 +25,8 @@ const formatMonthLabel = (month, locale, year, showYear) => {
 const PlayingListStatsChart = ({ statsFilter }) => {
 	const { t, i18n } = useTranslation()
 	const [monthlyData, setMonthlyData] = useState([])
+	const [availablePlatforms, setAvailablePlatforms] = useState([])
+	const [platform, setPlatform] = useState(DEFAULT_STATS_PLATFORM)
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState(null)
 
@@ -37,14 +42,16 @@ const PlayingListStatsChart = ({ statsFilter }) => {
 				setLoading(true)
 				setError(null)
 
-				const res = await fetch(buildStatsUrl('/api/stats/playinglist', statsFilter), {
-					headers: { Authorization: `Bearer ${token}` },
-				})
+				const res = await fetch(
+					buildPlayingListStatsUrl(statsFilter, platform),
+					{ headers: { Authorization: `Bearer ${token}` } },
+				)
 
 				if (!res.ok) throw new Error('fetch_failed')
 
 				const json = await res.json()
 				setMonthlyData(json.data ?? [])
+				setAvailablePlatforms(json.availablePlatforms ?? [])
 			} catch {
 				setError(t('stats.load_error'))
 			} finally {
@@ -53,7 +60,11 @@ const PlayingListStatsChart = ({ statsFilter }) => {
 		}
 
 		fetchStats()
-	}, [statsFilter, t])
+	}, [statsFilter, platform, t])
+
+	useEffect(() => {
+		setPlatform(DEFAULT_STATS_PLATFORM)
+	}, [statsFilter])
 
 	const showYearOnAxis = useMemo(() => {
 		const years = new Set(monthlyData.map(({ year }) => year))
@@ -81,7 +92,27 @@ const PlayingListStatsChart = ({ statsFilter }) => {
 
 	return (
 		<div className="stats-chart-card">
-			<h3 className="stats-chart-title">{t('stats.playing_list_title')}</h3>
+			<div className="stats-chart-header">
+				<h3 className="stats-chart-title">{t('stats.playing_list_title')}</h3>
+				<div className="stats-chart-filter">
+					<label className="stats-period-label" htmlFor="stats-platform-select">
+						{t('stats.platform_label')}
+					</label>
+					<select
+						id="stats-platform-select"
+						className="stats-period-select"
+						value={platform}
+						onChange={(e) => setPlatform(e.target.value)}
+					>
+						<option value={DEFAULT_STATS_PLATFORM}>{t('stats.platform_all')}</option>
+						{availablePlatforms.map((item) => (
+							<option key={item} value={item}>
+								{item}
+							</option>
+						))}
+					</select>
+				</div>
+			</div>
 			<div className="stats-chart-container">
 				<ResponsiveContainer width="100%" height="100%">
 					<LineChart data={chartData} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>

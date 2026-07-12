@@ -94,6 +94,28 @@
 	text-align: center;
 }
 
+.stats-chart-header {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	margin-bottom: 24px;
+}
+
+.stats-chart-header .stats-chart-title {
+	margin-bottom: 0;
+	text-align: left;
+	flex: 1;
+	min-width: 180px;
+}
+
+.stats-chart-filter {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+
 .stats-chart-container {
 	width: 100%;
 	height: 360px;
@@ -152,5 +174,19 @@
 
 	.stats-chart-card {
 		padding: 16px;
+	}
+
+	.stats-chart-header {
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	.stats-chart-header .stats-chart-title {
+		text-align: center;
+	}
+
+	.stats-chart-filter {
+		flex-direction: column;
+		align-items: stretch;
 	}
 }

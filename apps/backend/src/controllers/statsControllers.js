@@ -1,4 +1,5 @@
 import prisma from '../init/initPrisma.js';
+import { getGameById } from '../services/igdb.js';
 
 const VALID_PERIODS = new Set(['all', 'year', '6months', 'custom']);
 
@@ -123,6 +124,54 @@ const buildMonthlyStats = (entries, start, end) => {
 	return months;
 };
 
+const parsePlatforms = (platforms) =>
+	platforms
+		? platforms.split(',').map((platform) => platform.trim()).filter(Boolean)
+		: [];
+
+const parsePlatformFilter = (req) => {
+	const platform = req.query.platform?.trim();
+	return platform && platform !== 'all' ? platform : null;
+};
+
+const gameMatchesPlatform = (game, platformFilter) => {
+	if (!platformFilter) return true;
+	return parsePlatforms(game.platforms).some(
+		(platform) => platform.toLowerCase() === platformFilter.toLowerCase(),
+	);
+};
+
+const extractAvailablePlatforms = (games) => {
+	const platforms = new Set();
+
+	for (const game of games) {
+		for (const platform of parsePlatforms(game.platforms)) {
+			platforms.add(platform);
+		}
+	}
+
+	return [...platforms].sort((a, b) => a.localeCompare(b));
+};
+
+const ensureGamePlatforms = async (game) => {
+	if (game.platforms) return game;
+
+	try {
+		const igdbData = await getGameById(game.idExterne);
+		const igdbGame = igdbData?.[0];
+		const platforms = igdbGame?.platforms?.map((p) => p.name).join(', ') || null;
+
+		if (!platforms) return game;
+
+		return prisma.game.update({
+			where: { id: game.id },
+			data: { platforms },
+		});
+	} catch {
+		return game;
+	}
+};
+
 /**
  * ROUTE GET /api/stats/playingList
  * @param {*} req requete recue
@@ -132,21 +181,43 @@ const getPlayingListStats = async (req, res) => {
 	try {
 		const userId = Number(req.user.id);
 		const { period, start, end, year, fromYear, toYear } = resolveStatsDateRange(req);
+		const platformFilter = parsePlatformFilter(req);
 
 		const entries = await prisma.playingList.findMany({
 			where: {
 				userId,
 				...buildDateFilter('addedAt', start, end),
 			},
-			select: { addedAt: true },
+			include: { game: true },
 		});
+
+		const enrichedEntries = await Promise.all(
+			entries.map(async (entry) => ({
+				...entry,
+				game: await ensureGamePlatforms(entry.game),
+			})),
+		);
+
+		const availablePlatforms = extractAvailablePlatforms(
+			enrichedEntries.map((entry) => entry.game),
+		);
+
+		const filteredEntries = enrichedEntries.filter((entry) =>
+			gameMatchesPlatform(entry.game, platformFilter),
+		);
 
 		res.status(200).json({
 			period,
 			year,
 			fromYear,
 			toYear,
-			data: buildMonthlyStats(entries, start, end),
+			platform: platformFilter ?? 'all',
+			availablePlatforms,
+			data: buildMonthlyStats(
+				filteredEntries.map((entry) => ({ addedAt: entry.addedAt })),
+				start,
+				end,
+			),
 		});
 	} catch (error) {
 		res.status(500).json({ error: 'Server error', details: error.message });
