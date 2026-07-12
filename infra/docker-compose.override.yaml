@@ -1,0 +1,15 @@
+services:
+  backend:
+    volumes:
+      - ../apps/backend:/app
+      - /app/node_modules
+      - /app/node_modules/.prisma
+    ports:
+      - "4000:4000"
+  postgres:
+    ports:
+      - "5433:5432"
+
+  grafana:
+    ports:
+      - "3000:3000"

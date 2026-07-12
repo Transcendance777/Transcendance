@@ -1,0 +1,238 @@
+generator client {
+  provider = "prisma-client-js"
+//   output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// table des utilisateurs
+model Users {
+	id				Int			@id @default(autoincrement())
+	email			String		@unique
+	username  		String		@unique
+	passwordHash	String		@map("password_hash") //map: relier passwordHash dans le back a password_hash ds la DB (convention de nom)
+	avatarUrl     	String?		@default("default_avatar.png") @map("avatar_url") @db.Text
+	bio				String?
+	createdAt		DateTime	    @default(now()) @map("created_at")
+
+	//relations
+	reviews			    Review[]
+	reviewLikes		  ReviewLike[]
+	apiKey    		  ApiKey?
+	likedGames		  LikedGame[]
+	playingList		  PlayingList[]
+	favoriteGames   FavoriteGame[]
+	reviewComments  ReviewComment[]
+	chatParticipants ConversationParticipant[]
+	sentMessages     ChatMessage[] @relation("ChatMessageSender")
+
+	// Self-referencing Many-to-Many for Friendships
+	friendsInitiated	Friendship[] @relation("FriendshipsInitiated")
+	friendsReceived		Friendship[] @relation("FriendshipsReceived")
+
+	@@map("users")
+}
+
+model ApiKey {
+	id        Int		    @id @default(autoincrement())
+	userId    Int		    @unique @map("user_id")
+	key       String	  @unique  // la clé elle-même (ex: "sk_abc123...")
+	isActive  Boolean 	@default(true) @map("is_active")
+	createdAt DateTime	@default(now()) @map("created_at")
+  scope     String    @default("regular")
+
+	user      Users		  @relation(fields: [userId], references: [id])
+
+	@@map("api_key")
+}
+
+
+// Table des Jeux Vidéo
+model Game {
+  id            Int       @id @default(autoincrement())
+  idExterne     String    @unique @map("id_externe")
+  title         String    @db.VarChar(150)
+  summary       String?
+  releaseDate   DateTime? @map("release_date") @db.Date
+  coverImageUrl String?   @map("cover_image_url")
+  developer     String?   @db.VarChar(100)
+  genre         String?   @db.VarChar(255)
+  themes        String?   @db.VarChar(255)
+  gameModes     String?   @map("game_modes") @db.VarChar(255)
+  rating        Float?
+  ratingCount   Int?      @map("rating_count")
+  
+  // Relations
+  reviews       Review[]
+  likedBy       LikedGame[]
+  inPlayingList PlayingList[]
+  favoritedBy   FavoriteGame[]
+
+  @@map("games")
+}
+
+// 3. Table des Critiques et Notes (Reviews)
+model Review {
+  id         Int          @id @default(autoincrement())
+  userId     Int          @map("user_id")
+  gameId     Int          @map("game_id")
+  rating     Int
+  reviewText String?      @map("review_text")
+  createdAt  DateTime     @default(now()) @map("created_at")
+  updatedAt  DateTime     @default(now()) @updatedAt @map("updated_at")
+
+  // Relations
+  user        Users 		  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  game        Game        @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  likes       ReviewLike[]
+  comments    ReviewComment[]
+
+  // Constraints
+  @@unique([userId, gameId], name: "unique_user_game_review")
+  @@map("reviews")
+}
+
+// Table des Likes sur les Critiques
+model ReviewLike {
+  userId   Int      @map("user_id")
+  reviewId Int      @map("review_id")
+  type     String   @default("like") @db.VarChar(10) // 'like' ou 'dislike'
+  likedAt  DateTime @default(now()) @map("liked_at")
+
+  user   Users  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  review Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+
+  @@id([userId, reviewId])
+  @@map("review_likes")
+}
+
+model ReviewComment {
+  id        Int      @id @default(autoincrement())
+  reviewId  Int      @map("review_id")
+  userId    Int      @map("user_id")
+  text      String
+  parentId  Int?     @map("parent_id") // null = commentaire racine, sinon = réponse à un comment
+  createdAt DateTime @default(now()) @map("created_at")
+
+  review   Review          @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  user     Users           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent   ReviewComment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies  ReviewComment[] @relation("CommentReplies")
+
+  @@map("review_comments")
+}
+
+// Table des Jeux Likés par les utilisateurs
+model LikedGame {
+  userId   Int      @map("user_id")
+  gameId   Int      @map("game_id")
+  likedAt  DateTime @default(now()) @map("liked_at")
+
+  // Relations
+  user Users @relation(fields: [userId], references: [id], onDelete: Cascade)
+  game Game  @relation(fields: [gameId], references: [id], onDelete: Cascade)
+
+  // Constraints
+  @@id([userId, gameId])
+  @@map("liked_games")
+}
+
+// Table de la Playing List (jeux en cours) des utilisateurs
+model PlayingList {
+  userId   Int      @map("user_id")
+  gameId   Int      @map("game_id")
+  addedAt  DateTime @default(now()) @map("added_at")
+
+  // Relations
+  user Users @relation(fields: [userId], references: [id], onDelete: Cascade)
+  game Game  @relation(fields: [gameId], references: [id], onDelete: Cascade)
+
+  // Constraints
+  @@id([userId, gameId])
+  @@map("playing_list")
+}
+
+// Table du Système d'Amis (Relation réflexive explicite)
+model Friendship {
+  userId1   Int      @map("user_id_1")
+  userId2   Int      @map("user_id_2")
+  status    String   @default("pending") @db.VarChar(20) // 'pending', 'accepted', 'blocked'
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  user1 Users @relation("FriendshipsInitiated", fields: [userId1], references: [id], onDelete: Cascade)
+  user2 Users @relation("FriendshipsReceived", fields: [userId2], references: [id], onDelete: Cascade)
+
+  // Constraints
+  @@id([userId1, userId2])
+  @@map("friendships")
+}
+
+model FavoriteGame {
+  userId    Int      @map("user_id")
+  gameId    Int      @map("game_id")
+  position  Int      // 1, 2, 3 ou 4
+  addedAt   DateTime @default(now()) @map("added_at")
+
+  user Users @relation(fields: [userId], references: [id], onDelete: Cascade)
+  game Game  @relation(fields: [gameId], references: [id], onDelete: Cascade)
+
+  @@id([userId, gameId])
+  @@unique([userId, position])
+  @@map("favorite_games")
+}
+
+model Conversation {
+  id        Int      @id @default(autoincrement())
+  type      String   @default("direct") @db.VarChar(20)
+  directKey String?  @unique @map("direct_key")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  participants ConversationParticipant[]
+  messages     ChatMessage[]
+
+  @@map("conversations")
+}
+
+model ConversationParticipant {
+  conversationId Int       @map("conversation_id")
+  userId         Int       @map("user_id")
+  joinedAt       DateTime  @default(now()) @map("joined_at")
+  lastReadAt     DateTime? @map("last_read_at")
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user         Users        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([conversationId, userId])
+  @@index([userId])
+  @@map("conversation_participants")
+}
+
+model ChatMessage {
+  id             Int      @id @default(autoincrement())
+  conversationId Int      @map("conversation_id")
+  senderId       Int      @map("sender_id")
+  body           String   @db.Text
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       Users        @relation("ChatMessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt])
+  @@index([senderId])
+  @@map("chat_messages")
+}
+
+model PasswordReset {
+  id        Int      @id @default(autoincrement())
+  email     String
+  code      String   @db.VarChar(6)
+  expiresAt DateTime @map("expires_at")
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("password_resets")
+}
