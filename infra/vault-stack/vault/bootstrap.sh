@@ -13,12 +13,17 @@ vault_cmd() {
     -H "X-Vault-Token: $VAULT_TOKEN" \
     "$@"
 }
-
+#!
 if ! vault_cmd "$VAULT_ADDR/v1/auth/token/lookup-self" > /dev/null 2>&1; then
-  echo "Root token invalide ou déjà révoqué — bootstrap déjà effectué précédemment, rien à refaire."
+  echo "Root token invalide ou déjà révoqué — rafraîchissement des credentials AppRole..."
+  if sh /refresh-approle.sh; then
+    echo "✅ Credentials AppRole rafraîchis"
+  else
+    echo "⚠ Rafraîchissement AppRole échoué — le backend utilisera le fallback .env si disponible"
+  fi
   exit 0
 fi
-
+#!
 already_enabled() {
   PATH_CHECK="$1"
   vault_cmd "$VAULT_ADDR/v1/sys/mounts" | jq -e ".[\"$PATH_CHECK/\"]" > /dev/null 2>&1

@@ -100,6 +100,14 @@
 		"add_favorite": "Ajouter un jeu favori"
 	},
 	"stats": {
+		"period_label": "Période",
+		"period_all": "Tout le temps",
+		"period_year": "Cette année ({{year}})",
+		"period_six_months": "6 derniers mois",
+		"year_range_label": "Calendrier libre",
+		"year_from": "De",
+		"year_to": "À",
+		"year_select": "Année",
 		"playing_list_title": "Nombre de jeux joués",
 		"rating_distribution_title": "Notes",
 		"genre_distribution_title": "Genres des jeux",

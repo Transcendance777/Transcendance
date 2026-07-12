@@ -9,8 +9,9 @@ import {
 	Tooltip,
 	ResponsiveContainer,
 } from 'recharts'
+import { buildStatsUrl } from './statsUtils'
 
-const RatingDistributionChart = () => {
+const RatingDistributionChart = ({ statsFilter }) => {
 	const { t } = useTranslation()
 	const [distribution, setDistribution] = useState([])
 	const [loading, setLoading] = useState(true)
@@ -18,14 +19,17 @@ const RatingDistributionChart = () => {
 
 	useEffect(() => {
 		const token = localStorage.getItem('token')
-		if (!token) return
+		if (!token) {
+			setLoading(false)
+			return
+		}
 
 		const fetchStats = async () => {
 			try {
 				setLoading(true)
 				setError(null)
 
-				const res = await fetch('/api/stats/rating-distribution', {
+				const res = await fetch(buildStatsUrl('/api/stats/rating-distribution', statsFilter), {
 					headers: { Authorization: `Bearer ${token}` },
 				})
 
@@ -41,7 +45,7 @@ const RatingDistributionChart = () => {
 		}
 
 		fetchStats()
-	}, [t])
+	}, [statsFilter, t])
 
 	const chartData = useMemo(
 		() =>

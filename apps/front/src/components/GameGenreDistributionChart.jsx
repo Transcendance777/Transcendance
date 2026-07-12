@@ -8,6 +8,7 @@ import {
 	Legend,
 	ResponsiveContainer,
 } from 'recharts'
+import { buildStatsUrl } from './statsUtils'
 
 const GENRE_COLORS = [
 	'#f5a623',
@@ -22,7 +23,7 @@ const GENRE_COLORS = [
 	'#fb923c',
 ]
 
-const GameGenreDistributionChart = () => {
+const GameGenreDistributionChart = ({ statsFilter }) => {
 	const { t } = useTranslation()
 	const [distribution, setDistribution] = useState([])
 	const [loading, setLoading] = useState(true)
@@ -30,14 +31,17 @@ const GameGenreDistributionChart = () => {
 
 	useEffect(() => {
 		const token = localStorage.getItem('token')
-		if (!token) return
+		if (!token) {
+			setLoading(false)
+			return
+		}
 
 		const fetchStats = async () => {
 			try {
 				setLoading(true)
 				setError(null)
 
-				const res = await fetch('/api/stats/game-genre-distribution', {
+				const res = await fetch(buildStatsUrl('/api/stats/game-genre-distribution', statsFilter), {
 					headers: { Authorization: `Bearer ${token}` },
 				})
 
@@ -53,7 +57,7 @@ const GameGenreDistributionChart = () => {
 		}
 
 		fetchStats()
-	}, [t])
+	}, [statsFilter, t])
 
 	const chartData = useMemo(
 		() =>

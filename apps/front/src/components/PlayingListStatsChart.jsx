@@ -9,34 +9,41 @@ import {
 	Tooltip,
 	ResponsiveContainer,
 } from 'recharts'
+import { buildStatsUrl } from './statsUtils'
 
-const formatMonthLabel = (month, locale, year) =>
-	new Intl.DateTimeFormat(locale, { month: 'short' }).format(new Date(year, month - 1, 1))
+const formatMonthLabel = (month, locale, year, showYear) => {
+	const date = new Date(year, month - 1, 1)
+	const options = showYear
+		? { month: 'short', year: 'numeric' }
+		: { month: 'short' }
+	return new Intl.DateTimeFormat(locale, options).format(date)
+}
 
-const PlayingListStatsChart = () => {
+const PlayingListStatsChart = ({ statsFilter }) => {
 	const { t, i18n } = useTranslation()
-	const [year, setYear] = useState(null)
 	const [monthlyData, setMonthlyData] = useState([])
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState(null)
 
 	useEffect(() => {
 		const token = localStorage.getItem('token')
-		if (!token) return
+		if (!token) {
+			setLoading(false)
+			return
+		}
 
 		const fetchStats = async () => {
 			try {
 				setLoading(true)
 				setError(null)
 
-				const res = await fetch('/api/stats/playinglist', {
+				const res = await fetch(buildStatsUrl('/api/stats/playinglist', statsFilter), {
 					headers: { Authorization: `Bearer ${token}` },
 				})
 
 				if (!res.ok) throw new Error('fetch_failed')
 
 				const json = await res.json()
-				setYear(json.year)
 				setMonthlyData(json.data ?? [])
 			} catch {
 				setError(t('stats.load_error'))
@@ -46,16 +53,22 @@ const PlayingListStatsChart = () => {
 		}
 
 		fetchStats()
-	}, [t])
+	}, [statsFilter, t])
+
+	const showYearOnAxis = useMemo(() => {
+		const years = new Set(monthlyData.map(({ year }) => year))
+		return years.size > 1
+	}, [monthlyData])
 
 	const chartData = useMemo(
 		() =>
-			monthlyData.map(({ month, count }) => ({
+			monthlyData.map(({ month, year, count }) => ({
 				month,
-				label: formatMonthLabel(month, i18n.language, year ?? new Date().getFullYear()),
+				year,
+				label: formatMonthLabel(month, i18n.language, year, showYearOnAxis),
 				count,
 			})),
-		[monthlyData, i18n.language, year],
+		[monthlyData, i18n.language, showYearOnAxis],
 	)
 
 	if (loading) {
@@ -68,9 +81,7 @@ const PlayingListStatsChart = () => {
 
 	return (
 		<div className="stats-chart-card">
-			<h3 className="stats-chart-title">
-				{t('stats.playing_list_title', { year })}
-			</h3>
+			<h3 className="stats-chart-title">{t('stats.playing_list_title')}</h3>
 			<div className="stats-chart-container">
 				<ResponsiveContainer width="100%" height="100%">
 					<LineChart data={chartData} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>

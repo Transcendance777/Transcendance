@@ -100,6 +100,14 @@
 		"add_favorite": "Añadir un juego favorito"
 	},
 	"stats": {
+		"period_label": "Período",
+		"period_all": "Todo el tiempo",
+		"period_year": "Este año ({{year}})",
+		"period_six_months": "Últimos 6 meses",
+		"year_range_label": "Calendario libre",
+		"year_from": "Desde",
+		"year_to": "Hasta",
+		"year_select": "Año",
 		"playing_list_title": "Juegos jugados",
 		"rating_distribution_title": "Clasificaciones",
 		"genre_distribution_title": "Géneros de videojuegos",

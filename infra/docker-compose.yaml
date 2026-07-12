@@ -189,6 +189,9 @@ services:
       - CYBER_PASSWORD=${CYBER_PASSWORD}
     volumes:
       - ./vault-stack/vault/bootstrap.sh:/bootstrap.sh:ro
+      #! added
+      - ./vault-stack/vault/refresh-approle.sh:/refresh-approle.sh:ro
+      #! added
       - ./vault-stack/vault/policies:/vault/policies:ro
       - vault_keys_data:/vault_keys/:ro
       - approle_id_data:/approle_id

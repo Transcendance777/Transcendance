@@ -100,6 +100,14 @@
 		"add_favorite": "Add a Favorite Game"
 	},
 	"stats": {
+		"period_label": "Period",
+		"period_all": "All time",
+		"period_year": "This year ({{year}})",
+		"period_six_months": "Last 6 months",
+		"year_range_label": "Custom year range",
+		"year_from": "From",
+		"year_to": "To",
+		"year_select": "Year",
 		"playing_list_title": "Games played",
 		"rating_distribution_title": "Ratings",
 		"genre_distribution_title": "Games genre",
