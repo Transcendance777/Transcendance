@@ -8,6 +8,7 @@ DEVOPS_ROADMAP.MD
 infra/nginx/certs/*
 infra/waf/certs/*
 infra/waf/certs/cert.ctr
+nginx/certs/*
 /generated/prisma
 /apps/backend/node_modules
 /apps/front/node_modules
