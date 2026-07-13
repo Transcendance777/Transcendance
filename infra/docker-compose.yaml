@@ -21,8 +21,6 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      vault-bootstrap:
-        condition: service_started
 
   postgres:
     image: postgres:18.4-alpine
@@ -165,9 +163,6 @@ services:
       retries: 10
     networks:
       - gamerev
-    depends_on:
-      vault-init:
-        condition: service_started
 
   vault-unsealer:
     image: alpine:3.19
@@ -195,9 +190,6 @@ services:
     command: sh -c "apk add --no-cache curl jq && sh /bootstrap.sh"
     networks:
       - gamerev
-    depends_on:
-      vault-unsealer:
-        condition: service_started
 
   vault-seeder:
     container_name: vault-seeder
@@ -209,9 +201,6 @@ services:
     command: sh -c "apk add --no-cache curl jq && sh /seed-secrets.sh"
     networks:
       - gamerev
-    depends_on:
-      vault-bootstrap:
-        condition: service_started
 
   vault-healthcheck:
     image: alpine:3.19
