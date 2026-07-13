@@ -3,16 +3,9 @@
 # Transcendance
 
 ## Description
-
-**GameRev** is a social platform for video game enthusiasts, built as the final project of the 42 Transcendance curriculum. Users can discover games (via the IGDB API), write and browse reviews, manage a playing list and favorites, follow friends, chat in real time, and track their gaming habits through personal analytics.
-
-**Key features:**
-- User accounts with local registration, password reset, and Google OAuth 2.0 login
-- Game discovery, reviews, likes/dislikes, threaded comments, and social following
-- Real-time private messaging between friends (WebSockets / Socket.IO)
-- Personal stats dashboard with charts and PDF export
-- Public REST API secured by per-user API keys, documented with Swagger
-- Full Docker Compose deployment with WAF, Vault, and monitoring stack
+[clearly presents the project, including its goal and a
+brief overview, also contain a clear name for the project and its
+key features]
 
 ## Instructions
 
@@ -71,66 +64,18 @@ The application is then available at:
 On first startup, Vault bootstraps automatically, seeds secrets into the backend, Prisma syncs the database schema, and seed data is inserted.
 
 ## Resources
-
-**Documentation & references:**
-- [React](https://react.dev/) — frontend framework
-- [Vite](https://vite.dev/) — frontend build tool
-- [Express](https://expressjs.com/) — backend framework
-- [Prisma](https://www.prisma.io/docs) — ORM and schema management
-- [Socket.IO](https://socket.io/docs/v4/) — real-time WebSocket communication
-- [IGDB API](https://api-docs.igdb.com/) — game metadata
-- [HashiCorp Vault](https://developer.hashicorp.com/vault/docs) — secrets management
-- [ModSecurity / OWASP CRS](https://coreruleset.org/) — WAF rules
-- [Prometheus](https://prometheus.io/docs/) & [Grafana](https://grafana.com/docs/) — monitoring
-- [i18next](https://www.i18next.com/) — internationalization
-- [Recharts](https://recharts.org/) — data visualization
-
-**AI usage:**
-AI tools (Cursor / ChatGPT) were used during development for:
-- Drafting and reviewing documentation (README, DevOps notes)
-- Exploring boilerplate patterns (Swagger setup, Docker Compose service wiring)
-- Debugging assistance (WAF false positives, Vault permission issues)
-- Generating seed/test scripts
-
-All architectural decisions, security configuration, and business logic were implemented and reviewed by the team.
+[section listing classic references related to the topic (documen-
+tation, articles, tutorials, etc.), as well as a description of how AI was used —
+specifying for which tasks and which parts of the project]
 
 # Technical Informations
 
 ## Technical Stack
-
-**Frontend**
-- **React 19** with **Vite 8** — component-based SPA with fast HMR during development
-- **React Router 7** — client-side routing
-- **Tailwind CSS 4** — utility-first styling
-- **i18next / react-i18next** — multi-language support (EN, FR, ES)
-- **Recharts** — interactive charts for the stats dashboard
-- **Socket.IO client** — real-time chat
-
-**Backend**
-- **Node.js 20** with **Express 5** — REST API monolith
-- **Socket.IO** — WebSocket server sharing the HTTP port
-- **Passport.js** + **passport-google-oauth20** — Google OAuth 2.0
-- **JWT** + **bcrypt** — token-based auth and password hashing
-- **express-validator**, **sanitize-html**, **express-rate-limit** — input validation and abuse prevention
-- **prom-client** — Prometheus metrics endpoint
-- **Swagger (swagger-jsdoc + swagger-ui-express)** — public API documentation
-
-**Database**
-- **PostgreSQL 18** — relational database chosen for ACID compliance, mature ecosystem, and strong support for complex relations (friendships, reviews, chat). Fits the social + review data model naturally.
-- **Prisma 7** — type-safe ORM with schema migrations and seeding
-
-**Infrastructure & security**
-- **Docker Compose** — single-command orchestration of all services
-- **nginx** — internal reverse proxy (API, WebSocket upgrade, Grafana sub-path)
-- **ModSecurity WAF** — TLS termination, OWASP CRS request/response filtering
-- **HashiCorp Vault** — runtime secret injection (JWT, OAuth, mail) via AppRole
-- **Prometheus + Grafana** — metrics collection and dashboards
-
-**Justification for major choices:**
-- **Monolith backend** over microservices: the project scope does not justify the operational overhead of multiple services.
-- **PostgreSQL + Prisma** over raw SQL or NoSQL: structured relational data (users, games, reviews, friendships) with clear foreign keys and Prisma's developer ergonomics.
-- **Vault** over plain `.env` in production: secrets are not baked into images and can be rotated without redeploying.
-- **WAF as single entry point**: all external traffic is inspected before reaching internal services.
+[Frontend technologies and frameworks used.
+◦ Backend technologies and frameworks used.
+◦ Database system and why it was chosen.
+◦ Any other significant technologies or libraries.
+◦ Justification for major technical choices.]
 
 ## Project Structure
 
@@ -169,11 +114,11 @@ Each service runs in its own container. All containers communicate over a privat
 -notes
 
 # Team Information
-- **Product Owner** Rydom (rmiah) : Defines product vision and feature priorities, validates UX flows and acceptance criteria, and ensures deliverables match the project subject requirements.
-- **Project Manager** Daniya (dahmane) : Coordinates sprints and task distribution, maintains documentation and the README, and owns database design and Prisma schema decisions.
-- **Tech Lead** Mario (mdodevsk) : Owns overall architecture, Docker Compose stack, monitoring (Prometheus/Grafana), nginx reverse proxy, and CI/deployment workflows.
+- **Product Owner** Rydom (rmiah) : [Brief description of their responsibilities]
+- **Project Manager** Daniya (dahmane) : [Brief description of their responsibilities]
+- **Tech Lead** Mario (mdodevsk) : [Brief description of their responsibilities]
 - **Developers** :
-  - Yasser (yzeghari) : Cybersecurity — WAF/ModSecurity configuration, HashiCorp Vault bootstrap and secret management, TLS certificates, and security hardening.
+  - Yasser (yzeghari) : As the team's cybersecurity lead, I was responsible for securing the project's infrastructure, reviewing my teammates' code to  ensure secure development practices, and designing and implementing all the security features required by the project specifications.
   - Ugo (ufalzone) : Backend — Express API routes, authentication, Socket.IO chat, and IGDB integration.
 
 ## Project Management
@@ -187,7 +132,7 @@ The team organized work in two-week sprints with a shared backlog on **Notion** 
 ## Individual Contributions
 - **rmiah** : -notes
 - **mdodevsk** : -notes
-- **yzeghari** : -notes
+- **yzeghari** : I initially worked on a separate GitHub repository to learn and experiment with the technologies and security mechanisms required for the project. Once the implementation was mature enough, I collaborated with the DevOps engineer (Mario) to integrate my work into the main project. We first deployed the infrastructure over HTTP, then migrated it to HTTPS, continuously improving and refining the security architecture throughout the development process.
 - **dahmane** :
   **Database initialization & schema (ORM module)**
   - Designed the full PostgreSQL schema in `prisma/schema.prisma` (users, games, reviews, friendships, chat, API keys, etc.) with proper relations, constraints, and cascading deletes.
@@ -321,7 +266,69 @@ Implemented by: mdodevsk.
 
 ### Implement WAF/ModSecurity + HashiCorp - Major (2pts)
 
--notes
+## 1. WAF / ModSecurity
+
+The WAF (Web Application Firewall) can either be embedded directly inside the Nginx container or deployed as a separate layer sitting between the Internet and Nginx. **The second architecture was chosen** for this project — a dedicated, standalone WAF container in front of Nginx.
+
+Its role is to inspect every incoming HTTP request. Using the default rule sets — primarily the **OWASP Core Rule Set (CRS)** — along with custom rules defined in our configuration files, it decides whether a request should be allowed through or blocked.
+
+### Hardened configuration constraint
+
+The subject requires a **hardened configuration**, so the security/paranoia level could not simply be set to its lowest value for convenience. A high paranoia level significantly improves protection against real attacks (SQLi, XSS, path traversal, etc.), but it also increases the risk of **false positives** that can break legitimate application behavior.
+
+To reconcile both requirements, custom rules were added on top of the default CRS ruleset — explicitly whitelisting legitimate request patterns specific to our application, while keeping the overall protection level high rather than lowering paranoia globally.
+
+### Key configuration parameters
+
+- **Rule engine**: blocking mode (`On`), not detection-only — required for a hardened setup.
+- **Paranoia level**: kept high per subject requirements; false positives mitigated via custom rule exceptions rather than by lowering global paranoia.
+- **Anomaly scoring thresholds** (inbound/outbound): tuned so legitimate traffic passes while attack patterns are still caught.
+- **TLS termination**: handled at the WAF layer, in front of Nginx.
+- **Audit logging**: JSON-formatted request logs for later analysis.
+
+---
+
+## 2. HashiCorp Vault
+
+Vault is our secrets management system: a dedicated vault to store and retrieve passwords, API keys, certificates, and other sensitive credentials. It runs in its own container, and the backend queries Vault to fetch the secrets it needs (e.g., database credentials) before connecting to other services — instead of hardcoding them or passing them as plain environment variables.
+
+### Design goal: configure Vault entirely from the outside
+
+The main technical objective of this part was to configure Vault **without ever exec-ing into the Vault container manually**. Instead, a series of short-lived, purpose-built containers run Bash scripts making `curl` calls against the Vault HTTP API, then exit automatically once their task is done. This keeps the configuration process reproducible, scriptable, and auditable — no manual, undocumented steps against the running server.
+
+### Container breakdown
+
+| Container | Role |
+|---|---|
+| **`vault-init`** | Prepares the environment by fixing volume permissions before Vault's first start (Vault's process drops privileges to a non-root UID internally, so the underlying volume must be writable by that UID beforehand). |
+| **`vault`** | The HashiCorp Vault server itself — encrypted, sealed storage for all secrets. |
+| **`vault-unsealer`** | Vault is **sealed** after every restart by design. This container automatically unseals it using the unseal keys generated during the very first initialization and persisted in a dedicated volume. *(In a production environment, this manual-key unseal would typically be replaced by an **Auto-Unseal** mechanism backed by a KMS — AWS KMS, Azure Key Vault, Google Cloud KMS, or an HSM — removing the need to store raw unseal keys at all.)* |
+| **`vault-bootstrap`** | Initializes Vault's configuration once unsealed: enables the KV secrets engine, writes access policies, configures authentication methods (AppRole for services, Userpass for the human admin), and provisions the roles needed by backend applications and operators. |
+| **`vault-seeker`** | Reads secrets currently held as environment variables (API keys, credentials, passwords, etc.) and writes them into Vault via the KV secrets engine, which stores data as simple key/value pairs. This is effectively a one-time migration step: moving secrets out of `.env`-style variables and into Vault's encrypted storage. |
+| **`vault-health`** | The only long-running container in this set. Unlike the others, it doesn't exit — it continuously polls Vault's status (sealed/unsealed, initialized, healthy) for monitoring purposes. |
+
+### Root token lifecycle
+
+The root token generated at initialization is used only once, by `vault-bootstrap`, to set up engines, policies, auth methods, and roles — then it is **revoked** immediately afterward. No long-lived root access remains; all further administrative operations go through a scoped admin user instead.
+
+### Access model
+
+- **AppRole authentication** for backend services, each bound to a dedicated policy restricting it to exactly the secret paths it needs (principle of least privilege) — e.g., a `backend-dev` role has no access whatsoever to production secrets, and vice versa.
+- **Userpass authentication** for the human operator (devops/cyber role), used for manual administrative tasks after bootstrap.
+- **KV secrets engine (v2)** stores static secrets — API keys, DB passwords, JWT secrets — as versioned key/value pairs, with read access scoped per policy.
+
+### Known limitation (documented intentionally)
+
+Because this is a school project without production KMS access, unseal keys and short-lived tokens are persisted on disk (in a restricted, non-versioned volume/directory) rather than through an Auto-Unseal/KMS setup. This is called out explicitly as a deliberate trade-off for the project's scope, with the production-grade alternative (KMS-backed Auto-Unseal) documented above.
+
+---
+
+## Summary
+
+| Layer | Protects against | Mechanism |
+|---|---|---|
+| WAF / ModSecurity | Application-layer attacks (SQLi, XSS, etc.) on incoming HTTP traffic | OWASP CRS + custom rules, hardened paranoia level |
+| Vault | Secret sprawl, hardcoded credentials, unrestricted secret access | Encrypted storage, scoped policies, AppRole isolation, revoked root token, audited access |
 
 ## Modules - Data & Analytics
 
