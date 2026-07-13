@@ -130,7 +130,29 @@ The team organized work in two-week sprints with a shared backlog on **Notion** 
 - **Communication:** Discord (daily chat, voice for pairing), Notion (docs and planning).
 
 ## Individual Contributions
-- **rmiah** : -notes
+- **rmiah** :
+  **Frontend framework & application shell**
+  - Built the entire React 19 + Vite 8 SPA: routing (`App.jsx`, `main.jsx` with `BrowserRouter`), page structure, and API integration via `fetch` across all pages.
+  - Configured the Vite dev proxy (`/api` → backend) and the production multi-stage Docker build (Node build → nginx static serving with SPA fallback).
+  - Implemented 14 pages: login/signup, home, games, game detail, reviews, post review, profile, other profile, friends, chat, settings, privacy, and terms.
+
+  **Design system & reusable components**
+  - Created the shared visual identity: custom fonts (`policePS3`, `policeConthrax`), dark theme with `#f5a623` accent, and the `Background` overlay layout used on every page.
+  - Built reusable components: page-specific navbars (`HomeNavBar`, `GamesNavBar`, `ProfileNavBar`, etc.), `GamesCard`/`GamesCarousel`, `ReviewsCard`, `SearchBar`, `PostStars`, `InscriptionForm`, `Footer`, profile and friends components, and the full chat UI (`ChatWindow`, `ConversationList`, `MessageBubble`, etc.).
+  - Responsive layouts with mobile hamburger menus and CSS breakpoints (600px / 900px).
+
+  **Internationalization**
+  - Set up i18next with translation files for English, French, and Spanish (`locales/en.json`, `fr.json`, `es.json`).
+  - Externalized all major UI strings via `useTranslation()` and built the language switcher in Settings with `localStorage` persistence.
+
+  **User-facing features (frontend)**
+  - Login/signup flow with password reset UI, Google OAuth redirect handling, game browsing and detail pages, review posting, friends feed, and real-time chat interface (Socket.IO client integration).
+
+  **Challenges overcome**
+  - **SPA routing behind nginx:** configured `try_files` fallback so client-side routes work in production after a page refresh.
+  - **i18n at scale:** progressively migrated hardcoded strings across 14 pages into locale files without breaking existing layouts.
+  - **Consistent UI across many screens:** enforced a shared component and CSS convention (navbars, cards, modals) to avoid one-off styles and keep the app visually cohesive.
+  - **OAuth callback flow:** handled the token/user query params on the Home page after Google redirect through the WAF/nginx proxy chain.
 - **mdodevsk** : -notes
 - **yzeghari** : I initially worked on a separate GitHub repository to learn and experiment with the technologies and security mechanisms required for the project. Once the implementation was mature enough, I collaborated with the DevOps engineer (Mario) to integrate my work into the main project. We first deployed the infrastructure over HTTP, then migrated it to HTTPS, continuously improving and refining the security architecture throughout the development process.
 - **dahmane** :
@@ -181,7 +203,22 @@ The team organized work in two-week sprints with a shared backlog on **Notion** 
 
 ### Framework for both the frontend and backend — Major (2pts)
 
--notes
+**Justification:** The project subject requires a modern web framework on both sides. A React SPA for the frontend and an Express API for the backend provide a clear separation of concerns while staying deployable as a simple monolith.
+
+**Implementation — Frontend (rmiah):**
+- **React 19** + **Vite 8** SPA with **React Router 7** for client-side navigation across 14 pages.
+- **Tailwind CSS 4** for utility-based styling alongside custom CSS per component.
+- Vite dev server with `/api` proxy to the backend for local development.
+- Multi-stage **Dockerfile**: `npm run build` in Node 20, then served as static files by nginx with SPA `try_files` fallback.
+
+**Implementation — Backend (ufalzone):**
+- **Express 5** monolith on **Node.js 20** (ES modules), single entry point in `src/index.js`.
+- HTTP server shared with **Socket.IO** on the same port (no separate WebSocket service).
+- Route mounting for internal API (`/api/games`, `/api/auth`, `/api/user`, `/api/chat`, etc.) and public API (`/api/public/*`).
+- Middleware stack: CORS, JSON parsing, sessions (Passport OAuth), Prometheus metrics, rate limiting.
+- Dockerized with a non-root `appuser`, Prisma client generation at build time.
+
+Implemented by: rmiah (frontend), ufalzone (backend).
 
 ### Real-time features using WebSockets — Major (2pts)
 
@@ -220,7 +257,17 @@ Implemented by: dahmane.
 
 ### Design system with reusable components — Minor (1pts)
 
--notes
+**Justification:** With 14 pages sharing the same visual language, ad-hoc styling would lead to inconsistencies and duplicated code. A set of reusable layout and UI components keeps the app cohesive and speeds up development of new screens.
+
+**Implementation:**
+- **Layout shell:** `Background` (full-page overlay), `Footer` (logo, credits, legal links), and a dedicated navbar component per section (`HomeNavBar`, `GamesNavBar`, `ProfileNavBar`, `SettingsNavBar`, `ChatNavBar`, etc.).
+- **Game & review UI:** `GamesCard`, `GamesCarousel`, `ReviewsCard`, `PostStars`, `PostGamePicker`, `GamePresentationReviews`, `GamePresentationScreenshots`.
+- **Social & profile:** `FriendsList`, `FriendsActivity`, `ProfileFavorites`, `ProfileModal`, `NavAvatar`, `SearchBar`.
+- **Auth:** `InscriptionForm` (login, signup, password reset flows in a single modal component).
+- **Design tokens:** custom fonts (`policePS3`, `policeConthrax`), `#f5a623` accent on dark backgrounds, `clamp()` for responsive typography, and shared button/input styles across settings and forms.
+- **Responsive behavior:** hamburger menu on mobile navbars, breakpoints at 600px and 900px in `index.css`.
+
+Implemented by: rmiah.
 
 ## Modules - Accessibility and Internationalization
 
@@ -228,7 +275,15 @@ Implemented by: dahmane.
 
 ### Support for multiple languages — Minor (1pts)
 
--notes
+**Justification:** GameRev targets an international audience. Supporting multiple languages makes the platform accessible to non-English speakers and is a required module of the subject.
+
+**Implementation:**
+- **i18next** + **react-i18next** configured in `i18n.js` with three locale files: `en.json`, `fr.json`, `es.json`.
+- All major UI strings externalized (navigation, login, home, profile, friends, settings, chat, legal pages) and consumed via the `useTranslation()` hook.
+- Language switcher in the Settings page with flag buttons (EN / FR / ES); selected language persisted in `localStorage` and restored on reload.
+- Fallback language set to English if no preference is stored.
+
+Implemented by: rmiah.
 
 ## Modules - User Management
 
