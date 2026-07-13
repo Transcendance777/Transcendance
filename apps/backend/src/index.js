@@ -13,6 +13,7 @@ import gamesRouter from './routes/games.js'; //routes internes
 import authRouter from './routes/auth.js';
 import userRouter from './routes/user.js';
 import apiKeyRouter from './routes/apiKey.js';
+import statsRouter from './routes/stats.js';
 import chatRouter from './routes/chat.js';
 
 import publicReviewsRouter from './routes/publicReviews.js'; //routes externes
@@ -62,7 +63,8 @@ app.use(passport.session());
 app.use('/api/games', gamesRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/user', userRouter);
-app.use('/api/api-key', apiKeyRouter);
+app.use('/api/api-key', apiKeyRouter); // API key routes
+app.use('/api/stats', statsRouter); // Stats routes
 app.use('/api/chat', chatRouter);
 
 // Public API routes

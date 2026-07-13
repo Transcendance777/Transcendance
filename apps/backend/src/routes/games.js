@@ -215,10 +215,15 @@ router.get('/:id', async (req, res) => {
 
 		if (!igdb && !dbGame) return res.status(404).json(null)
 
+		const platforms = typeof dbGame?.platforms === 'string'
+			? dbGame.platforms.split(',').map((p) => p.trim()).filter(Boolean).map((name) => ({ name }))
+			: igdb?.platforms || [];
+
 		// Fusionne : données IGDB (riches) + reviews de la DB
 		res.json({
 			...igdb,
 			...dbGame,
+			platforms,
 			reviews: dbGame?.reviews || []
 		})
 	} catch (error) {

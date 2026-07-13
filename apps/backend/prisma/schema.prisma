@@ -61,6 +61,7 @@ model Game {
   genre         String?   @db.VarChar(255)
   themes        String?   @db.VarChar(255)
   gameModes     String?   @map("game_modes") @db.VarChar(255)
+  platforms     String?   @db.VarChar(255)
   rating        Float?
   ratingCount   Int?      @map("rating_count")
   
