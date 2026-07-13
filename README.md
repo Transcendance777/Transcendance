@@ -153,7 +153,31 @@ The team organized work in two-week sprints with a shared backlog on **Notion** 
   - **i18n at scale:** progressively migrated hardcoded strings across 14 pages into locale files without breaking existing layouts.
   - **Consistent UI across many screens:** enforced a shared component and CSS convention (navbars, cards, modals) to avoid one-off styles and keep the app visually cohesive.
   - **OAuth callback flow:** handled the token/user query params on the Home page after Google redirect through the WAF/nginx proxy chain.
-- **mdodevsk** : -notes
+- **mdodevsk** :
+  **Infrastructure & orchestration**
+  - Designed and maintained the full **Docker Compose** stack (`infra/docker-compose.yaml`): 12+ services on a private `gamerev` bridge network, with healthchecks, volume persistence, and `depends_on` ordering (Postgres → Vault bootstrap → backend).
+  - Wrote the root **Makefile** (`make up`, `make re`, `make rebuild`, `make logs`, `make clean`, `make fclean`) for single-command deployment, automatic TLS cert generation, and safe teardown.
+  - Authored architecture documentation (`Flux.md`, `docs/DEVOPS_NOTES_MARIO.md`) describing the request flow (Client → WAF → nginx → backend → Vault) and operational runbooks.
+
+  **Reverse proxy (nginx)**
+  - Configured the internal nginx reverse proxy (`infra/nginx/nginx.conf`): API and WebSocket (`/socket.io/`) forwarding to the backend, SPA serving via the frontend container, and sub-path routing for Grafana (`/grafana/`) and Prometheus (`/prometheus/`).
+  - Set up `stub_status` on port 8080 for nginx metrics export, with `X-Forwarded-Proto` headers so downstream services know the original request was HTTPS.
+
+  **Monitoring module**
+  - Deployed **Prometheus** + **Grafana** with automatic provisioning: datasource, dashboards, and alerting rules — no manual setup required on startup.
+  - Created custom Grafana dashboards (`backend.json`, `postgres.json`, `nginx.json`) and configured `postgres-exporter` and `nginx-exporter` as scrape targets.
+  - Integrated backend metrics via `prom-client` (`/metrics` endpoint, HTTP request counter and duration histogram middleware).
+
+  **Tech lead & integration**
+  - Owned overall system architecture (monolith backend, container-per-service, WAF as single entry point).
+  - Collaborated with Yasser (cyber) to integrate the WAF and Vault stack into the main Compose file, migrating from HTTP to HTTPS and resolving cross-service compatibility issues.
+
+  **Challenges overcome**
+  - **WAF blocking Grafana:** ModSecurity phase-4 outbound scoring flagged Grafana's inline JavaScript as XSS — diagnosed via WAF logs and fixed with a custom CRS exception rule for `/grafana/` paths.
+  - **WebSocket proxy:** configured nginx `Upgrade`/`Connection` headers and disabled buffering so Socket.IO handshakes work through the WAF → nginx → backend chain.
+  - **Grafana/Prometheus sub-path routing:** proxied both services behind `/grafana/` and `/prometheus/` with correct `Host` and `X-Forwarded-Proto` headers so they work behind the WAF without direct public exposure.
+  - **Cross-platform Docker permissions:** documented and resolved Vault certificate permission issues between macOS (Docker Desktop) and native Linux caused by UID/GID mismatches on bind mounts.
+  - **Service startup ordering:** chained `depends_on` with healthcheck conditions so the backend only starts after Postgres is ready and Vault bootstrap has completed.
 - **yzeghari** : I initially worked on a separate GitHub repository to learn and experiment with the technologies and security mechanisms required for the project. Once the implementation was mature enough, I collaborated with the DevOps engineer (Mario) to integrate my work into the main project. We first deployed the infrastructure over HTTP, then migrated it to HTTPS, continuously improving and refining the security architecture throughout the development process.
 - **dahmane** :
   **Database initialization & schema (ORM module)**
@@ -178,7 +202,32 @@ The team organized work in two-week sprints with a shared backlog on **Notion** 
   - **Complex relational modelling:** self-referencing friendships (M2M on `users`), review likes/comments junction tables, and chat conversations required careful foreign key design to avoid orphan data — addressed with explicit `onDelete: Cascade` and unique composite constraints.
   - **Stats aggregation complexity:** filtering by period, year range, and platform across multiple tables — split logic into dedicated utility modules (`statsDateUtils`, `statsGenreUtils`, `statsPlatformUtils`, `statsRatingUtils`) to keep controllers readable.
   - **API key security:** keys are only shown once at generation; only the SHA-256 hash is stored in the database, preventing plaintext leakage if the DB is compromised.
-- **ufalzone** : -notes
+- **ufalzone** :
+  **Backend framework & core API**
+  - Built the Express 5 monolith (`src/index.js`): HTTP server shared with Socket.IO, route mounting, CORS, sessions, Passport, and Prometheus metrics middleware.
+  - Implemented authentication routes (`/api/auth`): registration, login (email or username), password reset via email (nodemailer), and JWT token generation using Vault-injected secrets.
+
+  **Real-time chat (WebSockets)**
+  - Socket.IO server (`src/socket/`): JWT authentication on handshake (`authSocket.js`), per-user rooms, and chat event handlers (`chatSocket.js`).
+  - Real-time events: `message:send`, `message:read`, `conversation:join/leave`, `typing:start/stop` with acknowledgement callbacks.
+  - REST chat API (`/api/chat`): conversation list, direct conversation creation, message history, read status, and unread counts.
+  - Friends-only messaging enforcement (`chatFriendship.js`), message rate limiting (10 per 10s), and 2000-character cap.
+
+  **User interactions**
+  - User routes (`/api/user`): follow/unfollow, user search, public profiles, liked games, playing list, top-4 favorites.
+  - Reviews: create/edit/delete, like/dislike toggle, threaded comments with replies.
+  - IGDB integration (`services/igdb.js`, `/api/games`): game discovery, search, categories, screenshots — with Twitch OAuth token caching and query caching.
+
+  **Google OAuth 2.0**
+  - Passport.js Google strategy (`config/passport.js`): auto-account creation, unique username generation, email conflict detection with local accounts.
+  - OAuth flow routes (`/api/auth/google`, `/api/auth/google/callback`): session-based auth, JWT issuance, redirect to frontend with token.
+
+  **Challenges overcome**
+  - **WebSocket proxy through nginx:** configured the reverse proxy with `Upgrade` and `Connection` headers so Socket.IO handshakes work behind the WAF/nginx chain.
+  - **JWT auth on sockets:** implemented a custom Socket.IO middleware reading the token from `handshake.auth` or `Authorization` header, separate from Express REST middleware.
+  - **OAuth behind reverse proxy:** enabled `proxy: true` on the Google strategy and set the callback URL to the WAF HTTPS endpoint so Passport receives the correct host/scheme.
+  - **Google vs local account conflicts:** blocked OAuth login when the email already belongs to a password-based account (`email_conflict` redirect), and prevented password login on Google-only accounts.
+  - **On-demand game creation:** when a user likes or reviews a game not yet in the local DB, the backend fetches it from IGDB and creates the record on the fly.
 
 # Modules & Features
 
@@ -222,11 +271,32 @@ Implemented by: rmiah (frontend), ufalzone (backend).
 
 ### Real-time features using WebSockets — Major (2pts)
 
--notes
+**Justification:** Private messaging between friends requires instant delivery without polling. WebSockets provide low-latency, bidirectional communication ideal for chat, typing indicators, and read receipts.
+
+**Implementation:**
+- **Socket.IO** server attached to the same HTTP server as Express (`src/socket/index.js`), sharing port 4000.
+- JWT authentication on socket connection via custom middleware (`authSocket.js`); each user joins a personal room (`user:{id}`).
+- Chat events in `chatSocket.js`: send/receive messages, join/leave conversations, mark as read, typing indicators — all with acknowledgement callbacks.
+- Messages persisted in PostgreSQL (`chat_messages` table) inside a Prisma transaction, then broadcast to all conversation participants via `message:new` and `conversation:updated` events.
+- REST fallback API (`/api/chat`): list conversations, create direct chats, fetch message history, mark conversations as read.
+- Safeguards: friends-only messaging, 10 messages per 10s rate limit, 2000-character max length.
+- nginx reverse proxy configured with WebSocket upgrade headers; frontend connects via `socket.io-client` with JWT in `handshake.auth`.
+
+Implemented by: ufalzone (backend), rmiah (frontend chat UI).
 
 ### User interactions — Major (2pts)
 
--notes
+**Justification:** GameRev is a social platform — users need to follow each other, interact with reviews, manage game collections, and discover content. These interactions form the core engagement loop of the application.
+
+**Implementation:**
+- **Social graph:** follow/unfollow users, search by username, view public profiles (followers, following, reviews, collections).
+- **Game collections:** like/unlike games, add/remove from playing list, manage top-4 favorite games on profile.
+- **Reviews:** post, edit, delete reviews with half-star ratings (stored as integers ×2); browse all reviews and followed users' reviews.
+- **Review interactions:** like/dislike toggle on reviews, threaded comments with nested replies (parentId).
+- **Game discovery:** IGDB-powered routes (`/api/games`) for new releases, popular games, search, categories, game details, and screenshots — games auto-created in the local DB on first interaction.
+- On-demand IGDB fetch: when a user likes or reviews a game not yet stored locally, the backend creates it from the IGDB API automatically.
+
+Implemented by: ufalzone (backend), rmiah (frontend).
 
 ### Public API for the Database — Major (2pts)
 
@@ -271,8 +341,6 @@ Implemented by: rmiah.
 
 ## Modules - Accessibility and Internationalization
 
--notes
-
 ### Support for multiple languages — Minor (1pts)
 
 **Justification:** GameRev targets an international audience. Supporting multiple languages makes the platform accessible to non-English speakers and is a required module of the subject.
@@ -289,7 +357,17 @@ Implemented by: rmiah.
 
 ### Remote authentication with OAuth 2.0 — Minor (1pts)
 
--notes
+**Justification:** Requiring users to create yet another password increases friction. Google OAuth lets users sign in with an existing trusted account while still creating a local user record in our database.
+
+**Implementation:**
+- **Passport.js** with `passport-google-oauth20` strategy (`config/passport.js`).
+- OAuth routes: `GET /api/auth/google` (redirect to Google with `profile` + `email` scopes) and `GET /api/auth/google/callback` (session auth → JWT generation → redirect to frontend).
+- Auto-creates a new user on first Google login with a unique username derived from the Google display name.
+- Email conflict handling: blocks OAuth if the email is already linked to a local password account; blocks password login on Google-only accounts (`passwordHash: 'google_oauth'`).
+- Google Client ID and Secret stored in Vault, not in source code; `proxy: true` enabled for correct callback handling behind the WAF/nginx reverse proxy.
+- Frontend receives the JWT and user object via URL query params on `/home` after successful OAuth.
+
+Implemented by: ufalzone.
 
 ### User activity analytics — Minor (1pts)
 
