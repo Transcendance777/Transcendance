@@ -111,7 +111,8 @@ Each service runs in its own container. All containers communicate over a privat
 
 ## Database Schema
 
--notes
+<img width="1920" height="1080" alt="users" src="https://github.com/user-attachments/assets/962d1587-c996-4934-b5ee-ad5871a803f0" />
+
 
 # Team Information
 - **Product Owner** Rydom (rmiah) : [Brief description of their responsibilities]
