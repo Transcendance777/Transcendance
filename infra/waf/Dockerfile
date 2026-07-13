@@ -1,4 +1,4 @@
-FROM owasp/modsecurity-crs:nginx
+FROM docker.io/owasp/modsecurity-crs:nginx
 ENV MODSEC_RULE_ENGINE=On
 ENV PARANOIA=2
 
