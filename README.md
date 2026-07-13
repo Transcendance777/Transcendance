@@ -132,102 +132,73 @@ The team organized work in two-week sprints with a shared backlog on **Notion** 
 ## Individual Contributions
 - **rmiah** :
   **Frontend framework & application shell**
-  - Built the entire React 19 + Vite 8 SPA: routing (`App.jsx`, `main.jsx` with `BrowserRouter`), page structure, and API integration via `fetch` across all pages.
-  - Configured the Vite dev proxy (`/api` → backend) and the production multi-stage Docker build (Node build → nginx static serving with SPA fallback).
-  - Implemented 14 pages: login/signup, home, games, game detail, reviews, post review, profile, other profile, friends, chat, settings, privacy, and terms.
+  - Built the React 19 + Vite 8 SPA (14 pages, React Router, `fetch` API integration) with a multi-stage Docker build and nginx SPA fallback.
 
   **Design system & reusable components**
-  - Created the shared visual identity: custom fonts (`policePS3`, `policeConthrax`), dark theme with `#f5a623` accent, and the `Background` overlay layout used on every page.
-  - Built reusable components: page-specific navbars (`HomeNavBar`, `GamesNavBar`, `ProfileNavBar`, etc.), `GamesCard`/`GamesCarousel`, `ReviewsCard`, `SearchBar`, `PostStars`, `InscriptionForm`, `Footer`, profile and friends components, and the full chat UI (`ChatWindow`, `ConversationList`, `MessageBubble`, etc.).
-  - Responsive layouts with mobile hamburger menus and CSS breakpoints (600px / 900px).
+  - Shared visual identity (custom fonts, dark theme, `#f5a623` accent) and reusable components: navbars, `GamesCard`/`GamesCarousel`, `ReviewsCard`, `InscriptionForm`, chat UI, etc. Responsive layouts with mobile breakpoints.
 
   **Internationalization**
-  - Set up i18next with translation files for English, French, and Spanish (`locales/en.json`, `fr.json`, `es.json`).
-  - Externalized all major UI strings via `useTranslation()` and built the language switcher in Settings with `localStorage` persistence.
+  - i18next setup (EN/FR/ES locale files), `useTranslation()` across pages, language switcher in Settings with `localStorage` persistence.
 
   **User-facing features (frontend)**
-  - Login/signup flow with password reset UI, Google OAuth redirect handling, game browsing and detail pages, review posting, friends feed, and real-time chat interface (Socket.IO client integration).
+  - Login/signup, password reset, OAuth redirect handling, game browsing, reviews, friends feed, and Socket.IO chat interface.
 
   **Challenges overcome**
-  - **SPA routing behind nginx:** configured `try_files` fallback so client-side routes work in production after a page refresh.
-  - **i18n at scale:** progressively migrated hardcoded strings across 14 pages into locale files without breaking existing layouts.
-  - **Consistent UI across many screens:** enforced a shared component and CSS convention (navbars, cards, modals) to avoid one-off styles and keep the app visually cohesive.
-  - **OAuth callback flow:** handled the token/user query params on the Home page after Google redirect through the WAF/nginx proxy chain.
+  - **SPA routing behind nginx:** `try_files` fallback for client-side routes on refresh.
+  - **i18n at scale:** migrated hardcoded strings across all pages into locale files.
+  - **OAuth callback flow:** handled token/user query params after Google redirect through the WAF/nginx chain.
 - **mdodevsk** :
   **Infrastructure & orchestration**
-  - Designed and maintained the full **Docker Compose** stack (`infra/docker-compose.yaml`): 12+ services on a private `gamerev` bridge network, with healthchecks, volume persistence, and `depends_on` ordering (Postgres → Vault bootstrap → backend).
-  - Wrote the root **Makefile** (`make up`, `make re`, `make rebuild`, `make logs`, `make clean`, `make fclean`) for single-command deployment, automatic TLS cert generation, and safe teardown.
-  - Authored architecture documentation (`Flux.md`, `docs/DEVOPS_NOTES_MARIO.md`) describing the request flow (Client → WAF → nginx → backend → Vault) and operational runbooks.
+  - Full **Docker Compose** stack (12+ services, healthchecks, volumes, startup ordering) and root **Makefile** for single-command deployment.
+  - Architecture docs (`Flux.md`, `DEVOPS_NOTES_MARIO.md`) describing the Client → WAF → nginx → backend → Vault flow.
 
   **Reverse proxy (nginx)**
-  - Configured the internal nginx reverse proxy (`infra/nginx/nginx.conf`): API and WebSocket (`/socket.io/`) forwarding to the backend, SPA serving via the frontend container, and sub-path routing for Grafana (`/grafana/`) and Prometheus (`/prometheus/`).
-  - Set up `stub_status` on port 8080 for nginx metrics export, with `X-Forwarded-Proto` headers so downstream services know the original request was HTTPS.
+  - Internal nginx: API/WebSocket proxying, SPA serving, Grafana/Prometheus sub-path routing, `stub_status` for metrics.
 
   **Monitoring module**
-  - Deployed **Prometheus** + **Grafana** with automatic provisioning: datasource, dashboards, and alerting rules — no manual setup required on startup.
-  - Created custom Grafana dashboards (`backend.json`, `postgres.json`, `nginx.json`) and configured `postgres-exporter` and `nginx-exporter` as scrape targets.
-  - Integrated backend metrics via `prom-client` (`/metrics` endpoint, HTTP request counter and duration histogram middleware).
+  - Prometheus + Grafana with auto-provisioning (dashboards, alerting), custom dashboards (`backend`, `postgres`, `nginx`), and `prom-client` backend metrics.
 
   **Tech lead & integration**
-  - Owned overall system architecture (monolith backend, container-per-service, WAF as single entry point).
-  - Collaborated with Yasser (cyber) to integrate the WAF and Vault stack into the main Compose file, migrating from HTTP to HTTPS and resolving cross-service compatibility issues.
+  - Owned system architecture; integrated WAF and Vault stack with Yasser, migrating HTTP → HTTPS.
 
   **Challenges overcome**
-  - **WAF blocking Grafana:** ModSecurity phase-4 outbound scoring flagged Grafana's inline JavaScript as XSS — diagnosed via WAF logs and fixed with a custom CRS exception rule for `/grafana/` paths.
-  - **WebSocket proxy:** configured nginx `Upgrade`/`Connection` headers and disabled buffering so Socket.IO handshakes work through the WAF → nginx → backend chain.
-  - **Grafana/Prometheus sub-path routing:** proxied both services behind `/grafana/` and `/prometheus/` with correct `Host` and `X-Forwarded-Proto` headers so they work behind the WAF without direct public exposure.
-  - **Cross-platform Docker permissions:** documented and resolved Vault certificate permission issues between macOS (Docker Desktop) and native Linux caused by UID/GID mismatches on bind mounts.
-  - **Service startup ordering:** chained `depends_on` with healthcheck conditions so the backend only starts after Postgres is ready and Vault bootstrap has completed.
+  - **WAF blocking Grafana:** custom CRS exception for `/grafana/` outbound false positives.
+  - **WebSocket proxy:** nginx `Upgrade`/`Connection` headers through the WAF chain.
+  - **Cross-platform Docker permissions:** resolved Vault cert UID/GID issues between macOS and Linux.
 - **yzeghari** : I initially worked on a separate GitHub repository to learn and experiment with the technologies and security mechanisms required for the project. Once the implementation was mature enough, I collaborated with the DevOps engineer (Mario) to integrate my work into the main project. We first deployed the infrastructure over HTTP, then migrated it to HTTPS, continuously improving and refining the security architecture throughout the development process.
 - **dahmane** :
   **Database initialization & schema (ORM module)**
-  - Designed the full PostgreSQL schema in `prisma/schema.prisma` (users, games, reviews, friendships, chat, API keys, etc.) with proper relations, constraints, and cascading deletes.
-  - Set up `initPrisma.js`: Prisma client with the `@prisma/adapter-pg` driver adapter and a PostgreSQL connection pool, reading the DB password from Vault at runtime.
-  - Built `initDatabase.js`: automatic schema sync on startup (`prisma db push`), fallback force-reset on migration conflicts, conditional seeding via IGDB, and Vault DB role provisioning through raw SQL queries.
-  - Wrote the seed script (`prisma/seed.js`) to populate the database with games fetched from the IGDB API on first launch.
+  - Designed the Prisma schema (13 models), `initPrisma.js` (Vault credentials), `initDatabase.js` (auto-sync, seeding, Vault DB role), and IGDB seed script.
 
   **Public API module**
-  - Implemented the public REST API under `/api/public/games` and `/api/public/reviews` with pagination, scoped access, and input validation.
-  - Built API key management: generation, revocation, and SHA-256 hashing before storage (`apiKeyAuth` middleware, `apiKey` controller and routes).
-  - Added rate limiting (`express-rate-limit`) and interactive Swagger documentation at `/api-docs`.
+  - Public REST API (`/api/public/games`, `/api/public/reviews`), API key auth with SHA-256 hashing, rate limiting, and Swagger docs at `/api-docs`.
 
   **Data & Analytics module / User activity analytics**
-  - Backend stats API (`/api/stats/`): playing list over time, rating distribution, genre breakdown, with date/platform/year filters and PDF export (`pdfkit`).
-  - Frontend stats page and chart components (`StatsPage`, `PlayingListStatsChart`, `RatingDistributionChart`, `GameGenreDistributionChart`, `StatsFilters`, `StatsExportButton`).
-  - User activity endpoints: `/api/user/activity/:userId` (personal activity timeline) and `/api/user/friends-activity` (aggregated feed of followed users' likes, reviews, and playing list updates).
+  - Stats API + frontend charts (playing list, ratings, genres, PDF export) and user activity endpoints (`/activity/:userId`, `/friends-activity`).
 
   **Challenges overcome**
-  - **Schema drift across environments:** `prisma db push` could fail when the local DB was in an inconsistent state — solved with an automatic `--force-reset` fallback so the stack always starts cleanly on a fresh clone.
-  - **Vault integration for DB credentials:** Prisma had to connect using secrets injected by Vault rather than plain `.env` values — wired the pg Pool to `vaultSecrets.DB_PASS` and documented the persistence model (Docker volumes vs. git-cloned state).
-  - **Complex relational modelling:** self-referencing friendships (M2M on `users`), review likes/comments junction tables, and chat conversations required careful foreign key design to avoid orphan data — addressed with explicit `onDelete: Cascade` and unique composite constraints.
-  - **Stats aggregation complexity:** filtering by period, year range, and platform across multiple tables — split logic into dedicated utility modules (`statsDateUtils`, `statsGenreUtils`, `statsPlatformUtils`, `statsRatingUtils`) to keep controllers readable.
-  - **API key security:** keys are only shown once at generation; only the SHA-256 hash is stored in the database, preventing plaintext leakage if the DB is compromised.
+  - **Schema drift:** automatic `--force-reset` fallback on `prisma db push` failure.
+  - **Vault DB credentials:** Prisma pool wired to `vaultSecrets.DB_PASS` instead of plain `.env`.
+  - **Stats aggregation:** split filter logic into dedicated utility modules per concern (date, genre, platform, rating).
 - **ufalzone** :
   **Backend framework & core API**
-  - Built the Express 5 monolith (`src/index.js`): HTTP server shared with Socket.IO, route mounting, CORS, sessions, Passport, and Prometheus metrics middleware.
-  - Implemented authentication routes (`/api/auth`): registration, login (email or username), password reset via email (nodemailer), and JWT token generation using Vault-injected secrets.
+  - Express 5 monolith (`index.js`): shared HTTP/Socket.IO server, route mounting, CORS, sessions, Passport, metrics.
+  - Auth routes: register, login, password reset (nodemailer), JWT via Vault secrets.
 
   **Real-time chat (WebSockets)**
-  - Socket.IO server (`src/socket/`): JWT authentication on handshake (`authSocket.js`), per-user rooms, and chat event handlers (`chatSocket.js`).
-  - Real-time events: `message:send`, `message:read`, `conversation:join/leave`, `typing:start/stop` with acknowledgement callbacks.
-  - REST chat API (`/api/chat`): conversation list, direct conversation creation, message history, read status, and unread counts.
-  - Friends-only messaging enforcement (`chatFriendship.js`), message rate limiting (10 per 10s), and 2000-character cap.
+  - Socket.IO server with JWT handshake auth, chat events (send/read/typing), REST `/api/chat` API, friends-only enforcement, and rate limiting.
 
   **User interactions**
-  - User routes (`/api/user`): follow/unfollow, user search, public profiles, liked games, playing list, top-4 favorites.
-  - Reviews: create/edit/delete, like/dislike toggle, threaded comments with replies.
-  - IGDB integration (`services/igdb.js`, `/api/games`): game discovery, search, categories, screenshots — with Twitch OAuth token caching and query caching.
+  - `/api/user` routes: follow, profiles, likes, playing list, favorites, reviews, comments, like/dislike.
+  - IGDB integration (`/api/games`): discovery, search, on-demand game creation from API.
 
   **Google OAuth 2.0**
-  - Passport.js Google strategy (`config/passport.js`): auto-account creation, unique username generation, email conflict detection with local accounts.
-  - OAuth flow routes (`/api/auth/google`, `/api/auth/google/callback`): session-based auth, JWT issuance, redirect to frontend with token.
+  - Passport Google strategy with auto-account creation, email conflict handling, and JWT redirect to frontend.
 
   **Challenges overcome**
-  - **WebSocket proxy through nginx:** configured the reverse proxy with `Upgrade` and `Connection` headers so Socket.IO handshakes work behind the WAF/nginx chain.
-  - **JWT auth on sockets:** implemented a custom Socket.IO middleware reading the token from `handshake.auth` or `Authorization` header, separate from Express REST middleware.
-  - **OAuth behind reverse proxy:** enabled `proxy: true` on the Google strategy and set the callback URL to the WAF HTTPS endpoint so Passport receives the correct host/scheme.
-  - **Google vs local account conflicts:** blocked OAuth login when the email already belongs to a password-based account (`email_conflict` redirect), and prevented password login on Google-only accounts.
-  - **On-demand game creation:** when a user likes or reviews a game not yet in the local DB, the backend fetches it from IGDB and creates the record on the fly.
+  - **WebSocket proxy:** Socket.IO through nginx/WAF with `Upgrade` headers.
+  - **OAuth behind reverse proxy:** `proxy: true` and WAF HTTPS callback URL for Passport.
+  - **Google vs local accounts:** blocked conflicting email/password combinations on both sides.
 
 # Modules & Features
 
