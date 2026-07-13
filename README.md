@@ -31,7 +31,7 @@
    ```bash
    cp .env.example .env   # or create .env manually
    ```
-2. Fill in the required variables in `.env`: database credentials (`DB_USER`, `DB_PASS`, `DB_NAME`), Grafana admin credentials, WAF settings, Google OAuth keys, mail credentials, and IGDB/Twitch API keys.
+2. Fill in the required variables in `.env`: database credentials (`DB_USER`, `DB_PASS`, `DB_NAME`), Grafana admin credentials, WAF settings, Google OAuth keys, mail credentials, and IGDB/Twitch API keys. You may need to create accounts to get certain API credentials (Twitch for exemple).
 3. Generate self-signed TLS certificates for the WAF and Vault:
    ```bash
    bash infra/scripts/generate_certs.sh
@@ -50,23 +50,6 @@ The application is then available at:
 - **Swagger (public API docs):** `https://localhost:8443/api-docs`
 
 On first startup, Vault bootstraps automatically, seeds secrets into the backend, Prisma syncs the database schema, and seed data is inserted.
-
-### Local development (without full infra)
-
-```bash
-# Backend
-cd apps/backend
-npm install
-npx prisma generate
-npm run dev          # listens on port 4000
-
-# Frontend (separate terminal)
-cd apps/front
-npm install
-npm run dev          # listens on port 5173, proxies /api to backend
-```
-
-> For local dev, set `DATABASE_URL` in `.env` and run a PostgreSQL instance separately. Vault integration is required for production secrets (JWT, OAuth, mail).
 
 ## Resources
 
@@ -172,11 +155,11 @@ Each service runs in its own container. All containers communicate over a privat
 - **Tech Lead** Mario (mdodevsk) : Owns overall architecture, Docker Compose stack, monitoring (Prometheus/Grafana), nginx reverse proxy, and CI/deployment workflows.
 - **Developers** :
   - Yasser (yzeghari) : Cybersecurity — WAF/ModSecurity configuration, HashiCorp Vault bootstrap and secret management, TLS certificates, and security hardening.
-  - Ugo (ufalzone) : Backend — Express API routes, authentication, public API, Socket.IO chat, and IGDB integration.
+  - Ugo (ufalzone) : Backend — Express API routes, authentication, Socket.IO chat, and IGDB integration.
 
 ## Project Management
 
-The team organized work in two-week sprints with a shared backlog on **Notion** (user stories, module checklist, meeting notes). Tasks were assigned per module and tracked through **GitHub Issues** and pull requests with code review before merge.
+The team organized work in two-week sprints with a shared backlog on **Notion** (module checklist, meeting notes). Tasks were assigned per module and tracked through **GitHub**.
 
 - **Meetings:** twice-weekly syncs on Discord (planning + retrospective), plus ad-hoc calls for blockers.
 - **Version control:** Git + GitHub (feature branches, PR reviews).
@@ -203,8 +186,8 @@ The team organized work in two-week sprints with a shared backlog on **Notion** 
 | Friends & activity feed | ufalzone, rmiah | Follow users, view friends' recent likes/reviews/playing activity |
 | Real-time chat | ufalzone, rmiah | Private messaging between friends via Socket.IO |
 | Stats dashboard | dahmane | Personal analytics: playing list over time, rating distribution, genre breakdown, PDF export |
-| Public REST API | ufalzone | API-key-authenticated endpoints for games and reviews, rate-limited, Swagger docs |
-| Multi-language UI | rmiah, dahmane | English, French, and Spanish via i18next, switchable in settings |
+| Public REST API | dahmane | API-key-authenticated endpoints for games and reviews, rate-limited, Swagger docs |
+| Multi-language UI | rmiah | English, French, and Spanish via i18next, switchable in settings |
 | Monitoring stack | mdodevsk | Prometheus metrics + Grafana dashboards for backend, Postgres, nginx |
 | WAF + Vault | yzeghari | ModSecurity WAF as public entry point; Vault for runtime secret injection |
 
