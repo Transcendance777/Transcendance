@@ -22,8 +22,9 @@
 |------|---------|
 | Docker | 24+ |
 | Docker Compose | v2+ |
+| Make | GNU Make |
 | Node.js (local dev only) | 20 LTS |
-| OpenSSL | for certificate generation |
+| OpenSSL | used by the cert generation script |
 
 ### Configuration
 
@@ -32,17 +33,35 @@
    cp .env.example .env   # or create .env manually
    ```
 2. Fill in the required variables in `.env`: database credentials (`DB_USER`, `DB_PASS`, `DB_NAME`), Grafana admin credentials, WAF settings, Google OAuth keys, mail credentials, and IGDB/Twitch API keys. You may need to create accounts to get certain API credentials (Twitch for exemple).
-3. Generate self-signed TLS certificates for the WAF and Vault:
-   ```bash
-   bash infra/scripts/generate_certs.sh
-   ```
 
-### Run with Docker (recommended)
+TLS certificates for the WAF and Vault are generated automatically on first `make up` if they are missing.
+
+### Run with Make (recommended)
+
+From the project root:
 
 ```bash
-cd infra
-docker compose up --build
+make        # alias for make up — starts the full stack in detached mode
 ```
+
+`make up` checks that `.env` exists, generates TLS certificates if needed, then runs `docker compose up -d`.
+
+For a fresh clone or after code changes:
+
+```bash
+make re     # stops containers, rebuilds images, and restarts the stack
+```
+
+**Other useful targets:**
+
+| Command | Description |
+|---------|-------------|
+| `make down` | Stop all containers |
+| `make logs` | Follow container logs |
+| `make ps` | Show running services |
+| `make rebuild SERVICE=<name>` | Rebuild and restart a single service (e.g. `make rebuild SERVICE=waf`) |
+| `make clean` | Stop containers and remove volumes (resets the database) |
+| `make fclean` | Full cleanup: images, volumes, certs, and Vault keys |
 
 The application is then available at:
 - **App (HTTPS):** `https://localhost:8443`
@@ -169,7 +188,29 @@ The team organized work in two-week sprints with a shared backlog on **Notion** 
 - **rmiah** : -notes
 - **mdodevsk** : -notes
 - **yzeghari** : -notes
-- **dahmane** : -notes
+- **dahmane** :
+  **Database initialization & schema (ORM module)**
+  - Designed the full PostgreSQL schema in `prisma/schema.prisma` (users, games, reviews, friendships, chat, API keys, etc.) with proper relations, constraints, and cascading deletes.
+  - Set up `initPrisma.js`: Prisma client with the `@prisma/adapter-pg` driver adapter and a PostgreSQL connection pool, reading the DB password from Vault at runtime.
+  - Built `initDatabase.js`: automatic schema sync on startup (`prisma db push`), fallback force-reset on migration conflicts, conditional seeding via IGDB, and Vault DB role provisioning through raw SQL queries.
+  - Wrote the seed script (`prisma/seed.js`) to populate the database with games fetched from the IGDB API on first launch.
+
+  **Public API module**
+  - Implemented the public REST API under `/api/public/games` and `/api/public/reviews` with pagination, scoped access, and input validation.
+  - Built API key management: generation, revocation, and SHA-256 hashing before storage (`apiKeyAuth` middleware, `apiKey` controller and routes).
+  - Added rate limiting (`express-rate-limit`) and interactive Swagger documentation at `/api-docs`.
+
+  **Data & Analytics module / User activity analytics**
+  - Backend stats API (`/api/stats/`): playing list over time, rating distribution, genre breakdown, with date/platform/year filters and PDF export (`pdfkit`).
+  - Frontend stats page and chart components (`StatsPage`, `PlayingListStatsChart`, `RatingDistributionChart`, `GameGenreDistributionChart`, `StatsFilters`, `StatsExportButton`).
+  - User activity endpoints: `/api/user/activity/:userId` (personal activity timeline) and `/api/user/friends-activity` (aggregated feed of followed users' likes, reviews, and playing list updates).
+
+  **Challenges overcome**
+  - **Schema drift across environments:** `prisma db push` could fail when the local DB was in an inconsistent state — solved with an automatic `--force-reset` fallback so the stack always starts cleanly on a fresh clone.
+  - **Vault integration for DB credentials:** Prisma had to connect using secrets injected by Vault rather than plain `.env` values — wired the pg Pool to `vaultSecrets.DB_PASS` and documented the persistence model (Docker volumes vs. git-cloned state).
+  - **Complex relational modelling:** self-referencing friendships (M2M on `users`), review likes/comments junction tables, and chat conversations required careful foreign key design to avoid orphan data — addressed with explicit `onDelete: Cascade` and unique composite constraints.
+  - **Stats aggregation complexity:** filtering by period, year range, and platform across multiple tables — split logic into dedicated utility modules (`statsDateUtils`, `statsGenreUtils`, `statsPlatformUtils`, `statsRatingUtils`) to keep controllers readable.
+  - **API key security:** keys are only shown once at generation; only the SHA-256 hash is stored in the database, preventing plaintext leakage if the DB is compromised.
 - **ufalzone** : -notes
 
 # Modules & Features
@@ -207,21 +248,36 @@ The team organized work in two-week sprints with a shared backlog on **Notion** 
 
 ### Public API for the Database — Major (2pts)
 
--notes
+**Justification:** The project subject requires exposing database data through a secured external API so third-party clients can read and write reviews programmatically. API keys per user ensure accountability, while rate limiting prevents abuse.
+
+**Implementation:**
+- Public REST routes under `/api/public/games` and `/api/public/reviews` (GET, POST, PUT, DELETE) with pagination on list endpoints.
+- Authentication via `x-api-key` header: keys are generated/revoked in user settings, hashed with SHA-256 before storage, and validated by the `apiKeyAuth` middleware.
+- Scope-based authorization (`regular` vs `admin`) for update/delete operations on reviews.
+- Rate limiting at 100 requests per 15 minutes per API key (`express-rate-limit`).
+- Input validation and HTML sanitization on review creation/update (`express-validator`, `sanitize-html`).
+- Interactive Swagger documentation served at `/api-docs` (`swagger-jsdoc` + `swagger-ui-express`).
+
+Implemented by: dahmane.
 
 ### ORM for the database — Minor (1pts)
 
--notes
+**Justification:** Raw SQL queries across a growing schema would be error-prone and hard to maintain. An ORM provides type-safe queries, schema versioning, and a single source of truth for the data model.
+
+**Implementation:**
+- Full schema defined in `prisma/schema.prisma` (13 models: users, games, reviews, friendships, chat, API keys, etc.) with relations, unique constraints, and cascading deletes.
+- Prisma Client configured with the `@prisma/adapter-pg` driver adapter and a PostgreSQL connection pool in `initPrisma.js`, using Vault-injected credentials.
+- Automatic schema sync on backend startup via `prisma db push` in `initDatabase.js`, with a `--force-reset` fallback when the local DB is in an inconsistent state.
+- Conditional seeding (`prisma/seed.js`) that fetches games from the IGDB API on first launch if the database is empty.
+- Vault DB role provisioning through Prisma raw SQL queries (`ensureVaultDbRole`).
+
+Implemented by: dahmane.
 
 ### Design system with reusable components — Minor (1pts)
 
 -notes
 
 ## Modules - Accessibility and Internationalization
-
--notes
-
-### Support for multiple languages — Minor (1pts)
 
 -notes
 
@@ -237,7 +293,15 @@ The team organized work in two-week sprints with a shared backlog on **Notion** 
 
 ### User activity analytics — Minor (1pts)
 
--notes
+**Justification:** A social gaming platform needs more than static profiles — users should see what their friends are doing (new reviews, likes, playing list updates) and browse any user's recent activity on their profile page.
+
+**Implementation:**
+- `GET /api/user/activity/:userId` — aggregates a user's 15 most recent actions (likes, reviews, follows, playing list additions) from multiple tables, merged and sorted by date.
+- `GET /api/user/friends-activity` — fetches the same activity types for all followed users, enriched with user info (username, avatar), capped at 30 entries.
+- Parallel Prisma queries (`Promise.all`) across `likedGame`, `review`, `friendship`, and `playingList` tables for performance.
+- Consumed on the Home page (friends activity feed) and Friends page (`FriendsActivity` component).
+
+Implemented by: dahmane.
 
 ## Modules - Devops
 
@@ -263,7 +327,18 @@ Implemented by: mdodevsk.
 
 ### Analytics dashboard + data visualization - Major (2pts)
 
--notes
+**Justification:** Users accumulate gaming data (playing list, ratings, genres) over time but have no way to visualize trends. A dedicated stats page with interactive charts and export turns raw data into actionable insights.
+
+**Implementation:**
+- Backend stats API (`/api/stats/`):
+  - `GET /playinglist` — line chart of games added to the playing list over time.
+  - `GET /rating-distribution` — bar chart of review ratings, filterable by genre.
+  - `GET /game-genre-distribution` — pie chart of genres in the playing list, filterable by release year.
+  - `GET /export` — PDF report generated server-side with `pdfkit`.
+- Filtering by period (week, month, year, all time), custom year range, platform, and genre — logic split into utility modules (`statsDateUtils`, `statsGenreUtils`, `statsPlatformUtils`, `statsRatingUtils`, `statsExportUtils`).
+- Frontend **Stats page** with Recharts components: `PlayingListStatsChart`, `RatingDistributionChart`, `GameGenreDistributionChart`, plus `StatsFilters` and `StatsExportButton`.
+
+Implemented by: dahmane.
 
 ## Total
 = 19pts
