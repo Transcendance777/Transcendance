@@ -1,4 +1,31 @@
+*This project has been created as part of the 42 curriculum by rmiah, mdodevsk, yzeghari, dahmane, ufalzone*
+
 # Transcendance
+
+## Description
+[clearly presents the project, including its goal and a
+brief overview, also contain a clear name for the project and its
+key features]
+
+## Instructions
+[containing any relevant information about compilation,
+installation, and/or execution, should also mention all the needed prerequisites (software,
+tools, versions, configuration like .env setup, etc.), and step-by-step instructions to
+run the project]
+
+## Resources
+[section listing classic references related to the topic (documen-
+tation, articles, tutorials, etc.), as well as a description of how AI was used —
+specifying for which tasks and which parts of the project]
+
+# Technical Informations
+
+## Technical Stack
+[Frontend technologies and frameworks used.
+◦ Backend technologies and frameworks used.
+◦ Database system and why it was chosen.
+◦ Any other significant technologies or libraries.
+◦ Justification for major technical choices.]
 
 ## Project Structure
 
@@ -32,7 +59,86 @@ Each service runs in its own container. All containers communicate over a privat
 - **Prometheus + Grafana**: collects metrics from backend, postgres and nginx, with custom dashboards and alerting rules.
 - **Docker Compose**: the whole stack starts with a single command.
 
-## Modules (Devops)
+## Database Schema
+
+-notes
+
+# Team Information
+- **Product Owner** Rydom (rmiah) : [Brief description of their responsibilities]
+- **Project Manager** Daniya (dahmane) : [Brief description of their responsibilities]
+- **Tech Lead** Mario (mdodevsk) : [Brief description of their responsibilities]
+- **Developers** :
+  - Yasser (yzeghari) : [Brief description of their responsibilities (the cybersecurity dev)]
+  - Ugo (ufalzone) :  [Brief description of their responsibilities (the backend dev)]
+
+## Project Management
+[How the team organized the work (task distribution, meetings, etc.).
+◦ Tools used for project management (tools used : git/github, notion).
+◦ Communication channels used (Discord).]
+
+## Individual Contributions
+- **rmiah** : -notes
+- **mdodevsk** : -notes
+- **yzeghari** : -notes
+- **dahmane** : -notes
+- **ufalzone** : -notes
+
+# Modules & Features
+
+## Features List
+[Complete list of implemented features.
+◦ Which team member(s) worked on each feature.
+◦ Brief description of each feature’s functionality.]
+
+## Modules - Web
+
+### Framework for both the frontend and backend — Major (2pts)
+
+-notes
+
+### Real-time features using WebSockets — Major (2pts)
+
+-notes
+
+### User interactions — Major (2pts)
+
+-notes
+
+### Public API for the Database — Major (2pts)
+
+-notes
+
+### ORM for the database — Minor (1pts)
+
+-notes
+
+### Design system with reusable components — Minor (1pts)
+
+-notes
+
+## Modules - Accessibility and Internationalization
+
+-notes
+
+### Support for multiple languages — Minor (1pts)
+
+-notes
+
+### Support for multiple languages — Minor (1pts)
+
+-notes
+
+## Modules - User Management
+
+### Remote authentication with OAuth 2.0 — Minor (1pts)
+
+-notes
+
+### User activity analytics — Minor (1pts)
+
+-notes
+
+## Modules - Devops
 
 ### Monitoring — Major (2pts)
 
@@ -45,3 +151,18 @@ Each service runs in its own container. All containers communicate over a privat
 - Access to Grafana is restricted (not publicly exposed like the app itself).
 
 Implemented by: mdodevsk.
+
+## Modules - Cyber
+
+### Implement WAF/ModSecurity + HashiCorp - Major (2pts)
+
+-notes
+
+## Modules - Data & Analytics
+
+### Analytics dashboard + data visualization - Major (2pts)
+
+-notes
+
+## Total
+= 19pts
