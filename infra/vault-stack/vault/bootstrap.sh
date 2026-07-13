@@ -3,8 +3,14 @@ set -eu
 
 VAULT_ADDR="https://vault:8200"
 POLICIES_DIR="/vault/policies"
-VAULT_TOKEN=$(jq -r .root_token /vault_keys/root_keys.json)
 OUT_DIR="/approle_id"
+
+echo "==> Waiting for vault-unsealer..."
+until [ -f /vault_keys/root_keys.json ]; do
+  sleep 2
+done
+
+VAULT_TOKEN=$(jq -r .root_token /vault_keys/root_keys.json)
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
 

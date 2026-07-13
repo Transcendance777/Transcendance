@@ -1,6 +1,10 @@
-COMPOSE = docker compose -f $(COMPOSE_FILE) -f $(COMPOSE_OVERRIDE) --env-file $(ENV_FILE)
+DOCKER ?= docker
+ifeq (,$(shell command -v $(DOCKER) 2>/dev/null))
+DOCKER := podman
+endif
+
+COMPOSE = $(DOCKER) compose -f $(COMPOSE_FILE) --env-file $(ENV_FILE)
 COMPOSE_FILE = infra/docker-compose.yaml
-COMPOSE_OVERRIDE = infra/docker-compose.override.yaml
 ENV_FILE = .env
 
 all: up
@@ -41,7 +45,7 @@ clean:
 # Nettoyage complet + images construites + réseaux orphelins + clés
 fclean: clean
 	$(COMPOSE) down --rmi all --remove-orphans
-	docker system prune -f
+	$(DOCKER) system prune -f
 	rm -rf infra/vault-stack/vault_keys/* infra/vault-stack/approle_id/*
 	rm -f infra/waf/certs/*.crt infra/waf/certs/*.key infra/nginx/certs/*.crt infra/nginx/certs/*.key infra/vault-stack/vault/certs/*.crt infra/vault-stack/vault/certs/*.key
 

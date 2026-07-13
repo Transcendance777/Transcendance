@@ -17,5 +17,5 @@ USER appuser
 
 EXPOSE 4000
 
-CMD ["npm", "start"]
+CMD ["sh", "-c", "until [ -f /approle_id/backend-api.json ]; do echo 'Waiting for vault-bootstrap...'; sleep 2; done; npm start"]
 
