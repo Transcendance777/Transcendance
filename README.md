@@ -1,6 +1,18 @@
 *This project has been created as part of the 42 curriculum by rmiah, mdodevsk, yzeghari, dahmane, ufalzone*
 
 # Transcendance
+![JavaScript](https://img.shields.io/badge/javascript-%23323330.svg?style=for-the-badge&logo=javascript&logoColor=%23F7DF1E)
+![React](https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB)
+![Express.js](https://img.shields.io/badge/express.js-%23404d59.svg?style=for-the-badge&logo=express&logoColor=%2361DAFB)
+![NodeJS](https://img.shields.io/badge/node.js-6DA55F?style=for-the-badge&logo=node.js&logoColor=white)
+![Postgres](https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white)
+![Prisma](https://img.shields.io/badge/Prisma-3982CE.svg?style=for-the-badge&logo=Prisma&logoColor=white)
+![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)
+![Nginx](https://img.shields.io/badge/nginx-%23009639.svg?style=for-the-badge&logo=nginx&logoColor=white)
+![Prometheus](https://img.shields.io/badge/Prometheus-E6522C.svg?style=for-the-badge&logo=Prometheus&logoColor=white)
+![Grafana](https://img.shields.io/badge/Grafana-F46800.svg?style=for-the-badge&logo=Grafana&logoColor=white)
+![Vault](https://img.shields.io/badge/Vault-FFEC6E.svg?style=for-the-badge&logo=vault&logoColor=black)
+![ModSecurity](https://img.shields.io/badge/ModSecurity-WAF-red.svg?style=for-the-badge)
 
 ## Description
 **GameRev** is a social platform for video game enthusiasts, built as the final project of the 42 Transcendance curriculum. Users can discover games (via the IGDB API), write and browse reviews, manage a playing list and favorites, follow friends, chat in real time, and track their gaming habits through personal analytics.
@@ -167,7 +179,7 @@ Each service runs in its own container. All containers communicate over a privat
 ## Database Schema
 
 <img width="1920" height="1080" alt="users" src="https://github.com/user-attachments/assets/962d1587-c996-4934-b5ee-ad5871a803f0" />
-
+You can find more notes on the Database in /docs/notes/DEV_NOTES_DB_DANIYA.md
 
 # Team Information
 - **Product Owner** Rydom (rmiah) : Defines product vision and feature priorities, validates UX flows and acceptance criteria, and ensures deliverables match the project subject requirements.
