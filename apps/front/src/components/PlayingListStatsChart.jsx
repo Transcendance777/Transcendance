@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
 	LineChart,
@@ -22,13 +22,18 @@ const formatMonthLabel = (month, locale, year, showYear) => {
 	return new Intl.DateTimeFormat(locale, options).format(date)
 }
 
-const PlayingListStatsChart = ({ statsFilter }) => {
+const PlayingListStatsChart = ({ statsFilter, refreshTick = 0 }) => {
 	const { t, i18n } = useTranslation()
 	const [monthlyData, setMonthlyData] = useState([])
 	const [availablePlatforms, setAvailablePlatforms] = useState([])
 	const [platform, setPlatform] = useState(DEFAULT_STATS_PLATFORM)
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState(null)
+	const filterKey = useMemo(
+		() => `${JSON.stringify(statsFilter)}:${platform}`,
+		[statsFilter, platform],
+	)
+	const prevFilterKey = useRef(null)
 
 	useEffect(() => {
 		const token = localStorage.getItem('token')
@@ -37,10 +42,15 @@ const PlayingListStatsChart = ({ statsFilter }) => {
 			return
 		}
 
+		const showLoading = prevFilterKey.current !== filterKey
+		prevFilterKey.current = filterKey
+
 		const fetchStats = async () => {
 			try {
-				setLoading(true)
-				setError(null)
+				if (showLoading) {
+					setLoading(true)
+					setError(null)
+				}
 
 				const res = await fetch(
 					buildPlayingListStatsUrl(statsFilter, platform),
@@ -53,14 +63,14 @@ const PlayingListStatsChart = ({ statsFilter }) => {
 				setMonthlyData(json.data ?? [])
 				setAvailablePlatforms(json.availablePlatforms ?? [])
 			} catch {
-				setError(t('stats.load_error'))
+				if (showLoading) setError(t('stats.load_error'))
 			} finally {
-				setLoading(false)
+				if (showLoading) setLoading(false)
 			}
 		}
 
 		fetchStats()
-	}, [statsFilter, platform, t])
+	}, [filterKey, refreshTick, t])
 
 	useEffect(() => {
 		setPlatform(DEFAULT_STATS_PLATFORM)

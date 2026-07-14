@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
 	BarChart,
@@ -14,13 +14,18 @@ import {
 	DEFAULT_STATS_GENRE,
 } from './statsUtils'
 
-const RatingDistributionChart = ({ statsFilter }) => {
+const RatingDistributionChart = ({ statsFilter, refreshTick = 0 }) => {
 	const { t } = useTranslation()
 	const [distribution, setDistribution] = useState([])
 	const [availableGenres, setAvailableGenres] = useState([])
 	const [genre, setGenre] = useState(DEFAULT_STATS_GENRE)
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState(null)
+	const filterKey = useMemo(
+		() => `${JSON.stringify(statsFilter)}:${genre}`,
+		[statsFilter, genre],
+	)
+	const prevFilterKey = useRef(null)
 
 	useEffect(() => {
 		const token = localStorage.getItem('token')
@@ -29,10 +34,15 @@ const RatingDistributionChart = ({ statsFilter }) => {
 			return
 		}
 
+		const showLoading = prevFilterKey.current !== filterKey
+		prevFilterKey.current = filterKey
+
 		const fetchStats = async () => {
 			try {
-				setLoading(true)
-				setError(null)
+				if (showLoading) {
+					setLoading(true)
+					setError(null)
+				}
 
 				const res = await fetch(
 					buildRatingStatsUrl(statsFilter, genre),
@@ -45,14 +55,14 @@ const RatingDistributionChart = ({ statsFilter }) => {
 				setDistribution(json.data ?? [])
 				setAvailableGenres(json.availableGenres ?? [])
 			} catch {
-				setError(t('stats.load_error'))
+				if (showLoading) setError(t('stats.load_error'))
 			} finally {
-				setLoading(false)
+				if (showLoading) setLoading(false)
 			}
 		}
 
 		fetchStats()
-	}, [statsFilter, genre, t])
+	}, [filterKey, refreshTick, t])
 
 	useEffect(() => {
 		setGenre(DEFAULT_STATS_GENRE)
