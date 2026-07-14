@@ -35,12 +35,12 @@ const OtherProfilePage = () => {
 	const reviewsSectionRef = useRef(null)
 	const [hoverUnfollow, setHoverUnfollow] = useState(false)
 	const reviewItemRefs = useRef({})
-	const [isTouchDevice, setIsTouchDevice] = useState(false)
+	const [isTouchDevice, setIsTouchDevice] = useState(
+		'ontouchstart' in window || navigator.maxTouchPoints > 0
+	)
 
 	useEffect(() => {
-		const handleResize = () => setIsMobile(window.innerWidth <= 768)
-		window.addEventListener('resize', handleResize)
-		return () => window.removeEventListener('resize', handleResize)
+		setIsTouchDevice('ontouchstart' in window || navigator.maxTouchPoints > 0)
 	}, [])
 
 	useEffect(() => {
@@ -86,10 +86,6 @@ const OtherProfilePage = () => {
 			console.error('Erreur follow:', err)
 		}
 	}
-
-	useEffect(() => {
-		setIsTouchDevice('ontouchstart' in window || navigator.maxTouchPoints > 0)
-	}, [])
 
 	const handleReviewClick = (reviewId) => {
 		setModal(null)
@@ -148,11 +144,11 @@ const OtherProfilePage = () => {
 									}}
 									onMouseEnter={e => {
 										e.currentTarget.style.transform = 'scale(1.1)'
-										if (isFollowing) { setHoverUnfollow(true) }
+										if (isFollowing) setHoverUnfollow(true)
 									}}
 									onMouseLeave={e => {
 										e.currentTarget.style.transform = 'scale(1)'
-										if (isFollowing) { setHoverUnfollow(false) }
+										if (isFollowing) setHoverUnfollow(false)
 									}}
 								>
 									{isFollowing ? (showUnfollowIcon ? <FiUserMinus size={16} /> : <FiCheck size={16} />) : <FiUserPlus size={16} />}
