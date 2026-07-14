@@ -1,5 +1,5 @@
 # Stage 1 : Build
-FROM node:20-alpine AS build
+FROM docker.io/library/node:20-alpine AS build
 
 WORKDIR /app
 
@@ -13,7 +13,7 @@ RUN ["npm", "run", "build"]
 
 # Stage 2 : servir
 
-FROM nginx:alpine
+FROM docker.io/library/nginx:alpine
 
 EXPOSE 80
 

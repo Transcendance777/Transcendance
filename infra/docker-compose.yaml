@@ -23,7 +23,7 @@ services:
         condition: service_healthy
 
   postgres:
-    image: postgres:18.4-alpine
+    image: docker.io/library/postgres:18.4-alpine
     volumes:
       - postgre-data:/var/lib/postgresql
     environment:
@@ -40,7 +40,7 @@ services:
       start_period: 60s
 
   nginx:
-    image: nginx:alpine
+    image: docker.io/library/nginx:alpine
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
     depends_on:
@@ -50,7 +50,7 @@ services:
       - gamerev
 
   prometheus:
-    image: prom/prometheus:v3.12.0
+    image: docker.io/prom/prometheus:v3.12.0
     container_name: prometheus
     volumes:
       - ./monitoring/prometheus/prometheus.yaml:/etc/prometheus/prometheus.yml
@@ -65,7 +65,7 @@ services:
 
   grafana:
     container_name: grafana
-    image: grafana/grafana:12.4
+    image: docker.io/grafana/grafana:12.4
     env_file:
       - ../.env
     networks:
@@ -78,7 +78,7 @@ services:
       - prometheus
 
   postgres-exporter:
-    image: prometheuscommunity/postgres-exporter:v0.16.0
+    image: docker.io/prometheuscommunity/postgres-exporter:v0.16.0
     container_name: postgres-exporter
     environment:
       DATA_SOURCE_URI: "postgres:5432/${DB_NAME}?sslmode=disable"
@@ -91,7 +91,7 @@ services:
         condition: service_healthy
 
   nginx-exporter:
-    image: nginx/nginx-prometheus-exporter:1.5.1
+    image: docker.io/nginx/nginx-prometheus-exporter:1.5.1
     container_name: nginx-exporter
     command:
       - "--nginx.scrape-uri=http://nginx:8080/stub_status"
@@ -131,7 +131,7 @@ services:
       - gamerev
 
   vault-init:
-    image: alpine:3.19
+    image: docker.io/library/alpine:3.19
     volumes:
       - vault_data:/vault/data
       - vault_logs:/vault/logs
@@ -141,7 +141,7 @@ services:
       - gamerev
 
   vault:
-    image: hashicorp/vault:1.17
+    image: docker.io/hashicorp/vault:1.17
     restart: unless-stopped
     container_name: vault
     environment:
@@ -165,7 +165,7 @@ services:
       - gamerev
 
   vault-unsealer:
-    image: alpine:3.19
+    image: docker.io/library/alpine:3.19
     container_name: vault-unsealer
     depends_on:
       - vault
@@ -179,7 +179,7 @@ services:
 
   vault-bootstrap:
     container_name: vault-bootstrap
-    image: alpine:3.19
+    image: docker.io/library/alpine:3.19
     environment:
       - CYBER_PASSWORD=${CYBER_PASSWORD}
     volumes:
@@ -193,7 +193,7 @@ services:
 
   vault-seeder:
     container_name: vault-seeder
-    image: alpine:3.19
+    image: docker.io/library/alpine:3.19
     env_file:
       - ../.env
     volumes:
@@ -203,7 +203,7 @@ services:
       - gamerev
 
   vault-healthcheck:
-    image: alpine:3.19
+    image: docker.io/library/alpine:3.19
     container_name: vault-healthcheck
     depends_on:
       - vault
