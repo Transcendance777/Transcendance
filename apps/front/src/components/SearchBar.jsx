@@ -48,7 +48,7 @@ const SearchBar = () => {
 					fetch(`/api/user/search?q=${encodeURIComponent(search)}`, { headers })
 				])
 
-				const gameData = await gameRes.json()
+				const gameData = gameRes.ok ? await gameRes.json() : []
 				const userData = userRes.ok ? await userRes.json() : []
 
 				setGameResults(gameData.slice(0, 50).map(g => ({
