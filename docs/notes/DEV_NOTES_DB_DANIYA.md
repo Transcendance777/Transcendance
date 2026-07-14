@@ -49,4 +49,7 @@ intermédiaire (`review_likes`) qui contient juste les paires (user, review)
 
 **Relation réflexive** : une table qui se relie à elle-même. Ici `friendships` lie des utilisateurs à d'autres utilisateurs. C'est toujours un Many-to-Many "sur soi-même"
 
-**Références** (base de données) : c’est simplement une valeur copiée, de l’ID de l’autre valeur dans sa table à elle, ex:
+**Références** (base de données) : c’est simplement une valeur copiée, de l’ID de l’autre valeur dans sa table à elle
+
+## Schéma des données
+<img width="1920" height="1080" alt="users" src="https://github.com/user-attachments/assets/962d1587-c996-4934-b5ee-ad5871a803f0" />

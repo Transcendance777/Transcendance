@@ -109,7 +109,7 @@ create_approle() {
   echo "    ✓ AppRole $NAME created (credentials écrites dans $OUT_FILE, non affichées)"
 }
 
-create_approle "backend-api" "backend-app-prod" "1h"  "4h"  "24h"
+create_approle "backend-api" "backend-app-prod" "4h"  "5h"  "24h"
 create_approle "backend-dev"  "backend-dev"      "8h"  "24h" "720h"
 create_approle "devops"       "devops"           "8h"  "24h" "720h"
 

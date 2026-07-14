@@ -243,6 +243,7 @@ const ProfilePage = () => {
 						<button className="profile-tab-btn" onClick={() => setModal('activity')}>{t('profile.last_activity')}</button>
 						<button className="profile-tab-btn" onClick={() => setModal('likes')}>{t('profile.likes')}</button>
 						<button className="profile-tab-btn" onClick={() => setModal('playinglist')}>{t('profile.playing_list')}</button>
+						<button className="profile-tab-btn" onClick={() => navigate('/stats')}>{t('profile.stats')}</button>
 					</div>
 
 				</div>

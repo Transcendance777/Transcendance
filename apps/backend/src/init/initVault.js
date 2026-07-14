@@ -107,6 +107,37 @@ const getVaultSecrets = async (path = 'prod/backend') => {
 	return res.data.data.data; // { DB_PASS, JWT_SECRET, GOOGLE_CLIENT_SECRET, ... }
 };
 
-const vaultSecrets = await getVaultSecrets();
+const loadEnvFallbackSecrets = () => ({
+	DB_PASS: process.env.DB_PASS,
+	JWT_SECRET: process.env.JWT_SECRET,
+	GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
+	GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
+	TWITCH_CLIENT_ID: process.env.TWITCH_CLIENT_ID,
+	TWITCH_CLIENT_SECRET: process.env.TWITCH_CLIENT_SECRET,
+	MAIL_USER: process.env.MAIL_USER,
+	MAIL_PASS: process.env.MAIL_PASS,
+	TEST_API_KEY: process.env.TEST_API_KEY,
+	ADMIN_API_KEY: process.env.ADMIN_API_KEY,
+	REGULAR_USER_PASSWORD: process.env.REGULAR_USER_PASSWORD,
+	ADMIN_USER_PASSWORD: process.env.ADMIN_USER_PASSWORD,
+});
+
+const hasEnvFallback = () =>
+	Boolean(process.env.JWT_SECRET && process.env.DB_PASS);
+
+let vaultSecrets;
+
+try {
+	vaultSecrets = await getVaultSecrets();
+} catch (error) {
+	if (hasEnvFallback()) {
+		console.warn(
+			`[initVault] Vault unavailable (${error.message}), using .env fallback.`,
+		);
+		vaultSecrets = loadEnvFallbackSecrets();
+	} else {
+		throw error;
+	}
+}
 
 export { vaultSecrets };

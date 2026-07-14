@@ -115,6 +115,16 @@ const GamePresentationPage = () => {
 		return []
 	}
 
+	const getPlatforms = (game) => {
+		if (typeof game?.platforms === 'string') {
+			return game.platforms.split(',').map((platform) => platform.trim()).filter(Boolean)
+		}
+		if (Array.isArray(game?.platforms)) {
+			return game.platforms.map((platform) => platform.name || platform).filter(Boolean)
+		}
+		return []
+	}
+
 	const renderStars = (rating) => {
 		const stars = Math.round(rating / 20)
 		return [1, 2, 3, 4, 5].map((star) => (
@@ -126,6 +136,7 @@ const GamePresentationPage = () => {
 	const developer = game?.developer || game?.involved_companies?.find(c => c.developer)?.company?.name || 'N/A'
 	const publisher = game?.involved_companies?.find(c => c.publisher)?.company?.name || 'N/A'
 	const genres = getGenres(game)
+	const platforms = getPlatforms(game)
 
 	const handleWriteReview = () => {
 		navigate('/post', { state: { selectedGame: { title: gameName, image: getCover(game), id: game?.idExterne || game?.id } } })
@@ -218,12 +229,12 @@ const GamePresentationPage = () => {
 								</div>
 							)}
 
-							{game.platforms && (
+							{platforms.length > 0 && (
 								<div className="gamepresentation-info-block">
 									<h3 className="gamepresentation-info-title">{t('game.platforms')}</h3>
 									<div className="gamepresentation-tags">
-										{game.platforms.map((platform, i) => (
-											<span key={i} className="gamepresentation-tag">{platform.name}</span>
+										{platforms.map((platform, i) => (
+											<span key={i} className="gamepresentation-tag">{platform}</span>
 										))}
 									</div>
 								</div>
