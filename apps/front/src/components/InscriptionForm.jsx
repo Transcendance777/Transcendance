@@ -1,6 +1,5 @@
 import '../styles/InscriptionForm.css'
 import '../index.css'
-import axios from 'axios'
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { FiEye, FiEyeOff } from 'react-icons/fi'
@@ -81,30 +80,44 @@ const InscriptionForm = () => {
 
 		try {
 			if (isLogin) {
-				const response = await axios.post('/api/auth/login', {
-					identifier: email,
-					password: password
+				if (!email || !password) {
+					showError(t('login.all_fields'))
+					return
+				}
+				const res = await fetch('/api/auth/login', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ identifier: email, password })
 				})
-				localStorage.setItem('token', response.data.token)
-				localStorage.setItem('user', JSON.stringify(response.data.user))
+				const data = await res.json()
+				if (!res.ok) {
+					showError(translateError(data.error || t('login.error')))
+					return
+				}
+				localStorage.setItem('token', data.token)
+				localStorage.setItem('user', JSON.stringify(data.user))
 				navigate('/home')
 			} else {
 				if (!username || !email || !password) {
 					showError(t('login.all_fields'))
 					return
 				}
-				const response = await axios.post('/api/auth/register', {
-					email: email,
-					username: username,
-					password: password
+				const res = await fetch('/api/auth/register', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ email, username, password })
 				})
-				localStorage.setItem('token', response.data.token)
-				localStorage.setItem('user', JSON.stringify(response.data.user))
+				const data = await res.json()
+				if (!res.ok) {
+					showError(translateError(data.error || t('login.error')))
+					return
+				}
+				localStorage.setItem('token', data.token)
+				localStorage.setItem('user', JSON.stringify(data.user))
 				navigate('/home')
 			}
 		} catch (error) {
-			const msg = error.response?.data?.error || t('login.error')
-			showError(translateError(msg))
+			showError(t('login.error'))
 		}
 	}
 
@@ -204,6 +217,8 @@ const InscriptionForm = () => {
 					<>
 						<p className="emailMessage texte">{t('login.username')}</p>
 						<input
+							id="username"
+							name="username"
 							className="emailArea"
 							type="text"
 							placeholder="Example: xX_DarkWolf_Xx"
@@ -218,6 +233,8 @@ const InscriptionForm = () => {
 					{isLogin ? t('login.email_username') : t('login.email')}
 				</p>
 				<input
+					id="email"
+					name="email"
 					className="emailArea"
 					type={isLogin ? 'text' : 'email'}
 					placeholder={isLogin ? 'Email or username...' : 'Example: john@gmail.com'}
@@ -230,6 +247,8 @@ const InscriptionForm = () => {
 				<p className="passwordMessage texte">{t('login.password')}</p>
 				<div className="password-wrapper">
 					<input
+						id="password"
+						name="password"
 						className="passwordArea"
 						type={showPassword ? 'text' : 'password'}
 						value={password}
@@ -297,6 +316,8 @@ const InscriptionForm = () => {
 								<h3 className="forgot-modal-title">{t('login.forgot_title')}</h3>
 								<p className="forgot-modal-text">{t('login.forgot_text')}</p>
 								<input
+									id="forgot-email"
+									name="forgot-email"
 									className="forgot-input"
 									type="email"
 									placeholder={t('login.forgot_email')}
@@ -316,6 +337,8 @@ const InscriptionForm = () => {
 								<h3 className="forgot-modal-title">{t('login.verify_title')}</h3>
 								<p className="forgot-modal-text">{t('login.verify_text')}</p>
 								<input
+									id="verif-code"
+									name="verif-code"
 									className="forgot-input"
 									type="text"
 									placeholder={t('login.verify_code')}
@@ -335,6 +358,8 @@ const InscriptionForm = () => {
 								<h3 className="forgot-modal-title">{t('login.new_password_title')}</h3>
 								<div className="forgot-password-wrapper">
 									<input
+										id="new-password"
+										name="new-password"
 										className="forgot-input"
 										type={showNewPass1 ? 'text' : 'password'}
 										placeholder={t('login.new_password')}
@@ -347,6 +372,8 @@ const InscriptionForm = () => {
 								</div>
 								<div className="forgot-password-wrapper">
 									<input
+										id="confirm-password"
+										name="confirm-password"
 										className="forgot-input"
 										type={showNewPass2 ? 'text' : 'password'}
 										placeholder={t('login.confirm_password')}

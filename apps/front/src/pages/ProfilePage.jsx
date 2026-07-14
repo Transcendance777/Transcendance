@@ -117,8 +117,8 @@ const ProfilePage = () => {
 				headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
 				body: JSON.stringify({ rating: editRating, reviewText: editText })
 			})
+			if (!res.ok) return  // ← ajoute ça avant le res.json()
 			const data = await res.json()
-			if (!res.ok) return console.error(data.error)
 			setReviews(prev => prev.map(r => r.id === editReview.id ? { ...r, rating: data.review.rating, reviewText: data.review.reviewText } : r))
 			setEditReview(null)
 		} catch (err) {

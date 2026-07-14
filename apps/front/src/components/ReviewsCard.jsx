@@ -50,8 +50,8 @@ const ReviewsCard = ({ review, isOwn = false, onReviewUpdated = null, onReviewDe
 				headers: { ...headers, 'Content-Type': 'application/json' },
 				body: JSON.stringify({ type })
 			})
-			const data = await res.json()
 			if (!res.ok) return
+			const data = await res.json()
 			if (data.type === null) {
 				if (type === 'like') setLikes(l => l - 1)
 				else setDislikes(d => d - 1)
@@ -78,8 +78,8 @@ const ReviewsCard = ({ review, isOwn = false, onReviewUpdated = null, onReviewDe
 				headers: { ...headers, 'Content-Type': 'application/json' },
 				body: JSON.stringify({ text: reply })
 			})
-			const data = await res.json()
 			if (!res.ok) return
+			const data = await res.json()
 			setComments(prev => [...prev, { ...data, replies: [] }])
 			setReply('')
 		} catch (err) {
@@ -95,8 +95,8 @@ const ReviewsCard = ({ review, isOwn = false, onReviewUpdated = null, onReviewDe
 				headers: { ...headers, 'Content-Type': 'application/json' },
 				body: JSON.stringify({ text: subReply, parentId })
 			})
-			const data = await res.json()
 			if (!res.ok) return
+			const data = await res.json()
 			setComments(prev => prev.map(c =>
 				c.id === parentId ? { ...c, replies: [...(c.replies || []), data] } : c
 			))
@@ -137,8 +137,8 @@ const ReviewsCard = ({ review, isOwn = false, onReviewUpdated = null, onReviewDe
 				headers: { ...headers, 'Content-Type': 'application/json' },
 				body: JSON.stringify({ rating: editRating, reviewText: editText })
 			})
-			const data = await res.json()
 			if (!res.ok) return
+			const data = await res.json()
 			setShowEdit(false)
 			if (onReviewUpdated) onReviewUpdated(review.id, data.review)
 		} catch (err) {
