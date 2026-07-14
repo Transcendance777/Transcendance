@@ -105,6 +105,7 @@ services:
   waf:
     build: waf
     container_name: waf
+    user: "0"
     env_file:
       - ../.env
     environment:
