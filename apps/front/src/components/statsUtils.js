@@ -19,6 +19,7 @@ export const getStatsYearOptions = () => {
 
 export const DEFAULT_STATS_PLATFORM = 'all'
 export const DEFAULT_STATS_GENRE = 'all'
+export const STATS_POLL_INTERVAL_MS = 5000
 
 export const buildStatsFilter = ({ period, filterYear }) => {
 	const hasFilterYear = filterYear != null

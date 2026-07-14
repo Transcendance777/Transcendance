@@ -9,7 +9,10 @@ import RatingDistributionChart from '../components/RatingDistributionChart'
 import GameGenreDistributionChart from '../components/GameGenreDistributionChart'
 import StatsFilters from '../components/StatsFilters'
 import StatsExportButton from '../components/StatsExportButton'
-import { DEFAULT_STATS_PERIOD } from '../components/statsUtils'
+import {
+	DEFAULT_STATS_PERIOD,
+	STATS_POLL_INTERVAL_MS,
+} from '../components/statsUtils'
 import '../styles/ProfilePage.css'
 import '../styles/StatsPage.css'
 
@@ -18,6 +21,7 @@ const StatsPage = () => {
 	const navigate = useNavigate()
 	const [period, setPeriod] = useState(DEFAULT_STATS_PERIOD)
 	const [filterYear, setFilterYear] = useState(null)
+	const [refreshTick, setRefreshTick] = useState(0)
 
 	const statsFilter = useMemo(
 		() => ({ period, filterYear }),
@@ -28,6 +32,14 @@ const StatsPage = () => {
 		const token = localStorage.getItem('token')
 		if (!token) navigate('/')
 	}, [navigate])
+
+	useEffect(() => {
+		const interval = setInterval(() => {
+			setRefreshTick((tick) => tick + 1)
+		}, STATS_POLL_INTERVAL_MS)
+
+		return () => clearInterval(interval)
+	}, [])
 
 	const handlePeriodChange = (nextPeriod) => {
 		setPeriod(nextPeriod)
@@ -47,9 +59,18 @@ const StatsPage = () => {
 							onPeriodChange={handlePeriodChange}
 							onFilterYearChange={setFilterYear}
 						/>
-						<PlayingListStatsChart statsFilter={statsFilter} />
-						<RatingDistributionChart statsFilter={statsFilter} />
-						<GameGenreDistributionChart statsFilter={statsFilter} />
+						<PlayingListStatsChart
+							statsFilter={statsFilter}
+							refreshTick={refreshTick}
+						/>
+						<RatingDistributionChart
+							statsFilter={statsFilter}
+							refreshTick={refreshTick}
+						/>
+						<GameGenreDistributionChart
+							statsFilter={statsFilter}
+							refreshTick={refreshTick}
+						/>
 						<StatsExportButton statsFilter={statsFilter} />
 					</div>
 				</div>
