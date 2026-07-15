@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { FiCornerDownRight, FiThumbsUp, FiThumbsDown, FiTrash2, FiEdit2, FiX } from 'react-icons/fi'
 import PostStars from './PostStars'
+import { validateCommentText, validateInternalRating, validateReviewText } from '../utils/validation.js'
 
 const MAX_REPLY = 200
 const MAX_CHARS = 500
@@ -24,6 +25,8 @@ const ReviewsCard = ({ review, isOwn = false, onReviewUpdated = null, onReviewDe
 	const [editText, setEditText] = useState(review.text || '')
 	const [editRating, setEditRating] = useState(null)
 	const [editStarsKey, setEditStarsKey] = useState(0)
+	const [commentMsg, setCommentMsg] = useState('')
+	const [editMsg, setEditMsg] = useState('')
 
 	const currentUser = JSON.parse(localStorage.getItem('user') || '{}')
 	const token = localStorage.getItem('token')
@@ -71,12 +74,17 @@ const ReviewsCard = ({ review, isOwn = false, onReviewUpdated = null, onReviewDe
 	}
 
 	const handleReplySubmit = async () => {
-		if (reply.trim() === '') return
+		const textResult = validateCommentText(reply)
+		if (!textResult.ok) {
+			setCommentMsg(t(textResult.errorKey))
+			setTimeout(() => setCommentMsg(''), 2000)
+			return
+		}
 		try {
 			const res = await fetch(`/api/user/review/${review.id}/comment`, {
 				method: 'POST',
 				headers: { ...headers, 'Content-Type': 'application/json' },
-				body: JSON.stringify({ text: reply })
+				body: JSON.stringify({ text: textResult.value })
 			})
 			if (!res.ok) return
 			const data = await res.json()
@@ -88,12 +96,17 @@ const ReviewsCard = ({ review, isOwn = false, onReviewUpdated = null, onReviewDe
 	}
 
 	const handleSubReplySubmit = async (parentId) => {
-		if (subReply.trim() === '') return
+		const textResult = validateCommentText(subReply)
+		if (!textResult.ok) {
+			setCommentMsg(t(textResult.errorKey))
+			setTimeout(() => setCommentMsg(''), 2000)
+			return
+		}
 		try {
 			const res = await fetch(`/api/user/review/${review.id}/comment`, {
 				method: 'POST',
 				headers: { ...headers, 'Content-Type': 'application/json' },
-				body: JSON.stringify({ text: subReply, parentId })
+				body: JSON.stringify({ text: textResult.value, parentId })
 			})
 			if (!res.ok) return
 			const data = await res.json()
@@ -130,12 +143,23 @@ const ReviewsCard = ({ review, isOwn = false, onReviewUpdated = null, onReviewDe
 	}
 
 	const handleEditSubmit = async () => {
-		if (!editRating) return
+		const ratingResult = validateInternalRating(editRating)
+		if (!ratingResult.ok) {
+			setEditMsg(t(ratingResult.errorKey))
+			setTimeout(() => setEditMsg(''), 2000)
+			return
+		}
+		const textResult = validateReviewText(editText)
+		if (!textResult.ok) {
+			setEditMsg(t(textResult.errorKey))
+			setTimeout(() => setEditMsg(''), 2000)
+			return
+		}
 		try {
 			const res = await fetch(`/api/user/review/${review.id}`, {
 				method: 'PUT',
 				headers: { ...headers, 'Content-Type': 'application/json' },
-				body: JSON.stringify({ rating: editRating, reviewText: editText })
+				body: JSON.stringify({ rating: ratingResult.value, reviewText: textResult.value })
 			})
 			if (!res.ok) return
 			const data = await res.json()
@@ -189,7 +213,13 @@ const ReviewsCard = ({ review, isOwn = false, onReviewUpdated = null, onReviewDe
 						</p>
 						{isOwn && (
 							<div style={{ display: 'flex', gap: '8px' }}>
-								<button onClick={() => { setEditText(review.text || ''); setEditStarsKey(k => k + 1); setShowEdit(true) }}
+								<button onClick={() => {
+									setEditText(review.text || '')
+									setEditRating(review.rating)
+									setEditStarsKey(k => k + 1)
+									setEditMsg('')
+									setShowEdit(true)
+								}}
 									style={{ background: 'none', border: 'none', color: '#e7e7e7', cursor: 'pointer' }}>
 									<FiEdit2 size={16} />
 								</button>
@@ -229,9 +259,14 @@ const ReviewsCard = ({ review, isOwn = false, onReviewUpdated = null, onReviewDe
 									onChange={(e) => setReply(e.target.value)} maxLength={MAX_REPLY} />
 								<div className="reply-bottom">
 									<span className="reply-count">{reply.length}/{MAX_REPLY}</span>
-									<button className="reply-submit-btn" onClick={handleReplySubmit}>→</button>
+									<button className="reply-submit-btn" onClick={handleReplySubmit} disabled={!reply.trim()}>→</button>
 								</div>
 							</div>
+							{commentMsg && (
+								<p style={{ color: '#f44336', fontFamily: '"policeConthrax", sans-serif', fontSize: '12px', marginTop: '6px' }}>
+									{commentMsg}
+								</p>
+							)}
 
 							<div className="replies-list">
 								{comments.length === 0 ? (
@@ -293,7 +328,7 @@ const ReviewsCard = ({ review, isOwn = false, onReviewUpdated = null, onReviewDe
 															value={subReply} onChange={(e) => setSubReply(e.target.value)} maxLength={MAX_REPLY} />
 														<div className="reply-bottom">
 															<span className="reply-count">{subReply.length}/{MAX_REPLY}</span>
-															<button className="reply-submit-btn" onClick={() => handleSubReplySubmit(comment.id)}>→</button>
+															<button className="reply-submit-btn" onClick={() => handleSubReplySubmit(comment.id)} disabled={!subReply.trim()}>→</button>
 														</div>
 													</div>
 												</div>
@@ -327,6 +362,11 @@ const ReviewsCard = ({ review, isOwn = false, onReviewUpdated = null, onReviewDe
 							{editText.length}/{MAX_CHARS}
 						</p>
 						<PostStars key={editStarsKey} onRate={setEditRating} />
+						{editMsg && (
+							<p style={{ color: '#f44336', fontFamily: '"policeConthrax", sans-serif', fontSize: '12px', marginTop: '10px' }}>
+								{editMsg}
+							</p>
+						)}
 						<div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '20px' }}>
 							<button className="settings-cancel-btn" onClick={() => setShowEdit(false)}>{t('reviews.cancel')}</button>
 							<button className="settings-save-btn" onClick={handleEditSubmit}>{t('reviews.save')}</button>
