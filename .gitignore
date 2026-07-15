@@ -19,8 +19,6 @@ infra/vault-stack/vault/keys/root_keys.json
 
 Reste.md
 
-infra/vault-stack/vault_keys/*
-infra/vault-stack/approle_id/*
 infra/vault-stack/vault/certs/vault.crt
 infra/vault-stack/vault/certs/vault.key
 

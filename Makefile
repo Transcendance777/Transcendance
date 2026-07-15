@@ -43,7 +43,6 @@ clean:
 fclean: clean
 	$(COMPOSE) down --rmi all --remove-orphans
 	docker system prune -f
-	rm -rf infra/vault-stack/vault_keys/* infra/vault-stack/approle_id/*
 	rm -f infra/waf/certs/*.crt infra/waf/certs/*.key infra/nginx/certs/*.crt infra/nginx/certs/*.key infra/vault-stack/vault/certs/*.crt infra/vault-stack/vault/certs/*.key
 	rm -f infra/monitoring/prometheus/certs/*.crt infra/monitoring/prometheus/certs/*.key infra/monitoring/grafana/certs/*.crt infra/monitoring/grafana/certs/*.key infra/backend/certs/*.crt infra/backend/certs/*.key
 
@@ -52,4 +51,4 @@ $(ENV_FILE):
 	@echo "Erreur : fichier .env manquant. Copie .env.example vers .env."
 	@exit 1
 
-.PHONY: all up re rebuild logs ps clean fclean
+.PHONY: all up down certs re rebuild logs ps clean fclean
