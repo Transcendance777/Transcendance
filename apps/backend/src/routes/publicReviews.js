@@ -24,11 +24,14 @@ import { createReviewValidation, updateReviewValidation }from '../middlewares/in
  *         schema:
  *           type: integer
  *           minimum: 1
+ *           maximum: 100
  *           default: 10
  *         description: Number of reviews per page
  *     responses:
  *       200:
  *         description: Paginated list of reviews
+ *       400:
+ *         description: Invalid pagination parameters
  *       401:
  *         description: Missing or invalid API key
  *       500:

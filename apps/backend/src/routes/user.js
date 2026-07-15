@@ -1,19 +1,34 @@
 import express from 'express';
 import prisma from '../init/initPrisma.js';
 import { authMiddleware } from '../middlewares/auth.js';
+import {
+	MAX_COMMENT_TEXT_LENGTH,
+	MAX_REVIEW_TEXT_LENGTH,
+	parseExternalGameId,
+	parsePositiveIntParam,
+	sanitizeUserText,
+	validateAvatar,
+	validateCredentialPassword,
+	validateInternalRating,
+	validatePassword,
+	validateSearchQuery,
+	validateUsername,
+} from '../middlewares/validationUtils.js';
 
 const router = express.Router();
 
 // ─── AVATAR ───
 
 router.put('/avatar', authMiddleware, async (req, res) => {
-	const { avatar } = req.body;
-	if (!avatar) return res.status(400).json({ error: 'No image provided.' });
-	if (avatar.length > 3_000_000) return res.status(413).json({ error: 'Image too large (max ~2MB).' });
+	const avatarResult = validateAvatar(req.body?.avatar);
+	if (!avatarResult.ok) {
+		const status = avatarResult.error === 'Image too large (max ~2MB).' ? 413 : 400;
+		return res.status(status).json({ error: avatarResult.error });
+	}
 	try {
 		const updated = await prisma.users.update({
 			where: { id: req.user.id },
-			data: { avatarUrl: avatar },
+			data: { avatarUrl: avatarResult.value },
 			select: { id: true, username: true, email: true, avatarUrl: true },
 		});
 		res.json({ message: 'Avatar updated!', user: updated });
@@ -41,16 +56,18 @@ router.get('/me', authMiddleware, async (req, res) => {
 // ─── JEUX LIKÉS ───
 
 router.post('/like/:gameId', authMiddleware, async (req, res) => {
+	const gameId = parseExternalGameId(req.params.gameId);
+	if (!gameId) return res.status(400).json({ error: 'Invalid game id.' });
 	try {
-		let game = await prisma.game.findUnique({ where: { idExterne: req.params.gameId.toString() } })
+		let game = await prisma.game.findUnique({ where: { idExterne: gameId } })
 		if (!game) {
 			const { getGameById } = await import('../services/igdb.js')
-			const igdbData = await getGameById(req.params.gameId.toString())
+			const igdbData = await getGameById(gameId)
 			if (!igdbData || igdbData.length === 0) return res.status(404).json({ error: 'Game not found.' })
 			const g = igdbData[0]
 			game = await prisma.game.create({
 				data: {
-					idExterne: req.params.gameId.toString(),
+					idExterne: gameId,
 					title: g.name,
 					summary: g.summary || null,
 					releaseDate: g.first_release_date ? new Date(g.first_release_date * 1000) : null,
@@ -90,16 +107,18 @@ router.get('/liked', authMiddleware, async (req, res) => {
 // ─── PLAYING LIST ───
 
 router.post('/playing/:gameId', authMiddleware, async (req, res) => {
+	const gameId = parseExternalGameId(req.params.gameId);
+	if (!gameId) return res.status(400).json({ error: 'Invalid game id.' });
 	try {
-		let game = await prisma.game.findUnique({ where: { idExterne: req.params.gameId.toString() } })
+		let game = await prisma.game.findUnique({ where: { idExterne: gameId } })
 		if (!game) {
 			const { getGameById } = await import('../services/igdb.js')
-			const igdbData = await getGameById(req.params.gameId.toString())
+			const igdbData = await getGameById(gameId)
 			if (!igdbData || igdbData.length === 0) return res.status(404).json({ error: 'Game not found.' })
 			const g = igdbData[0]
 			game = await prisma.game.create({
 				data: {
-					idExterne: req.params.gameId.toString(),
+					idExterne: gameId,
 					title: g.name,
 					summary: g.summary || null,
 					releaseDate: g.first_release_date ? new Date(g.first_release_date * 1000) : null,
@@ -153,8 +172,9 @@ router.get('/favorites', authMiddleware, async (req, res) => {
 })
 
 router.post('/favorites/:gameId', authMiddleware, async (req, res) => {
+	const idExterne = parseExternalGameId(req.params.gameId);
+	if (!idExterne) return res.status(400).json({ error: 'Invalid game id.' });
 	try {
-		const idExterne = req.params.gameId.toString()
 		let game = await prisma.game.findUnique({ where: { idExterne } })
 		if (!game) {
 			const { getGameById } = await import('../services/igdb.js')
@@ -191,8 +211,10 @@ router.post('/favorites/:gameId', authMiddleware, async (req, res) => {
 })
 
 router.delete('/favorites/:gameId', authMiddleware, async (req, res) => {
+	const gameId = parseExternalGameId(req.params.gameId);
+	if (!gameId) return res.status(400).json({ error: 'Invalid game id.' });
 	try {
-		const game = await prisma.game.findUnique({ where: { idExterne: req.params.gameId.toString() } })
+		const game = await prisma.game.findUnique({ where: { idExterne: gameId } })
 		if (!game) return res.status(404).json({ error: 'Game not found.' })
 		await prisma.favoriteGame.delete({ where: { userId_gameId: { userId: req.user.id, gameId: game.id } } })
 		res.json({ message: 'Favorite removed.' })
@@ -205,8 +227,10 @@ router.delete('/favorites/:gameId', authMiddleware, async (req, res) => {
 // ─── STATUS ───
 
 router.get('/status/:gameId', authMiddleware, async (req, res) => {
+	const gameId = parseExternalGameId(req.params.gameId);
+	if (!gameId) return res.status(400).json({ error: 'Invalid game id.' });
 	try {
-		const game = await prisma.game.findUnique({ where: { idExterne: req.params.gameId.toString() } });
+		const game = await prisma.game.findUnique({ where: { idExterne: gameId } });
 		if (!game) return res.json({ liked: false, inPlayingList: false });
 		const [liked, playing] = await Promise.all([
 			prisma.likedGame.findUnique({ where: { userId_gameId: { userId: req.user.id, gameId: game.id } } }),
@@ -222,14 +246,14 @@ router.get('/status/:gameId', authMiddleware, async (req, res) => {
 // ─── USERNAME ───
 
 router.put('/username', authMiddleware, async (req, res) => {
-	const { username } = req.body
-	if (!username || username.trim() === '') return res.status(400).json({ error: 'Invalid username.' })
+	const usernameResult = validateUsername(req.body?.username);
+	if (!usernameResult.ok) return res.status(400).json({ error: usernameResult.error });
 	try {
-		const existing = await prisma.users.findUnique({ where: { username: username.trim() } })
-		if (existing) return res.status(409).json({ error: 'Username already taken.' })
+		const existing = await prisma.users.findUnique({ where: { username: usernameResult.value } })
+		if (existing && existing.id !== req.user.id) return res.status(409).json({ error: 'Username already taken.' })
 		const updated = await prisma.users.update({
 			where: { id: req.user.id },
-			data: { username: username.trim() },
+			data: { username: usernameResult.value },
 			select: { id: true, username: true, email: true, avatarUrl: true }
 		})
 		res.json({ message: 'Username updated!', user: updated })
@@ -242,16 +266,18 @@ router.put('/username', authMiddleware, async (req, res) => {
 // ─── MOT DE PASSE ───
 
 router.put('/password', authMiddleware, async (req, res) => {
-	const { currentPassword, newPassword } = req.body
-	if (!currentPassword || !newPassword) return res.status(400).json({ error: 'Missing fields.' })
-	if (newPassword.length < 6) return res.status(400).json({ error: 'Password must be at least 6 characters.' })
+	const { currentPassword, newPassword } = req.body;
+	const currentPasswordResult = validateCredentialPassword(currentPassword, { requiredError: 'Missing fields.' });
+	if (!currentPasswordResult.ok) return res.status(400).json({ error: currentPasswordResult.error });
+	const newPasswordResult = validatePassword(newPassword, { requiredError: 'Missing fields.' });
+	if (!newPasswordResult.ok) return res.status(400).json({ error: newPasswordResult.error });
 	try {
 		const user = await prisma.users.findUnique({ where: { id: req.user.id } })
 		if (!user) return res.status(404).json({ error: 'User not found.' })
 		const bcrypt = await import('bcrypt')
-		const valid = await bcrypt.default.compare(currentPassword, user.passwordHash)
+		const valid = await bcrypt.default.compare(currentPasswordResult.value, user.passwordHash)
 		if (!valid) return res.status(401).json({ error: 'Incorrect current password.' })
-		const hashed = await bcrypt.default.hash(newPassword, 10)
+		const hashed = await bcrypt.default.hash(newPasswordResult.value, 10)
 		await prisma.users.update({ where: { id: req.user.id }, data: { passwordHash: hashed } })
 		res.json({ message: 'Password updated!' })
 	} catch (error) {
@@ -270,9 +296,10 @@ router.delete('/delete', authMiddleware, async (req, res) => {
 
 		// Compte Google — pas de vérification de mot de passe
 		if (user.passwordHash !== 'google_oauth') {
-			if (!password) return res.status(400).json({ error: 'Password required.' })
+			const passwordResult = validateCredentialPassword(password, { requiredError: 'Password required.' });
+			if (!passwordResult.ok) return res.status(400).json({ error: passwordResult.error });
 			const bcrypt = await import('bcrypt')
-			const valid = await bcrypt.default.compare(password, user.passwordHash)
+			const valid = await bcrypt.default.compare(passwordResult.value, user.passwordHash)
 			if (!valid) return res.status(401).json({ error: 'Incorrect password.' })
 		}
 
@@ -288,11 +315,11 @@ router.delete('/delete', authMiddleware, async (req, res) => {
 // ─── AMIS ───
 
 router.get('/search', authMiddleware, async (req, res) => {
-	const { q } = req.query
-	if (!q || q.trim() === '') return res.status(400).json({ error: 'Empty query.' })
+	const queryResult = validateSearchQuery(req.query.q);
+	if (!queryResult.ok) return res.status(400).json({ error: queryResult.error });
 	try {
 		const users = await prisma.users.findMany({
-			where: { username: { contains: q.trim(), mode: 'insensitive' }, NOT: { id: req.user.id } },
+			where: { username: { contains: queryResult.value, mode: 'insensitive' }, NOT: { id: req.user.id } },
 			select: { id: true, username: true, avatarUrl: true },
 			take: 10
 		})
@@ -304,7 +331,8 @@ router.get('/search', authMiddleware, async (req, res) => {
 })
 
 router.post('/friend-request/:userId', authMiddleware, async (req, res) => {
-	const targetId = parseInt(req.params.userId)
+	const targetId = parsePositiveIntParam(req.params.userId);
+	if (!targetId) return res.status(400).json({ error: 'Invalid user id.' });
 	if (targetId === req.user.id) return res.status(400).json({ error: 'You cannot follow yourself.' })
 	try {
 		const existing = await prisma.friendship.findFirst({ where: { userId1: req.user.id, userId2: targetId } })
@@ -348,7 +376,8 @@ router.get('/followers', authMiddleware, async (req, res) => {
 // ─── PROFIL PUBLIC ───
 
 router.get('/profile/:userId', authMiddleware, async (req, res) => {
-	const userId = parseInt(req.params.userId)
+	const userId = parsePositiveIntParam(req.params.userId);
+	if (!userId) return res.status(400).json({ error: 'Invalid user id.' });
 	try {
 		const user = await prisma.users.findUnique({
 			where: { id: userId },
@@ -485,7 +514,8 @@ router.get('/friends-activity', authMiddleware, async (req, res) => {
 
 // Unfollow un user
 router.delete('/follow/:userId', authMiddleware, async (req, res) => {
-	const targetId = parseInt(req.params.userId)
+	const targetId = parsePositiveIntParam(req.params.userId);
+	if (!targetId) return res.status(400).json({ error: 'Invalid user id.' });
 	try {
 		await prisma.friendship.deleteMany({
 			where: { userId1: req.user.id, userId2: targetId }
@@ -499,7 +529,8 @@ router.delete('/follow/:userId', authMiddleware, async (req, res) => {
 
 // Supprimer un follower
 router.delete('/follower/:userId', authMiddleware, async (req, res) => {
-	const followerId = parseInt(req.params.userId)
+	const followerId = parsePositiveIntParam(req.params.userId);
+	if (!followerId) return res.status(400).json({ error: 'Invalid user id.' });
 	try {
 		await prisma.friendship.deleteMany({
 			where: { userId1: followerId, userId2: req.user.id }
@@ -514,20 +545,27 @@ router.delete('/follower/:userId', authMiddleware, async (req, res) => {
 // ─── REVIEWS ───
 
 router.post('/review', authMiddleware, async (req, res) => {
-	const { gameId, rating, reviewText } = req.body
-	if (!gameId || !rating) return res.status(400).json({ error: 'Game and rating are required.' })
-	if (rating < 0.5 || rating > 5) return res.status(400).json({ error: 'Invalid rating (0.5 to 5).' })
+	const { gameId, rating, reviewText } = req.body;
+
+	const externalGameId = parseExternalGameId(gameId);
+	if (!externalGameId) return res.status(400).json({ error: 'Game and rating are required.' });
+
+	const ratingResult = validateInternalRating(rating);
+	if (!ratingResult.ok) return res.status(400).json({ error: ratingResult.error });
+
+	const reviewTextResult = sanitizeUserText(reviewText, MAX_REVIEW_TEXT_LENGTH);
+	if (!reviewTextResult.ok) return res.status(400).json({ error: reviewTextResult.error });
 
 	try {
-		let game = await prisma.game.findUnique({ where: { idExterne: gameId.toString() } })
+		let game = await prisma.game.findUnique({ where: { idExterne: externalGameId } })
 		if (!game) {
 			const { getGameById } = await import('../services/igdb.js')
-			const igdbData = await getGameById(gameId.toString())
+			const igdbData = await getGameById(externalGameId)
 			if (!igdbData || igdbData.length === 0) return res.status(404).json({ error: 'Game not found.' })
 			const g = igdbData[0]
 			game = await prisma.game.create({
 				data: {
-					idExterne: gameId.toString(),
+					idExterne: externalGameId,
 					title: g.name,
 					summary: g.summary || null,
 					releaseDate: g.first_release_date ? new Date(g.first_release_date * 1000) : null,
@@ -543,9 +581,9 @@ router.post('/review', authMiddleware, async (req, res) => {
 		})
 		if (existing) return res.status(409).json({ error: 'You already posted a review for this game.' })
 
-		const ratingInt = Math.round(rating * 2)
+		const ratingInt = Math.round(ratingResult.value * 2)
 		const review = await prisma.review.create({
-			data: { userId: req.user.id, gameId: game.id, rating: ratingInt, reviewText: reviewText?.trim() || null },
+			data: { userId: req.user.id, gameId: game.id, rating: ratingInt, reviewText: reviewTextResult.value },
 			include: { game: true }
 		})
 		res.json({ message: 'Review posted!', review })
@@ -613,21 +651,36 @@ router.get('/reviews/following', authMiddleware, async (req, res) => {
 
 // Modifier une review
 router.put('/review/:reviewId', authMiddleware, async (req, res) => {
-	const { rating, reviewText } = req.body
-	const reviewId = parseInt(req.params.reviewId)
+	const { rating, reviewText } = req.body;
+	const reviewId = parsePositiveIntParam(req.params.reviewId);
+	if (!reviewId) return res.status(400).json({ error: 'Invalid review id.' });
+
+	let validatedRating = null;
+	if (rating !== undefined && rating !== null) {
+		const ratingResult = validateInternalRating(rating);
+		if (!ratingResult.ok) return res.status(400).json({ error: ratingResult.error });
+		validatedRating = ratingResult.value;
+	}
+
+	let safeReviewText;
+	if (reviewText !== undefined) {
+		const reviewTextResult = sanitizeUserText(reviewText, MAX_REVIEW_TEXT_LENGTH);
+		if (!reviewTextResult.ok) return res.status(400).json({ error: reviewTextResult.error });
+		safeReviewText = reviewTextResult.value;
+	}
 
 	try {
 		const review = await prisma.review.findUnique({ where: { id: reviewId } })
 		if (!review) return res.status(404).json({ error: 'Review not found.' })
 		if (review.userId !== req.user.id) return res.status(403).json({ error: 'Unauthorized.' })
 
-		const ratingInt = rating ? Math.round(rating * 2) : review.rating
+		const ratingInt = validatedRating !== null ? Math.round(validatedRating * 2) : review.rating;
 
 		const updated = await prisma.review.update({
 			where: { id: reviewId },
 			data: {
 				rating: ratingInt,
-				reviewText: reviewText?.trim() ?? review.reviewText
+				...(reviewText !== undefined && { reviewText: safeReviewText })
 			},
 			include: { game: true }
 		})
@@ -640,7 +693,8 @@ router.put('/review/:reviewId', authMiddleware, async (req, res) => {
 
 // Supprimer une review
 router.delete('/review/:reviewId', authMiddleware, async (req, res) => {
-	const reviewId = parseInt(req.params.reviewId)
+	const reviewId = parsePositiveIntParam(req.params.reviewId);
+	if (!reviewId) return res.status(400).json({ error: 'Invalid review id.' });
 	try {
 		const review = await prisma.review.findUnique({ where: { id: reviewId } })
 		if (!review) return res.status(404).json({ error: 'Review not found.' })
@@ -658,8 +712,9 @@ router.delete('/review/:reviewId', authMiddleware, async (req, res) => {
 
 // Toggle like ou dislike sur une review
 router.post('/review/:reviewId/like', authMiddleware, async (req, res) => {
-	const reviewId = parseInt(req.params.reviewId)
-	const { type } = req.body // 'like' ou 'dislike'
+	const reviewId = parsePositiveIntParam(req.params.reviewId);
+	if (!reviewId) return res.status(400).json({ error: 'Invalid review id.' });
+	const { type } = req.body;
 
 	if (!['like', 'dislike'].includes(type)) {
 		return res.status(400).json({ error: 'Invalid type.' })
@@ -694,7 +749,8 @@ router.post('/review/:reviewId/like', authMiddleware, async (req, res) => {
 
 // Récupère le statut like/dislike + compteurs pour une review
 router.get('/review/:reviewId/likes', authMiddleware, async (req, res) => {
-	const reviewId = parseInt(req.params.reviewId)
+	const reviewId = parsePositiveIntParam(req.params.reviewId);
+	if (!reviewId) return res.status(400).json({ error: 'Invalid review id.' });
 	try {
 		const [likes, dislikes, userLike] = await Promise.all([
 			prisma.reviewLike.count({ where: { reviewId, type: 'like' } }),
@@ -714,11 +770,18 @@ router.get('/review/:reviewId/likes', authMiddleware, async (req, res) => {
 
 // Ajoute un commentaire (avec support parentId pour les réponses)
 router.post('/review/:reviewId/comment', authMiddleware, async (req, res) => {
-	const reviewId = parseInt(req.params.reviewId)
-	const { text, parentId } = req.body
+	const reviewId = parsePositiveIntParam(req.params.reviewId);
+	if (!reviewId) return res.status(400).json({ error: 'Invalid review id.' });
 
-	if (!text || text.trim() === '') {
-		return res.status(400).json({ error: 'Comment cannot be empty.' })
+	const { text, parentId } = req.body;
+	const textResult = sanitizeUserText(text, MAX_COMMENT_TEXT_LENGTH);
+	if (!textResult.ok) return res.status(400).json({ error: textResult.error });
+	if (!textResult.value) return res.status(400).json({ error: 'Comment cannot be empty.' });
+
+	let parsedParentId = null;
+	if (parentId !== undefined && parentId !== null && parentId !== '') {
+		parsedParentId = parsePositiveIntParam(parentId);
+		if (!parsedParentId) return res.status(400).json({ error: 'Invalid parent comment id.' });
 	}
 
 	try {
@@ -726,8 +789,8 @@ router.post('/review/:reviewId/comment', authMiddleware, async (req, res) => {
 			data: {
 				reviewId,
 				userId: req.user.id,
-				text: text.trim(),
-				parentId: parentId ? parseInt(parentId) : null
+				text: textResult.value,
+				parentId: parsedParentId
 			},
 			include: {
 				user: { select: { id: true, username: true, avatarUrl: true } },
@@ -745,7 +808,8 @@ router.post('/review/:reviewId/comment', authMiddleware, async (req, res) => {
 
 // Récupère les commentaires racines + leurs réponses
 router.get('/review/:reviewId/comments', authMiddleware, async (req, res) => {
-	const reviewId = parseInt(req.params.reviewId)
+	const reviewId = parsePositiveIntParam(req.params.reviewId);
+	if (!reviewId) return res.status(400).json({ error: 'Invalid review id.' });
 	try {
 		const comments = await prisma.reviewComment.findMany({
 			where: { reviewId, parentId: null }, // seulement les commentaires racines
@@ -769,7 +833,8 @@ router.get('/review/:reviewId/comments', authMiddleware, async (req, res) => {
 
 // Supprime un commentaire (seulement le sien)
 router.delete('/comment/:commentId', authMiddleware, async (req, res) => {
-	const commentId = parseInt(req.params.commentId)
+	const commentId = parsePositiveIntParam(req.params.commentId);
+	if (!commentId) return res.status(400).json({ error: 'Invalid comment id.' });
 	try {
 		const comment = await prisma.reviewComment.findUnique({ where: { id: commentId } })
 		if (!comment) return res.status(404).json({ error: 'Comment not found.' })
@@ -786,7 +851,8 @@ router.delete('/comment/:commentId', authMiddleware, async (req, res) => {
 // ─── ACTIVITÉ UTILISATEUR ───
 
 router.get('/activity/:userId', authMiddleware, async (req, res) => {
-	const userId = parseInt(req.params.userId)
+	const userId = parsePositiveIntParam(req.params.userId);
+	if (!userId) return res.status(400).json({ error: 'Invalid user id.' });
 	try {
 		const [recentLikes, recentReviews, recentFollows, recentPlaying] = await Promise.all([
 			prisma.likedGame.findMany({

@@ -11,7 +11,7 @@ const swaggerOptions = {
     },
     servers: [
       {
-        url: 'http://localhost:4000', // Modifie le port si nécessaire
+        url: 'https://localhost:8443',
       },
     ],
     // Configuration pour la clé API demandée par ton énoncé

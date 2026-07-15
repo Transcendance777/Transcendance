@@ -327,5 +327,26 @@
 		"reviewed": "a posté un avis sur",
 		"playing": "a ajouté à sa liste",
 		"followed": "a commencé à suivre"
+	},
+	"validation": {
+		"all_fields": "Tous les champs sont requis.",
+		"username_required": "Veuillez entrer un nom d'utilisateur.",
+		"username_length": "Le nom d'utilisateur doit contenir entre 4 et 15 caractères.",
+		"username_chars": "Le nom d'utilisateur ne peut contenir que des lettres, chiffres et underscores.",
+		"password_too_long": "Le mot de passe est trop long.",
+		"email_too_long": "L'email est trop long.",
+		"identifier_too_long": "L'email ou le nom d'utilisateur est trop long.",
+		"invalid_code": "Code de vérification invalide.",
+		"search_empty": "Veuillez entrer un terme de recherche.",
+		"search_too_long": "La recherche est trop longue.",
+		"invalid_rating": "Veuillez sélectionner une note valide.",
+		"comment_empty": "Le commentaire ne peut pas être vide.",
+		"comment_too_long": "Le commentaire est trop long.",
+		"review_too_long": "L'avis est trop long.",
+		"avatar_required": "Veuillez sélectionner une image.",
+		"avatar_invalid_type": "Utilisez une image JPEG, PNG, GIF ou WebP.",
+		"avatar_too_large": "L'image est trop grande (max 2 Mo).",
+		"max_favorites": "Vous ne pouvez avoir que 4 jeux favoris.",
+		"invalid_text": "Texte invalide."
 	}
 }

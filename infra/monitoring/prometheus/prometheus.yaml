@@ -16,6 +16,9 @@ scrape_configs:
       - targets: ["nginx-exporter:9113"]
 
   - job_name: 'backend'
+    scheme: https
+    tls_config:
+      insecure_skip_verify: true
     static_configs:
       - targets: ['backend:4000']
     metrics_path: '/metrics'

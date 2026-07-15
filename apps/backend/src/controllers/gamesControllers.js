@@ -1,4 +1,5 @@
 import prisma from '../init/initPrisma.js';
+import { parsePaginationQuery } from './utils/paginationUtils.js';
 
 
 /**
@@ -8,10 +9,11 @@ import prisma from '../init/initPrisma.js';
  */
 const getAllGames = async (req, res) => {
     try {
-        // On récupère les paramètres de pagination depuis l'URL
-		const page = parseInt(req.query.page) || 1;
-		const limit = parseInt(req.query.limit) || 10;
-		const skip = (page - 1) * limit; // Combien d'éléments sauter
+		const pagination = parsePaginationQuery(req.query);
+		if (!pagination.ok) {
+			return res.status(400).json({ error: pagination.error });
+		}
+		const { page, limit, skip } = pagination;
 
 		const games = await prisma.game.findMany({
 		skip: skip,

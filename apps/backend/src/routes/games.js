@@ -9,6 +9,7 @@ import {
 } from '../services/igdb.js';
 import prisma from '../init/initPrisma.js'
 import { getByGenre, getByTheme, getByGameMode } from '../services/igdb.js';
+import { parseExternalGameId, validateSearchQuery } from '../middlewares/validationUtils.js';
 
 const router = express.Router();
 
@@ -107,14 +108,13 @@ router.get('/coming-soon', async (req, res) => {
 })
 
 router.get('/search', async (req, res) => {
-	const { q } = req.query;
-	if (!q) return res.status(400).json({ error: 'Paramètre q manquant' });
+	const queryResult = validateSearchQuery(req.query.q, { emptyError: 'Paramètre q manquant' });
+	if (!queryResult.ok) return res.status(400).json({ error: queryResult.error });
 
 	try {
-		// 1. Cherche d'abord dans la DB (résultats instantanés)
 		const dbGames = await prisma.game.findMany({
 			where: {
-				title: { contains: q, mode: 'insensitive' }
+				title: { contains: queryResult.value, mode: 'insensitive' }
 			},
 			orderBy: { ratingCount: 'desc' },
 			take: 10,
@@ -126,7 +126,7 @@ router.get('/search', async (req, res) => {
 		}
 
 		// 3. Sinon, complète avec IGDB
-		const igdbGames = await searchGames(q)
+		const igdbGames = await searchGames(queryResult.value)
 		const sorted = igdbGames.sort((a, b) => (b.rating_count || 0) - (a.rating_count || 0))
 
 		// 4. Fusionne en évitant les doublons (par idExterne)
@@ -195,10 +195,10 @@ router.get('/recent-acclaimed', async (req, res) => {
 })
 
 router.get('/:id', async (req, res) => {
-	try {
-		const idExterne = req.params.id.toString()
+	const idExterne = parseExternalGameId(req.params.id);
+	if (!idExterne) return res.status(400).json({ error: 'Invalid game id.' });
 
-		// Cherche d'abord en DB avec les reviews
+	try {
 		const dbGame = await prisma.game.findUnique({
 			where: { idExterne },
 			include: {

@@ -5,6 +5,7 @@ import FriendsList from '../components/FriendsList'
 import FriendsActivity from '../components/FriendsActivity'
 import '../styles/FriendsPage.css'
 import Footer from '../components/Footer'
+import { validateSearchQuery } from '../utils/validation.js'
 import { FiX, FiUserPlus, FiCheck } from 'react-icons/fi'
 import { useTranslation } from 'react-i18next'
 
@@ -65,9 +66,14 @@ const FriendsPage = () => {
 		setSearch(value)
 		setSearchMsg('')
 		if (value.trim() === '') return setResults([])
+		const queryResult = validateSearchQuery(value)
+		if (!queryResult.ok) {
+			setSearchMsg(t(queryResult.errorKey))
+			return setResults([])
+		}
 		const token = localStorage.getItem('token')
 		try {
-			const res = await fetch(`/api/user/search?q=${encodeURIComponent(value)}`, {
+			const res = await fetch(`/api/user/search?q=${encodeURIComponent(queryResult.value)}`, {
 				headers: { Authorization: `Bearer ${token}` }
 			})
 			const data = await res.json()
