@@ -4,6 +4,7 @@ keys/*
 
 .DS_Store
 .env
+.claude
 DEVOPS_ROADMAP.MD
 infra/nginx/certs/*
 infra/waf/certs/*
@@ -22,3 +23,7 @@ infra/vault-stack/vault_keys/*
 infra/vault-stack/approle_id/*
 infra/vault-stack/vault/certs/vault.crt
 infra/vault-stack/vault/certs/vault.key
+
+infra/backend/certs/*
+infra/monitoring/prometheus/certs/*
+infra/monitoring/grafana/certs/*
