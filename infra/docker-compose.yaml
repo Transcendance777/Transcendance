@@ -198,7 +198,7 @@ services:
     environment:
       - CYBER_PASSWORD=${CYBER_PASSWORD}
     volumes:
-      - ./vault-stack/vault/bootstrap.sh:/bootstrap.sh:ro
+      - ./vault-stack/bootstrap/bootstrap.sh:/bootstrap.sh:ro
       - ./vault-stack/vault/policies:/vault/policies:ro
       - vault_keys_data:/vault_keys/:ro
       - approle_id_data:/approle_id
