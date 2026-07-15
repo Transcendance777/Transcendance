@@ -1,6 +1,7 @@
 import prisma from '../init/initPrisma.js';
 import { validationResult } from 'express-validator';
 import sanitizeHtml from 'sanitize-html';
+import { parsePaginationQuery } from './utils/paginationUtils.js';
 
 /**
  * ROUTE GET/api/reviews (get all the reviews)
@@ -9,11 +10,11 @@ import sanitizeHtml from 'sanitize-html';
  */
 const getAllReviews = async (req, res) => {
     try {
-        // On récupère les paramètres de pagination depuis l'URL
-		// Ex: /api/reviews?page=2&limit=10
-		const page = parseInt(req.query.page) || 1;
-		const limit = parseInt(req.query.limit) || 10;
-		const skip = (page - 1) * limit; // Combien d'éléments sauter
+		const pagination = parsePaginationQuery(req.query);
+		if (!pagination.ok) {
+			return res.status(400).json({ error: pagination.error });
+		}
+		const { page, limit, skip } = pagination;
 
 		const reviews = await prisma.review.findMany({
 		skip: skip,
@@ -46,11 +47,11 @@ const getAllReviews = async (req, res) => {
  */
 const getReviewsByGame = async (req, res) => {
     try {
-        // On récupère les paramètres de pagination depuis l'URL
-		// Ex: /api/reviews?page=2&limit=10
-		const page = parseInt(req.query.page) || 1;
-		const limit = parseInt(req.query.limit) || 10;
-		const skip = (page - 1) * limit; // Combien d'éléments sauter
+		const pagination = parsePaginationQuery(req.query);
+		if (!pagination.ok) {
+			return res.status(400).json({ error: pagination.error });
+		}
+		const { page, limit, skip } = pagination;
 		const id = parseInt(req.params.id);
 
 		const reviews = await prisma.review.findMany({
@@ -60,12 +61,8 @@ const getReviewsByGame = async (req, res) => {
 		orderBy: { createdAt: 'desc' }, // Les plus récentes en premier
 		});
 
-		if (!reviews) {
-			return res.status(404).json({ error: 'No reviews for this game' });
-		}
-
 		// On compte le total pour calculer le nombre de pages
-		const total = await prisma.review.count();
+		const total = await prisma.review.count({ where: { gameId: id } });
 
 		res.status(200).json({
 		data: reviews,
