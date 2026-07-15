@@ -7,6 +7,7 @@ import PostStars from '../components/PostStars'
 import PostGamePicker from '../components/PostGamePicker'
 import '../styles/PostPage.css'
 import Footer from '../components/Footer'
+import { validateInternalRating, validateReviewText } from '../utils/validation.js'
 
 const MAX_CHARS = 500
 
@@ -35,7 +36,12 @@ const PostPage = () => {
 
 	const handleSubmit = async () => {
 		if (!selectedGame) return showError(t('post.choose_game_msg'))
-		if (!rating) return showError(t('post.choose_rating'))
+
+		const ratingResult = validateInternalRating(rating)
+		if (!ratingResult.ok) return showError(t('post.choose_rating'))
+
+		const textResult = validateReviewText(review)
+		if (!textResult.ok) return showError(t(textResult.errorKey))
 
 		const token = localStorage.getItem('token')
 		setSubmitting(true)
@@ -49,8 +55,8 @@ const PostPage = () => {
 				},
 				body: JSON.stringify({
 					gameId: selectedGame.id,
-					rating,
-					reviewText: review
+					rating: ratingResult.value,
+					reviewText: textResult.value
 				})
 			})
 			const data = await res.json()

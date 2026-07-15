@@ -327,5 +327,26 @@
 		"reviewed": "posted a review on",
 		"playing": "added to playing list",
 		"followed": "started following"
+	},
+	"validation": {
+		"all_fields": "All fields are required.",
+		"username_required": "Please enter a username.",
+		"username_length": "Username must be between 4 and 15 characters.",
+		"username_chars": "Username may only contain letters, numbers, and underscores.",
+		"password_too_long": "Password is too long.",
+		"email_too_long": "Email is too long.",
+		"identifier_too_long": "Email or username is too long.",
+		"invalid_code": "Invalid verification code.",
+		"search_empty": "Please enter a search term.",
+		"search_too_long": "Search query is too long.",
+		"invalid_rating": "Please select a valid rating.",
+		"comment_empty": "Comment cannot be empty.",
+		"comment_too_long": "Comment is too long.",
+		"review_too_long": "Review is too long.",
+		"avatar_required": "Please select an image.",
+		"avatar_invalid_type": "Please use a JPEG, PNG, GIF, or WebP image.",
+		"avatar_too_large": "Image is too large (max 2MB).",
+		"max_favorites": "You can only have 4 favorite games.",
+		"invalid_text": "Invalid text."
 	}
 }
