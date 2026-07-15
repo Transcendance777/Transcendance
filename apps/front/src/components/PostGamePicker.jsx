@@ -41,6 +41,9 @@ const PostGamePicker = ({ onSelect, onClose }) => {
 		<div className="picker-overlay" onClick={onClose}>
 			<div className="picker-modal" onClick={(e) => e.stopPropagation()}>
 				<input
+					id="game-search"
+					name="game-search"
+					autoComplete="off"
 					className="picker-search"
 					type="text"
 					placeholder={t('search.placeholder')}
