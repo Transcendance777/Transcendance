@@ -5,6 +5,14 @@ import passport from 'passport';
 import prisma from '../init/initPrisma.js';
 import nodemailer from 'nodemailer'
 import { vaultSecrets } from '../init/initVault.js'; //secrets Vault
+import {
+	validateEmail,
+	validateLoginIdentifier,
+	validateCredentialPassword,
+	validatePassword,
+	validateResetCode,
+	validateUsername,
+} from '../middlewares/validationUtils.js';
 
 const router = express.Router();
 
@@ -29,35 +37,38 @@ const transporter = nodemailer.createTransport({
 router.post('/register', async (req, res) => {
 	const { email, username, password } = req.body;
 
-	if (!email || !username || !password) {
+	if (email === undefined || username === undefined || password === undefined) {
 		return res.status(400).json({ error: 'All fields are required.' });
 	}
-	if (password.length < 6) {
-		return res.status(400).json({ error: 'Password must be at least 6 characters.' });
-	}
 
-	const allowedDomains = ['gmail.com', 'hotmail.com', 'yahoo.com', 'outlook.com', 'yahoo.fr', 'hotmail.fr']
-	const emailDomain = email.split('@')[1]?.toLowerCase()
-	if (!emailDomain || !allowedDomains.includes(emailDomain)) {
-		return res.status(400).json({ error: 'Please use a valid email address (Gmail, Hotmail, Yahoo or Outlook).' })
-	}
+	const emailResult = validateEmail(email);
+	if (!emailResult.ok) return res.status(400).json({ error: emailResult.error });
+
+	const usernameResult = validateUsername(username);
+	if (!usernameResult.ok) return res.status(400).json({ error: usernameResult.error });
+
+	const passwordResult = validatePassword(password);
+	if (!passwordResult.ok) return res.status(400).json({ error: passwordResult.error });
+
+	const normalizedEmail = emailResult.value;
+	const normalizedUsername = usernameResult.value;
 
 	try {
 		const existing = await prisma.users.findFirst({
-			where: { OR: [{ email }, { username }] }
+			where: { OR: [{ email: normalizedEmail }, { username: normalizedUsername }] }
 		});
 
 		if (existing) {
-			if (existing.email === email) {
+			if (existing.email === normalizedEmail) {
 				return res.status(409).json({ error: 'This email is already used.' });
 			}
 			return res.status(409).json({ error: 'This username is already taken.' });
 		}
 
-		const passwordHash = await bcrypt.hash(password, 10);
+		const passwordHash = await bcrypt.hash(passwordResult.value, 10);
 
 		const newUser = await prisma.users.create({
-			data: { email, username, passwordHash },
+			data: { email: normalizedEmail, username: normalizedUsername, passwordHash },
 			select: { id: true, email: true, username: true, avatarUrl: true }
 		});
 
@@ -73,19 +84,20 @@ router.post('/register', async (req, res) => {
 
 // CONNEXION
 router.post('/login', async (req, res) => {
-	const { identifier, password } = req.body; // identifier = email OU username
+	const { identifier, password } = req.body;
 
-	if (!identifier || !password) {
-		return res.status(400).json({ error: 'Email/username and password required.' });
-	}
+	const identifierResult = validateLoginIdentifier(identifier);
+	if (!identifierResult.ok) return res.status(400).json({ error: identifierResult.error });
+
+	const passwordResult = validateCredentialPassword(password, { requiredError: 'Email/username and password required.' });
+	if (!passwordResult.ok) return res.status(400).json({ error: passwordResult.error });
 
 	try {
-		// Cherche l'utilisateur par email OU username
 		const user = await prisma.users.findFirst({
 			where: {
 				OR: [
-					{ email: identifier },
-					{ username: identifier },
+					{ email: identifierResult.value },
+					{ username: identifierResult.value },
 				]
 			}
 		});
@@ -99,7 +111,7 @@ router.post('/login', async (req, res) => {
 			return res.status(401).json({ error: 'This account uses Google Sign-In.' });
 		}
 
-		const valid = await bcrypt.compare(password, user.passwordHash);
+		const valid = await bcrypt.compare(passwordResult.value, user.passwordHash);
 		if (!valid) {
 			return res.status(401).json({ error: 'Incorrect password.' });
 		}
@@ -121,11 +133,13 @@ router.post('/login', async (req, res) => {
 // ─── MOT DE PASSE OUBLIÉ ───
 
 router.post('/forgot-password', async (req, res) => {
-	const { email } = req.body
-	if (!email) return res.status(400).json({ error: 'Email required.' })
+	const { email } = req.body;
+
+	const emailResult = validateEmail(email);
+	if (!emailResult.ok) return res.status(400).json({ error: emailResult.error === 'All fields are required.' ? 'Email required.' : emailResult.error });
 
 	try {
-		const user = await prisma.users.findUnique({ where: { email } })
+		const user = await prisma.users.findUnique({ where: { email: emailResult.value } })
 		if (!user) return res.status(404).json({ error: 'No account found with this email.' })
 		if (user.passwordHash === 'google_oauth') return res.status(400).json({ error: 'This account uses Google Sign-In.' })
 
@@ -133,12 +147,12 @@ router.post('/forgot-password', async (req, res) => {
 		const expiresAt = new Date(Date.now() + 15 * 60 * 1000) // 15 minutes
 
 		await prisma.passwordReset.create({
-			data: { email, code, expiresAt }
+			data: { email: emailResult.value, code, expiresAt }
 		})
 
 		await transporter.sendMail({
 			from: `"Game REV" <${process.env.MAIL_USER}>`,
-			to: email,
+			to: emailResult.value,
 			subject: 'Password Reset - Game REV',
 			html: `
 				<div style="font-family: sans-serif; max-width: 400px; margin: auto;">
@@ -158,12 +172,19 @@ router.post('/forgot-password', async (req, res) => {
 })
 
 router.post('/verify-code', async (req, res) => {
-	const { email, code } = req.body
-	if (!email || !code) return res.status(400).json({ error: 'Email and code required.' })
+	const { email, code } = req.body;
+
+	const emailResult = validateEmail(email);
+	if (!emailResult.ok) {
+		return res.status(400).json({ error: emailResult.error === 'All fields are required.' ? 'Email and code required.' : emailResult.error });
+	}
+
+	const codeResult = validateResetCode(code);
+	if (!codeResult.ok) return res.status(400).json({ error: codeResult.error });
 
 	try {
 		const reset = await prisma.passwordReset.findFirst({
-			where: { email, code, used: false, expiresAt: { gt: new Date() } },
+			where: { email: emailResult.value, code: codeResult.value, used: false, expiresAt: { gt: new Date() } },
 			orderBy: { createdAt: 'desc' }
 		})
 
@@ -177,20 +198,31 @@ router.post('/verify-code', async (req, res) => {
 })
 
 router.post('/reset-password', async (req, res) => {
-	const { email, code, newPassword } = req.body
-	if (!email || !code || !newPassword) return res.status(400).json({ error: 'All fields required.' })
-	if (newPassword.length < 6) return res.status(400).json({ error: 'Password must be at least 6 characters.' })
+	const { email, code, newPassword } = req.body;
+
+	if (email === undefined || code === undefined || newPassword === undefined) {
+		return res.status(400).json({ error: 'All fields required.' });
+	}
+
+	const emailResult = validateEmail(email);
+	if (!emailResult.ok) return res.status(400).json({ error: emailResult.error });
+
+	const codeResult = validateResetCode(code);
+	if (!codeResult.ok) return res.status(400).json({ error: codeResult.error });
+
+	const passwordResult = validatePassword(newPassword, { requiredError: 'All fields required.' });
+	if (!passwordResult.ok) return res.status(400).json({ error: passwordResult.error });
 
 	try {
 		const reset = await prisma.passwordReset.findFirst({
-			where: { email, code, used: false, expiresAt: { gt: new Date() } },
+			where: { email: emailResult.value, code: codeResult.value, used: false, expiresAt: { gt: new Date() } },
 			orderBy: { createdAt: 'desc' }
 		})
 
 		if (!reset) return res.status(400).json({ error: 'Invalid or expired code.' })
 
-		const hashed = await bcrypt.hash(newPassword, 10)
-		await prisma.users.update({ where: { email }, data: { passwordHash: hashed } })
+		const hashed = await bcrypt.hash(passwordResult.value, 10)
+		await prisma.users.update({ where: { email: emailResult.value }, data: { passwordHash: hashed } })
 		await prisma.passwordReset.update({ where: { id: reset.id }, data: { used: true } })
 
 		res.json({ message: 'Password updated!' })

@@ -2,6 +2,7 @@ import express from 'express';
 import prisma from '../init/initPrisma.js';
 import { authMiddleware } from '../middlewares/auth.js';
 import { areChatFriends, getChatFriendIds } from '../services/chatFriendship.js';
+import { parsePositiveIntParam, validateSearchQuery } from '../middlewares/validationUtils.js';
 
 const router = express.Router();
 
@@ -20,10 +21,7 @@ const getDirectKey = (userIdA, userIdB) => {
 	return `${firstId}:${secondId}`;
 };
 
-const parseId = (value) => {
-	const id = Number.parseInt(value, 10);
-	return Number.isInteger(id) && id > 0 ? id : null;
-};
+const parseId = parsePositiveIntParam;
 
 const findParticipant = (conversationId, userId) => {
 	return prisma.conversationParticipant.findUnique({
@@ -102,13 +100,13 @@ router.get('/conversations', authMiddleware, async (req, res) => {
 
 // Recherche tous les users et indique lesquels sont joignables par le chat.
 router.get('/users/search', authMiddleware, async (req, res) => {
-	const query = typeof req.query.q === 'string' ? req.query.q.trim() : '';
-	if (!query) return res.status(400).json({ error: 'Empty query.' });
+	const queryResult = validateSearchQuery(req.query.q);
+	if (!queryResult.ok) return res.status(400).json({ error: queryResult.error });
 
 	try {
 		const users = await prisma.users.findMany({
 			where: {
-				username: { contains: query, mode: 'insensitive' },
+				username: { contains: queryResult.value, mode: 'insensitive' },
 				NOT: { id: req.user.id },
 			},
 			select: USER_SELECT,
