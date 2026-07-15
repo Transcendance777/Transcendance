@@ -88,6 +88,9 @@ const PostPage = () => {
 					<div className="post-left">
 						<p className="post-label">{t('post.write_review')}</p>
 						<textarea
+							id="review-text"
+							name="review-text"
+							autoComplete="off"
 							className="post-textarea"
 							value={review}
 							onChange={(e) => setReview(e.target.value)}

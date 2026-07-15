@@ -268,6 +268,7 @@ const InscriptionForm = () => {
 						<input
 							id="username"
 							name="username"
+							autoComplete="username"
 							className="emailArea"
 							type="text"
 							placeholder="Example: xX_DarkWolf_Xx"
@@ -284,6 +285,7 @@ const InscriptionForm = () => {
 				<input
 					id="email"
 					name="email"
+					autoComplete={isLogin ? 'username' : 'email'}
 					className="emailArea"
 					type={isLogin ? 'text' : 'email'}
 					placeholder={isLogin ? 'Email or username...' : 'Example: john@gmail.com'}
@@ -298,6 +300,7 @@ const InscriptionForm = () => {
 					<input
 						id="password"
 						name="password"
+						autoComplete={isLogin ? 'current-password' : 'new-password'}
 						className="passwordArea"
 						type={showPassword ? 'text' : 'password'}
 						value={password}
@@ -367,6 +370,7 @@ const InscriptionForm = () => {
 								<input
 									id="forgot-email"
 									name="forgot-email"
+									autoComplete="email"
 									className="forgot-input"
 									type="email"
 									placeholder={t('login.forgot_email')}
@@ -388,6 +392,7 @@ const InscriptionForm = () => {
 								<input
 									id="verif-code"
 									name="verif-code"
+									autoComplete="one-time-code"
 									className="forgot-input"
 									type="text"
 									inputMode="numeric"
@@ -412,6 +417,7 @@ const InscriptionForm = () => {
 									<input
 										id="new-password"
 										name="new-password"
+										autoComplete="new-password"
 										className="forgot-input"
 										type={showNewPass1 ? 'text' : 'password'}
 										placeholder={t('login.new_password')}
@@ -426,6 +432,7 @@ const InscriptionForm = () => {
 									<input
 										id="confirm-password"
 										name="confirm-password"
+										autoComplete="new-password"
 										className="forgot-input"
 										type={showNewPass2 ? 'text' : 'password'}
 										placeholder={t('login.confirm_password')}
