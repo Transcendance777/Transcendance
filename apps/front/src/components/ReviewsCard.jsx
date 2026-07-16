@@ -276,8 +276,8 @@ const ReviewsCard = ({ review, isOwn = false, onReviewUpdated = null, onReviewDe
 								) : (
 									comments.map((comment) => (
 										<div key={comment.id} className="reply-item">
-											<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-												<div style={{ flex: 1 }}>
+											<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', minWidth: 0 }}>
+												<div style={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
 													<p style={{ color: '#f5a623', fontFamily: '"policeConthrax", sans-serif', fontSize: '11px', marginBottom: '4px', cursor: 'pointer' }}
 														onClick={() => navigate(`/profile/${comment.user.id}`)}>
 														{comment.user.username}
@@ -299,10 +299,10 @@ const ReviewsCard = ({ review, isOwn = false, onReviewUpdated = null, onReviewDe
 											</div>
 
 											{comment.replies?.length > 0 && (
-												<div style={{ paddingLeft: '20px', borderLeft: '2px solid rgba(231,231,231,0.2)', marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+												<div style={{ paddingLeft: '20px', borderLeft: '2px solid rgba(231,231,231,0.2)', marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '8px', minWidth: 0, overflow: 'hidden' }}>
 													{comment.replies.map((rep) => (
-														<div key={rep.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-															<div>
+														<div key={rep.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', minWidth: 0 }}>
+															<div style={{ minWidth: 0, flex: 1, overflow: 'hidden' }}>
 																<p style={{ color: '#f5a623', fontFamily: '"policeConthrax", sans-serif', fontSize: '11px', marginBottom: '4px', cursor: 'pointer' }}
 																	onClick={() => navigate(`/profile/${rep.user.id}`)}>
 																	{rep.user.username}

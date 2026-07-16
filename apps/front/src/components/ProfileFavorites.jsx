@@ -44,6 +44,7 @@ const ProfileFavorites = ({ editable = false, externalFavorites = null }) => {
 		}
 		try {
 			const res = await fetch(`/api/games/search?q=${encodeURIComponent(queryResult.value)}`)
+			if (!res.ok) return setResults([])  // ← avant res.json()
 			const data = await res.json()
 			const formatted = data
 				.filter(g => g.id || g.idExterne)
