@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { FiSearch } from 'react-icons/fi'
 import '../styles/SearchBar.css'
+import { validateSearchQuery } from '../utils/validation.js'
 
 const getAvatar = (avatarUrl, username) => {
 	if (avatarUrl && avatarUrl !== 'default_avatar.png') return avatarUrl
@@ -39,16 +40,22 @@ const SearchBar = () => {
 		}
 
 		const timeout = setTimeout(async () => {
+			const queryResult = validateSearchQuery(search)
+			if (!queryResult.ok) {
+				setGameResults([])
+				setUserResults([])
+				return
+			}
 			try {
 				const token = localStorage.getItem('token')
 				const headers = token ? { Authorization: `Bearer ${token}` } : {}
 
 				const [gameRes, userRes] = await Promise.all([
-					fetch(`/api/games/search?q=${encodeURIComponent(search)}`),
-					fetch(`/api/user/search?q=${encodeURIComponent(search)}`, { headers })
+					fetch(`/api/games/search?q=${encodeURIComponent(queryResult.value)}`),
+					fetch(`/api/user/search?q=${encodeURIComponent(queryResult.value)}`, { headers })
 				])
 
-				const gameData = await gameRes.json()
+				const gameData = gameRes.ok ? await gameRes.json() : []
 				const userData = userRes.ok ? await userRes.json() : []
 
 				setGameResults(gameData.slice(0, 50).map(g => ({

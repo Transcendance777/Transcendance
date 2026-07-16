@@ -8,6 +8,13 @@ import Background from '../components/Background'
 import '../styles/SettingsPage.css'
 import Footer from '../components/Footer'
 import { disconnectSocket } from '../services/socket'
+import {
+	validateAvatarFile,
+	validateCredentialPassword,
+	validatePassword,
+	validatePasswordMatch,
+	validateUsername,
+} from '../utils/validation.js'
 
 const getAvatar = (avatarUrl, username) => {
 	if (avatarUrl && avatarUrl !== 'default_avatar.png') return avatarUrl
@@ -45,6 +52,7 @@ const SettingsPage = () => {
 	const [hasApiKey, setHasApiKey] = useState(false)
 	const [apiKeyMsg, setApiKeyMsg] = useState('')
 	const [showApiKey, setShowApiKey] = useState(false)
+	const [avatarMsg, setAvatarMsg] = useState('')
 	const [currentLang, setCurrentLang] = useState(localStorage.getItem('language') || 'en')
 	const navigate = useNavigate()
 
@@ -61,6 +69,11 @@ const SettingsPage = () => {
 	const showApiMsg = (msg) => {
 		setApiKeyMsg(msg)
 		setTimeout(() => setApiKeyMsg(''), 2000)
+	}
+
+	const showAvatarMsg = (msg) => {
+		setAvatarMsg(msg)
+		setTimeout(() => setAvatarMsg(''), 2000)
 	}
 
 	useEffect(() => {
@@ -103,6 +116,12 @@ const SettingsPage = () => {
 	const handleAvatarChange = (e) => {
 		const file = e.target.files[0]
 		if (!file) return
+		const fileResult = validateAvatarFile(file)
+		if (!fileResult.ok) {
+			showAvatarMsg(t(fileResult.errorKey))
+			e.target.value = ''
+			return
+		}
 		const reader = new FileReader()
 		reader.onloadend = () => setPreviewSrc(reader.result)
 		reader.readAsDataURL(file)
@@ -116,7 +135,11 @@ const SettingsPage = () => {
 				headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
 				body: JSON.stringify({ avatar: previewSrc })
 			})
-			if (!res.ok) throw new Error('Upload failed')
+			if (!res.ok) {
+				const data = await res.json().catch(() => ({}))
+				showAvatarMsg(data.error || t('settings.server_error'))
+				return
+			}
 			const user = JSON.parse(localStorage.getItem('user'))
 			user.avatarUrl = previewSrc
 			localStorage.setItem('user', JSON.stringify(user))
@@ -125,6 +148,7 @@ const SettingsPage = () => {
 			setShowAvatarModal(false)
 		} catch (err) {
 			console.error('Erreur avatar:', err)
+			showAvatarMsg(t('settings.server_error'))
 		}
 	}
 
@@ -136,7 +160,11 @@ const SettingsPage = () => {
 				headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
 				body: JSON.stringify({ avatar: 'default_avatar.png' })
 			})
-			if (!res.ok) throw new Error('Failed')
+			if (!res.ok) {
+				const data = await res.json().catch(() => ({}))
+				console.error('Error remove avatar:', data.error || res.status)
+				return
+			}
 			const user = JSON.parse(localStorage.getItem('user'))
 			user.avatarUrl = 'default_avatar.png'
 			localStorage.setItem('user', JSON.stringify(user))
@@ -145,7 +173,7 @@ const SettingsPage = () => {
 			setPreviewSrc(defaultAvatar)
 			setHasCustomAvatar(false)
 		} catch (err) {
-			console.error('Erreur remove avatar:', err)
+			console.error('Error remove avatar:', err)
 		}
 	}
 
@@ -157,13 +185,14 @@ const SettingsPage = () => {
 	}
 
 	const handleSaveUsername = async () => {
-		if (!username.trim()) return showUsernameMsg(t('settings.enter_username'))
+		const usernameResult = validateUsername(username)
+		if (!usernameResult.ok) return showUsernameMsg(t(usernameResult.errorKey))
 		const token = localStorage.getItem('token')
 		try {
 			const res = await fetch('/api/user/username', {
 				method: 'PUT',
 				headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-				body: JSON.stringify({ username })
+				body: JSON.stringify({ username: usernameResult.value })
 			})
 			const data = await res.json()
 			if (!res.ok) return showUsernameMsg(data.error)
@@ -178,18 +207,23 @@ const SettingsPage = () => {
 	}
 
 	const handleUpdatePassword = async () => {
-		if (!currentPassword || !newPassword || !confirmPassword)
-			return showPasswordMsg(t('settings.fill_fields'))
-		if (newPassword !== confirmPassword)
-			return showPasswordMsg(t('settings.passwords_match'))
-		if (newPassword.length < 6)
-			return showPasswordMsg(t('settings.password_length'))
+		const currentResult = validateCredentialPassword(currentPassword, { requiredKey: 'settings.fill_fields' })
+		if (!currentResult.ok) return showPasswordMsg(t(currentResult.errorKey))
+		const newResult = validatePassword(newPassword, { requiredKey: 'settings.fill_fields' })
+		if (!newResult.ok) {
+			const msg = newResult.errorKey === 'login.err_password_length'
+				? t('settings.password_length')
+				: t(newResult.errorKey)
+			return showPasswordMsg(msg)
+		}
+		const matchResult = validatePasswordMatch(newPassword, confirmPassword)
+		if (!matchResult.ok) return showPasswordMsg(t('settings.passwords_match'))
 		const token = localStorage.getItem('token')
 		try {
 			const res = await fetch('/api/user/password', {
 				method: 'PUT',
 				headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-				body: JSON.stringify({ currentPassword, newPassword })
+				body: JSON.stringify({ currentPassword: currentResult.value, newPassword: newResult.value })
 			})
 			const data = await res.json()
 			if (!res.ok) return showPasswordMsg(data.error)
@@ -203,8 +237,9 @@ const SettingsPage = () => {
 	}
 
 	const handleDeleteAccount = async () => {
-		if (!isGoogleAccount && !deletePassword) {
-			return setDeletePasswordMsg(t('settings.enter_password'))
+		if (!isGoogleAccount) {
+			const passwordResult = validateCredentialPassword(deletePassword, { requiredKey: 'settings.enter_password' })
+			if (!passwordResult.ok) return setDeletePasswordMsg(t(passwordResult.errorKey))
 		}
 		const token = localStorage.getItem('token')
 		try {
@@ -561,10 +596,15 @@ const SettingsPage = () => {
 							<input
 								id="avatar-input"
 								type="file"
-								accept="image/*"
+								accept="image/jpeg,image/png,image/gif,image/webp"
 								style={{ display: 'none' }}
 								onChange={handleAvatarChange}
 							/>
+							{avatarMsg && (
+								<p style={{ color: '#f44336', fontFamily: 'policeConthrax', fontSize: '12px', textAlign: 'center', marginTop: '10px' }}>
+									{avatarMsg}
+								</p>
+							)}
 							<div className="avatar-edit-btns">
 								<button className="settings-cancel-btn" onClick={() => setShowAvatarModal(false)}>{t('settings.cancel')}</button>
 								<button className="settings-save-btn" onClick={handleSaveAvatar}>{t('settings.save')}</button>

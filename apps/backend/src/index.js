@@ -1,6 +1,7 @@
 // bibliothèques et imports
 import 'dotenv/config'; // parse les variables d'environnement
-import http from 'http';
+import https from 'https';
+import fs from 'fs';
 import express from 'express'; // framework web
 import cors from 'cors'; // outil pour communiquer en sécurité avec un autre service
 
@@ -75,8 +76,12 @@ app.use('/api/public/reviews', apiLimiter, apiKeyAuth, publicReviewsRouter);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 
-// Express et Socket.IO partagent le meme serveur HTTP et le meme port.
-const httpServer = http.createServer(app);
+// Express et Socket.IO partagent le meme serveur HTTPS et le meme port.
+const httpsOptions = {
+	cert: fs.readFileSync('/certs/backend.crt'),
+	key: fs.readFileSync('/certs/backend.key'),
+};
+const httpServer = https.createServer(httpsOptions, app);
 initSocketServer(httpServer);
 
 httpServer.listen(PORT, () => console.log(`Backend actif sur le port ${PORT}`));

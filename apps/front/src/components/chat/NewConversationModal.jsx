@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { FiMessageCircle, FiSearch, FiUserPlus, FiX } from 'react-icons/fi'
 import { useTranslation } from 'react-i18next'
 import { getAvatar } from './chatUtils'
+import { validateSearchQuery } from '../../utils/validation.js'
 
 const NewConversationModal = ({ onClose, onSearch, onSelect, onAddFriend }) => {
 	const { t } = useTranslation()
@@ -13,10 +14,16 @@ const NewConversationModal = ({ onClose, onSearch, onSelect, onAddFriend }) => {
 	useEffect(() => {
 		if (!query.trim()) return
 
+		const queryResult = validateSearchQuery(query)
+		if (!queryResult.ok) {
+			setResults([])
+			return
+		}
+
 		const timeout = setTimeout(async () => {
 			setLoading(true)
 			try {
-				setResults(await onSearch(query.trim()))
+				setResults(await onSearch(queryResult.value))
 			} catch {
 				setResults([])
 			} finally {

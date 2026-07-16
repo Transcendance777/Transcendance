@@ -17,6 +17,8 @@ services:
       - ../.env
     volumes:
       - approle_id_data:/approle_id:ro
+      - ./backend/certs/backend.crt:/certs/backend.crt:ro
+      - ./backend/certs/backend.key:/certs/backend.key:ro
       - ./vault-stack/vault/certs/vault.crt:/certs/vault.crt:ro
     depends_on:
       postgres:
@@ -25,7 +27,7 @@ services:
   postgres:
     image: docker.io/library/postgres:18.4-alpine
     volumes:
-      - postgre-data:/var/lib/postgresql
+      - postgre_data:/var/lib/postgresql
     environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASS}
@@ -43,6 +45,8 @@ services:
     image: docker.io/library/nginx:alpine
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/certs/nginx.crt:/certs/nginx.crt:ro
+      - ./nginx/certs/nginx.key:/certs/nginx.key:ro
     depends_on:
       - frontend
       - backend
@@ -54,11 +58,15 @@ services:
     container_name: prometheus
     volumes:
       - ./monitoring/prometheus/prometheus.yaml:/etc/prometheus/prometheus.yml
+      - ./monitoring/prometheus/web-config.yml:/etc/prometheus/web-config.yml:ro
+      - ./monitoring/prometheus/certs/prometheus.crt:/certs/prometheus.crt:ro
+      - ./monitoring/prometheus/certs/prometheus.key:/certs/prometheus.key:ro
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
       - "--storage.tsdb.path=/prometheus"
       - "--web.route-prefix=/prometheus/"
       - "--web.external-url=https://localhost:8443/prometheus/"
+      - "--web.config.file=/etc/prometheus/web-config.yml"
     networks:
       - gamerev
 
@@ -71,7 +79,9 @@ services:
     networks:
       - gamerev
     volumes:
-      - grafana-data:/var/lib/grafana
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/certs/grafana.crt:/certs/grafana.crt:ro
+      - ./monitoring/grafana/certs/grafana.key:/certs/grafana.key:ro
       - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
       - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
     depends_on:
@@ -183,7 +193,7 @@ services:
     environment:
       - CYBER_PASSWORD=${CYBER_PASSWORD}
     volumes:
-      - ./vault-stack/vault/bootstrap.sh:/bootstrap.sh:ro
+      - ./vault-stack/bootstrap/bootstrap.sh:/bootstrap.sh:ro
       - ./vault-stack/vault/policies:/vault/policies:ro
       - vault_keys_data:/vault_keys/:ro
       - approle_id_data:/approle_id
@@ -219,15 +229,16 @@ networks:
     driver: bridge
 
 volumes:
-  postgre-data:
+  postgre_data:
     driver: local
-  grafana-data:
+  grafana_data:
     driver: local
   vault_data:
     driver: local
   vault_logs:
     driver: local
   vault_file:
+    driver: local
   vault_keys_data:
     driver: local
   approle_id_data:

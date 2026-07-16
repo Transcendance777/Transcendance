@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { FiPlus, FiX } from 'react-icons/fi'
 import '../styles/ProfileFavorites.css'
+import { validateSearchQuery } from '../utils/validation.js'
 
 const MAX_FAVORITES = 4
 
@@ -36,8 +37,14 @@ const ProfileFavorites = ({ editable = false, externalFavorites = null }) => {
 		setSearch(value)
 		setSearchMsg('')
 		if (value.trim() === '') return setResults([])
+		const queryResult = validateSearchQuery(value)
+		if (!queryResult.ok) {
+			setSearchMsg(t(queryResult.errorKey))
+			return setResults([])
+		}
 		try {
-			const res = await fetch(`/api/games/search?q=${encodeURIComponent(value)}`)
+			const res = await fetch(`/api/games/search?q=${encodeURIComponent(queryResult.value)}`)
+			if (!res.ok) return setResults([])  // ← avant res.json()
 			const data = await res.json()
 			const formatted = data
 				.filter(g => g.id || g.idExterne)
@@ -55,6 +62,10 @@ const ProfileFavorites = ({ editable = false, externalFavorites = null }) => {
 	}
 
 	const handleAddFavorite = async (game) => {
+		if (favorites.length >= MAX_FAVORITES) {
+			setAddMsg(t('validation.max_favorites'))
+			return
+		}
 		const token = localStorage.getItem('token')
 		try {
 			const res = await fetch(`/api/user/favorites/${game.id}`, {
@@ -63,7 +74,11 @@ const ProfileFavorites = ({ editable = false, externalFavorites = null }) => {
 			})
 			const data = await res.json()
 			if (!res.ok) {
-				setAddMsg(data.error === 'Already in favorites.' ? t('profile.already_favorite') : data.error)
+				setAddMsg(data.error === 'Already in favorites.'
+					? t('profile.already_favorite')
+					: data.error === 'Maximum 4 favorites.'
+						? t('validation.max_favorites')
+						: data.error)
 				return
 			}
 			setAddMsg('')

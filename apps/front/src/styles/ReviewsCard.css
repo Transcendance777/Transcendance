@@ -234,12 +234,16 @@
 	margin-top: 10px;
 	padding-left: 20px;
 	border-left: 2px solid rgba(231, 231, 231, 0.3);
+	min-width: 0;
+	overflow: hidden;
 }
 
 .reply-item {
 	background: rgba(0, 0, 0, 0.4);
 	border-radius: 8px;
 	padding: 8px 12px;
+	min-width: 0;
+	overflow: hidden;
 }
 
 .reply-text {
@@ -249,6 +253,8 @@
 	word-wrap: break-word;
 	overflow-wrap: break-word;
 	white-space: pre-wrap;
+	max-width: 100%;
+	min-width: 0;
 }
 
 @media (max-width: 480px) {

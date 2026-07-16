@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
 	PieChart,
@@ -26,13 +26,18 @@ const GENRE_COLORS = [
 	'#fb923c',
 ]
 
-const GameGenreDistributionChart = ({ statsFilter }) => {
+const GameGenreDistributionChart = ({ statsFilter, refreshTick = 0 }) => {
 	const { t } = useTranslation()
 	const [distribution, setDistribution] = useState([])
 	const [releaseYear, setReleaseYear] = useState(null)
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState(null)
 	const yearOptions = getStatsYearOptions()
+	const filterKey = useMemo(
+		() => `${JSON.stringify(statsFilter)}:${releaseYear ?? ''}`,
+		[statsFilter, releaseYear],
+	)
+	const prevFilterKey = useRef(null)
 
 	useEffect(() => {
 		const token = localStorage.getItem('token')
@@ -41,10 +46,15 @@ const GameGenreDistributionChart = ({ statsFilter }) => {
 			return
 		}
 
+		const showLoading = prevFilterKey.current !== filterKey
+		prevFilterKey.current = filterKey
+
 		const fetchStats = async () => {
 			try {
-				setLoading(true)
-				setError(null)
+				if (showLoading) {
+					setLoading(true)
+					setError(null)
+				}
 
 				const res = await fetch(
 					buildGenreStatsUrl(statsFilter, releaseYear),
@@ -56,14 +66,14 @@ const GameGenreDistributionChart = ({ statsFilter }) => {
 				const json = await res.json()
 				setDistribution(json.data ?? [])
 			} catch {
-				setError(t('stats.load_error'))
+				if (showLoading) setError(t('stats.load_error'))
 			} finally {
-				setLoading(false)
+				if (showLoading) setLoading(false)
 			}
 		}
 
 		fetchStats()
-	}, [statsFilter, releaseYear, t])
+	}, [filterKey, refreshTick, t])
 
 	useEffect(() => {
 		setReleaseYear(null)

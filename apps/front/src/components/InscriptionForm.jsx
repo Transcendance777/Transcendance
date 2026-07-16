@@ -1,10 +1,18 @@
 import '../styles/InscriptionForm.css'
 import '../index.css'
-import axios from 'axios'
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { FiEye, FiEyeOff } from 'react-icons/fi'
 import { useTranslation } from 'react-i18next'
+import {
+	validateCredentialPassword,
+	validateEmail,
+	validateLoginIdentifier,
+	validatePassword,
+	validatePasswordMatch,
+	validateResetCode,
+	validateUsername,
+} from '../utils/validation.js'
 
 const InscriptionForm = () => {
 	const { t } = useTranslation()
@@ -36,6 +44,12 @@ const InscriptionForm = () => {
 		'Email/username and password required.': 'login.err_identifier_required',
 		'No account found with this email.': 'login.err_no_account',
 		'Please use a valid email address (Gmail, Hotmail, Yahoo or Outlook).': 'login.err_email_domain',
+		'Invalid username.': 'validation.username_required',
+		'Username must be between 3 and 30 characters.': 'validation.username_length',
+		'Username may only contain letters, numbers, and underscores.': 'validation.username_chars',
+		'Password is too long.': 'validation.password_too_long',
+		'Invalid verification code.': 'validation.invalid_code',
+		'Email required.': 'login.email_required',
 	}
 
 	const translateError = (msg) => {
@@ -81,41 +95,83 @@ const InscriptionForm = () => {
 
 		try {
 			if (isLogin) {
-				const response = await axios.post('/api/auth/login', {
-					identifier: email,
-					password: password
-				})
-				localStorage.setItem('token', response.data.token)
-				localStorage.setItem('user', JSON.stringify(response.data.user))
-				navigate('/home')
-			} else {
-				if (!username || !email || !password) {
-					showError(t('login.all_fields'))
+				const identifierResult = validateLoginIdentifier(email)
+				if (!identifierResult.ok) {
+					showError(t(identifierResult.errorKey))
 					return
 				}
-				const response = await axios.post('/api/auth/register', {
-					email: email,
-					username: username,
-					password: password
+				const passwordResult = validateCredentialPassword(password, { requiredKey: 'login.err_identifier_required' })
+				if (!passwordResult.ok) {
+					showError(t(passwordResult.errorKey))
+					return
+				}
+				const res = await fetch('/api/auth/login', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ identifier: identifierResult.value, password: passwordResult.value })
 				})
-				localStorage.setItem('token', response.data.token)
-				localStorage.setItem('user', JSON.stringify(response.data.user))
+				const data = await res.json()
+				if (!res.ok) {
+					showError(translateError(data.error || t('login.error')))
+					return
+				}
+				localStorage.setItem('token', data.token)
+				localStorage.setItem('user', JSON.stringify(data.user))
+				navigate('/home')
+			} else {
+				const emailResult = validateEmail(email)
+				if (!emailResult.ok) {
+					showError(emailResult.errorKey === 'login.err_email_domain'
+						? t('login.err_email_domain')
+						: t(emailResult.errorKey))
+					return
+				}
+				const usernameResult = validateUsername(username)
+				if (!usernameResult.ok) {
+					showError(t(usernameResult.errorKey))
+					return
+				}
+				const passwordResult = validatePassword(password)
+				if (!passwordResult.ok) {
+					showError(t(passwordResult.errorKey))
+					return
+				}
+				const res = await fetch('/api/auth/register', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({
+						email: emailResult.value,
+						username: usernameResult.value,
+						password: passwordResult.value,
+					})
+				})
+				const data = await res.json()
+				if (!res.ok) {
+					showError(translateError(data.error || t('login.error')))
+					return
+				}
+				localStorage.setItem('token', data.token)
+				localStorage.setItem('user', JSON.stringify(data.user))
 				navigate('/home')
 			}
 		} catch (error) {
-			const msg = error.response?.data?.error || t('login.error')
-			showError(translateError(msg))
+			showError(t('login.error'))
 		}
 	}
 
 	const handleForgotPassword = async () => {
 		setForgotMsg('')
-		if (!forgotEmail) return setForgotMsg(t('login.email_required'))
+		const emailResult = validateEmail(forgotEmail)
+		if (!emailResult.ok) {
+			return setForgotMsg(emailResult.errorKey === 'validation.all_fields'
+				? t('login.email_required')
+				: t(emailResult.errorKey))
+		}
 		try {
 			const res = await fetch('/api/auth/forgot-password', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ email: forgotEmail })
+				body: JSON.stringify({ email: emailResult.value })
 			})
 			const data = await res.json()
 			if (!res.ok) return setForgotMsg(translateError(data.error))
@@ -127,12 +183,13 @@ const InscriptionForm = () => {
 
 	const handleVerifyCode = async () => {
 		setForgotMsg('')
-		if (!verifCode) return setForgotMsg(t('login.code_required'))
+		const codeResult = validateResetCode(verifCode)
+		if (!codeResult.ok) return setForgotMsg(t(codeResult.errorKey))
 		try {
 			const res = await fetch('/api/auth/verify-code', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ email: forgotEmail, code: verifCode })
+				body: JSON.stringify({ email: forgotEmail.trim().toLowerCase(), code: codeResult.value })
 			})
 			const data = await res.json()
 			if (!res.ok) return setForgotMsg(data.error)
@@ -145,15 +202,20 @@ const InscriptionForm = () => {
 	const handleResetPassword = async () => {
 		setForgotMsg('')
 		if (resetting) return
-		if (!newPassword1 || !newPassword2) return setForgotMsg(t('login.fill_fields'))
-		if (newPassword1 !== newPassword2) return setForgotMsg(t('login.passwords_match'))
-		if (newPassword1.length < 6) return setForgotMsg(t('login.password_length'))
+		const passwordResult = validatePassword(newPassword1, { requiredKey: 'login.fill_fields' })
+		if (!passwordResult.ok) return setForgotMsg(t(passwordResult.errorKey))
+		const matchResult = validatePasswordMatch(newPassword1, newPassword2)
+		if (!matchResult.ok) return setForgotMsg(t(matchResult.errorKey))
 		setResetting(true)
 		try {
 			const res = await fetch('/api/auth/reset-password', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ email: forgotEmail, code: verifCode, newPassword: newPassword1 })
+				body: JSON.stringify({
+					email: forgotEmail.trim().toLowerCase(),
+					code: verifCode.trim(),
+					newPassword: passwordResult.value,
+				})
 			})
 			const data = await res.json()
 			if (!res.ok) {
@@ -204,6 +266,9 @@ const InscriptionForm = () => {
 					<>
 						<p className="emailMessage texte">{t('login.username')}</p>
 						<input
+							id="username"
+							name="username"
+							autoComplete="username"
 							className="emailArea"
 							type="text"
 							placeholder="Example: xX_DarkWolf_Xx"
@@ -218,6 +283,9 @@ const InscriptionForm = () => {
 					{isLogin ? t('login.email_username') : t('login.email')}
 				</p>
 				<input
+					id="email"
+					name="email"
+					autoComplete={isLogin ? 'username' : 'email'}
 					className="emailArea"
 					type={isLogin ? 'text' : 'email'}
 					placeholder={isLogin ? 'Email or username...' : 'Example: john@gmail.com'}
@@ -230,6 +298,9 @@ const InscriptionForm = () => {
 				<p className="passwordMessage texte">{t('login.password')}</p>
 				<div className="password-wrapper">
 					<input
+						id="password"
+						name="password"
+						autoComplete={isLogin ? 'current-password' : 'new-password'}
 						className="passwordArea"
 						type={showPassword ? 'text' : 'password'}
 						value={password}
@@ -297,6 +368,9 @@ const InscriptionForm = () => {
 								<h3 className="forgot-modal-title">{t('login.forgot_title')}</h3>
 								<p className="forgot-modal-text">{t('login.forgot_text')}</p>
 								<input
+									id="forgot-email"
+									name="forgot-email"
+									autoComplete="email"
 									className="forgot-input"
 									type="email"
 									placeholder={t('login.forgot_email')}
@@ -316,11 +390,17 @@ const InscriptionForm = () => {
 								<h3 className="forgot-modal-title">{t('login.verify_title')}</h3>
 								<p className="forgot-modal-text">{t('login.verify_text')}</p>
 								<input
+									id="verif-code"
+									name="verif-code"
+									autoComplete="one-time-code"
 									className="forgot-input"
 									type="text"
+									inputMode="numeric"
+									pattern="[0-9]*"
+									maxLength={6}
 									placeholder={t('login.verify_code')}
 									value={verifCode}
-									onChange={(e) => setVerifCode(e.target.value)}
+									onChange={(e) => setVerifCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
 								/>
 								{forgotMsg && <p style={{ color: '#f44336', fontFamily: 'policeConthrax', fontSize: '12px', textAlign: 'center' }}>{forgotMsg}</p>}
 								<div className="forgot-modal-btns">
@@ -335,6 +415,9 @@ const InscriptionForm = () => {
 								<h3 className="forgot-modal-title">{t('login.new_password_title')}</h3>
 								<div className="forgot-password-wrapper">
 									<input
+										id="new-password"
+										name="new-password"
+										autoComplete="new-password"
 										className="forgot-input"
 										type={showNewPass1 ? 'text' : 'password'}
 										placeholder={t('login.new_password')}
@@ -347,6 +430,9 @@ const InscriptionForm = () => {
 								</div>
 								<div className="forgot-password-wrapper">
 									<input
+										id="confirm-password"
+										name="confirm-password"
+										autoComplete="new-password"
 										className="forgot-input"
 										type={showNewPass2 ? 'text' : 'password'}
 										placeholder={t('login.confirm_password')}

@@ -9,6 +9,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { FiEdit2, FiTrash2, FiX, FiSettings } from 'react-icons/fi'
 import Footer from '../components/Footer'
+import { validateInternalRating, validateReviewText } from '../utils/validation.js'
 
 const MAX_CHARS = 500
 
@@ -35,6 +36,7 @@ const ProfilePage = () => {
 	const [editRating, setEditRating] = useState(null)
 	const [editStarsKey, setEditStarsKey] = useState(0)
 	const [deleteReviewId, setDeleteReviewId] = useState(null)
+	const [editMsg, setEditMsg] = useState('')
 	const reviewsSectionRef = useRef(null)
 	const reviewItemRefs = useRef({})
 	const location = useLocation()
@@ -106,19 +108,31 @@ const ProfilePage = () => {
 		setEditText(review.reviewText || '')
 		setEditRating(review.rating / 2)
 		setEditStarsKey(k => k + 1)
+		setEditMsg('')
 	}
 
 	const handleEditSubmit = async () => {
-		if (!editRating) return
+		const ratingResult = validateInternalRating(editRating)
+		if (!ratingResult.ok) {
+			setEditMsg(t(ratingResult.errorKey))
+			setTimeout(() => setEditMsg(''), 2000)
+			return
+		}
+		const textResult = validateReviewText(editText)
+		if (!textResult.ok) {
+			setEditMsg(t(textResult.errorKey))
+			setTimeout(() => setEditMsg(''), 2000)
+			return
+		}
 		const token = localStorage.getItem('token')
 		try {
 			const res = await fetch(`/api/user/review/${editReview.id}`, {
 				method: 'PUT',
 				headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-				body: JSON.stringify({ rating: editRating, reviewText: editText })
+				body: JSON.stringify({ rating: ratingResult.value, reviewText: textResult.value })
 			})
+			if (!res.ok) return
 			const data = await res.json()
-			if (!res.ok) return console.error(data.error)
 			setReviews(prev => prev.map(r => r.id === editReview.id ? { ...r, rating: data.review.rating, reviewText: data.review.reviewText } : r))
 			setEditReview(null)
 		} catch (err) {
@@ -396,6 +410,11 @@ const ProfilePage = () => {
 							{editText.length}/{MAX_CHARS}
 						</p>
 						<PostStars key={editStarsKey} onRate={setEditRating} />
+						{editMsg && (
+							<p style={{ color: '#f44336', fontFamily: '"policeConthrax", sans-serif', fontSize: '12px', marginTop: '10px' }}>
+								{editMsg}
+							</p>
+						)}
 						<div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '20px' }}>
 							<button className="settings-cancel-btn" onClick={() => setEditReview(null)}>{t('profile.cancel')}</button>
 							<button className="settings-save-btn" onClick={handleEditSubmit}>{t('profile.save')}</button>
