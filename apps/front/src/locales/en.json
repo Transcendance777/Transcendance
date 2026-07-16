@@ -331,7 +331,7 @@
 	"validation": {
 		"all_fields": "All fields are required.",
 		"username_required": "Please enter a username.",
-		"username_length": "Username must be between 4 and 15 characters.",
+		"username_length": "Username must be between 4 and 8 characters.",
 		"username_chars": "Username may only contain letters, numbers, and underscores.",
 		"password_too_long": "Password is too long.",
 		"email_too_long": "Email is too long.",

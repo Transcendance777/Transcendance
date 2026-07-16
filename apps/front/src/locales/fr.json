@@ -331,7 +331,7 @@
 	"validation": {
 		"all_fields": "Tous les champs sont requis.",
 		"username_required": "Veuillez entrer un nom d'utilisateur.",
-		"username_length": "Le nom d'utilisateur doit contenir entre 4 et 15 caractères.",
+		"username_length": "Le nom d'utilisateur doit contenir entre 4 et 8 caractères.",
 		"username_chars": "Le nom d'utilisateur ne peut contenir que des lettres, chiffres et underscores.",
 		"password_too_long": "Le mot de passe est trop long.",
 		"email_too_long": "L'email est trop long.",

@@ -331,7 +331,7 @@
 	"validation": {
 		"all_fields": "Todos los campos son obligatorios.",
 		"username_required": "Introduce un nombre de usuario.",
-		"username_length": "El nombre de usuario debe tener entre 4 y 15 caracteres.",
+		"username_length": "El nombre de usuario debe tener entre 4 y 8 caracteres.",
 		"username_chars": "El nombre de usuario solo puede contener letras, números y guiones bajos.",
 		"password_too_long": "La contraseña es demasiado larga.",
 		"email_too_long": "El email es demasiado largo.",
