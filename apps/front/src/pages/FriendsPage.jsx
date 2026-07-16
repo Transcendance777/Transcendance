@@ -76,8 +76,8 @@ const FriendsPage = () => {
 			const res = await fetch(`/api/user/search?q=${encodeURIComponent(queryResult.value)}`, {
 				headers: { Authorization: `Bearer ${token}` }
 			})
+			if (!res.ok) return setResults([])  // ← avant le res.json()
 			const data = await res.json()
-			if (!res.ok) return setResults([])
 			setResults(data)
 			if (data.length === 0) setSearchMsg(t('friends.no_user'))
 		} catch (err) {
