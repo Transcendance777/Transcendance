@@ -151,6 +151,10 @@ const validateAvatar = (avatar) => {
 	if (!avatar || typeof avatar !== 'string') {
 		return { ok: false, error: 'No image provided.' };
 	}
+	// Special value used by the frontend to reset to the default avatar
+	if (avatar === 'default_avatar.png') {
+		return { ok: true, value: avatar };
+	}
 	if (avatar.length > MAX_AVATAR_SIZE) {
 		return { ok: false, error: 'Image too large (max ~2MB).' };
 	}

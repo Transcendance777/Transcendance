@@ -160,7 +160,11 @@ const SettingsPage = () => {
 				headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
 				body: JSON.stringify({ avatar: 'default_avatar.png' })
 			})
-			if (!res.ok) throw new Error('Failed')
+			if (!res.ok) {
+				const data = await res.json().catch(() => ({}))
+				console.error('Error remove avatar:', data.error || res.status)
+				return
+			}
 			const user = JSON.parse(localStorage.getItem('user'))
 			user.avatarUrl = 'default_avatar.png'
 			localStorage.setItem('user', JSON.stringify(user))
@@ -169,7 +173,7 @@ const SettingsPage = () => {
 			setPreviewSrc(defaultAvatar)
 			setHasCustomAvatar(false)
 		} catch (err) {
-			console.error('Erreur remove avatar:', err)
+			console.error('Error remove avatar:', err)
 		}
 	}
 
