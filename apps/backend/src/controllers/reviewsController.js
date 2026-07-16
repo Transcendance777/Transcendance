@@ -200,7 +200,7 @@ const updateReview = async (req, res) => {
 			where: { id: id },
 			data: {
 			// On ne met à jour que les champs fournis (les autres restent inchangés)
-			...(reviewText && { safeReviewText }),
+			...(reviewText && { reviewText: safeReviewText }),
 			...(rating && { rating }),
 			},
 		});
