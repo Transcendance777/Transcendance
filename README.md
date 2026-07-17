@@ -25,6 +25,8 @@
 - Public REST API secured by per-user API keys, documented with Swagger
 - Full Docker Compose deployment with WAF, Vault, and monitoring stack
 
+## Description
+**GameRev** is a web-based social platform designed for video game enthusiasts, heavily inspired by Letterboxd but tailored entirely for gaming. The application allows users to discover video games, rate them, write detailed reviews, and like their favorite titles. It serves as a social hub where gamers can interact in real-time, build a customized friends list, view peer profiles, and stay connected through dynamic activities.
 
 ## Instructions
 
@@ -437,6 +439,8 @@ Implemented by: mdodevsk.
 ## Modules - Cyber
 
 ### Implement WAF/ModSecurity + HashiCorp - Major (2pts)
+
+**Justification**: Some cybersecurity in a website is always good.
 
 ## 1. WAF / ModSecurity
 

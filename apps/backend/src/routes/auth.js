@@ -263,8 +263,8 @@ router.get('/google/callback',
 			isGoogle: true
 		}
 
-		// Redirige vers le front avec le token dans l'URL
-		res.redirect(`https://localhost:8443/home?token=${token}&user=${encodeURIComponent(JSON.stringify(user))}`)
+		// Hash fragment: never sent in Referer, so WAF won't block /assets after OAuth
+		res.redirect(`https://localhost:8443/home#token=${token}&user=${encodeURIComponent(JSON.stringify(user))}`)
 	}
 )
 
