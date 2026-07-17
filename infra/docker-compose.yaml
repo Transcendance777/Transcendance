@@ -1,0 +1,256 @@
+# Commenter les ports une fois en production pour reduire les risques d'attaques
+# et faire le nginx.conf pour faire le reverse proxy
+
+name: transcendance
+
+services:
+  frontend:
+    build: ../apps/front
+    networks:
+      - gamerev
+
+  backend:
+    build: ../apps/backend
+    networks:
+      - gamerev
+    env_file:
+      - ../.env
+    volumes:
+      - approle_id_data:/approle_id:ro
+      - ./backend/certs/backend.crt:/certs/backend.crt:ro
+      - ./backend/certs/backend.key:/certs/backend.key:ro
+      - ./vault-stack/vault/certs/vault.crt:/certs/vault.crt:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      vault-bootstrap:
+        condition: service_completed_successfully
+
+  postgres:
+    image: postgres:18.4-alpine
+    volumes:
+      - postgre_data:/var/lib/postgresql
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
+      POSTGRES_DB: ${DB_NAME}
+    networks:
+      - gamerev
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 40s
+      timeout: 30s
+      retries: 3
+      start_period: 60s
+
+  nginx:
+    image: nginx:alpine
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/certs/nginx.crt:/certs/nginx.crt:ro
+      - ./nginx/certs/nginx.key:/certs/nginx.key:ro
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - gamerev
+
+  prometheus:
+    image: prom/prometheus:v3.12.0
+    container_name: prometheus
+    volumes:
+      - ./monitoring/prometheus/prometheus.yaml:/etc/prometheus/prometheus.yml
+      - ./monitoring/prometheus/web-config.yml:/etc/prometheus/web-config.yml:ro
+      - ./monitoring/prometheus/certs/prometheus.crt:/certs/prometheus.crt:ro
+      - ./monitoring/prometheus/certs/prometheus.key:/certs/prometheus.key:ro
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--web.route-prefix=/prometheus/"
+      - "--web.external-url=https://localhost:8443/prometheus/"
+      - "--web.config.file=/etc/prometheus/web-config.yml"
+    networks:
+      - gamerev
+
+
+  grafana:
+    container_name: grafana
+    image: grafana/grafana:12.4
+    env_file:
+      - ../.env
+    networks:
+      - gamerev
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/certs/grafana.crt:/certs/grafana.crt:ro
+      - ./monitoring/grafana/certs/grafana.key:/certs/grafana.key:ro
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    depends_on:
+      - prometheus
+
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:v0.16.0
+    container_name: postgres-exporter
+    environment:
+      DATA_SOURCE_URI: "postgres:5432/${DB_NAME}?sslmode=disable"
+      DATA_SOURCE_USER: ${DB_USER}
+      DATA_SOURCE_PASS: ${DB_PASS}
+    networks:
+      - gamerev
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  nginx-exporter:
+    image: nginx/nginx-prometheus-exporter:1.5.1
+    container_name: nginx-exporter
+    command:
+      - "--nginx.scrape-uri=http://nginx:8080/stub_status"
+    networks:
+      - gamerev
+    depends_on:
+      - nginx
+
+#-----------CYBER------------
+
+  waf:
+    build: waf
+    container_name: waf
+    env_file:
+      - ../.env
+    environment:
+      - MODSEC_AUDIT_LOG=/var/log/modsec_audit.log
+      - MODSEC_AUDIT_LOG_FORMAT=JSON
+      - BACKEND=${WAF_BACKEND}
+      - MODSEC_RULE_ENGINE=${WAF_RULE_ENGINE}
+      - PARANOIA=${WAF_PARANOIA}
+      - ANOMALY_INBOUND=${WAF_ANOMALY_INBOUND}
+      - ANOMALY_OUTBOUND=${WAF_ANOMALY_OUTBOUND}
+      - BLOCKING_PARANOIA=${WAF_BLOCKING_PARANOIA}
+      - PORT=${WAF_PORT}
+      - TIMEOUT=${WAF_TIMEOUT}
+      - DNS_SERVER=${WAF_DNS_SERVER}
+      - SSL_PORT=${WAF_SSL_PORT}
+    ports:
+      - "8080:8080"   # HTTP (redirect vers HTTPS géré par le WAF)
+      - "8443:8443"   # HTTPS
+    volumes:
+      - ./waf/certs:/etc/waf/certs:ro
+    depends_on:
+      - nginx
+    networks:
+      - gamerev
+
+  vault-init:
+    image: alpine:3.19
+    volumes:
+      - vault_data:/vault/data
+      - vault_logs:/vault/logs
+      - vault_file:/vault/file
+    command: chown -R 100:100 /vault/data /vault/logs /vault/file
+    networks:
+      - gamerev
+
+  vault:
+    image: hashicorp/vault:1.17
+    restart: unless-stopped
+    container_name: vault
+    environment:
+      - VAULT_ADDR=https://127.0.0.1:8200
+      - VAULT_SKIP_VERIFY=true
+    cap_add:
+      - IPC_LOCK
+    volumes:
+      - vault_data:/vault/data
+      - vault_logs:/vault/logs
+      - vault_file:/vault/file
+      - ./vault-stack/vault/config:/vault/config:ro
+      - ./vault-stack/vault/certs:/certs:ro
+    command: vault server -config=/vault/config/vault.hcl -log-level="info"
+    healthcheck:
+      test: ["CMD", "wget", "--no-check-certificate", "-qO-", "https://127.0.0.1:8200/v1/sys/health?standbyok=true&sealedcode=200&uninitcode=200"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks:
+      - gamerev
+    depends_on:
+      vault-init:
+        condition: service_completed_successfully
+
+  vault-unsealer:
+    image: alpine:3.19
+    container_name: vault-unsealer
+    depends_on:
+      - vault
+    volumes:
+      - ./vault-stack/unsealer/unseal.sh:/unseal.sh:ro
+      - vault_keys_data:/vault_keys
+    command: sh -c "apk add --no-cache curl jq && sh /unseal.sh"
+    networks:
+      - gamerev
+    restart: on-failure
+
+  vault-bootstrap:
+    container_name: vault-bootstrap
+    image: alpine:3.19
+    environment:
+      - CYBER_PASSWORD=${CYBER_PASSWORD}
+    volumes:
+      - ./vault-stack/bootstrap/bootstrap.sh:/bootstrap.sh:ro
+      - ./vault-stack/vault/policies:/vault/policies:ro
+      - vault_keys_data:/vault_keys/:ro
+      - approle_id_data:/approle_id
+    command: sh -c "apk add --no-cache curl jq && sh /bootstrap.sh"
+    networks:
+      - gamerev
+    depends_on:
+      vault-unsealer:
+        condition: service_completed_successfully
+
+  vault-seeder:
+    container_name: vault-seeder
+    image: alpine:3.19
+    env_file:
+      - ../.env
+    volumes:
+      - ./vault-stack/seeder/seed-secrets.sh:/seed-secrets.sh:ro
+    command: sh -c "apk add --no-cache curl jq && sh /seed-secrets.sh"
+    networks:
+      - gamerev
+    depends_on:
+      vault-bootstrap:
+        condition: service_completed_successfully
+
+  vault-healthcheck:
+    image: alpine:3.19
+    container_name: vault-healthcheck
+    depends_on:
+      - vault
+    volumes:
+      - ./vault-stack/healthcheck/check.sh:/check.sh:ro
+    command: sh -c "apk add --no-cache curl jq && sh /check.sh"
+    networks:
+      - gamerev
+    restart: unless-stopped
+
+networks:
+  gamerev:
+    driver: bridge
+
+volumes:
+  postgre_data:
+    driver: local
+  grafana_data:
+    driver: local
+  vault_data:
+    driver: local
+  vault_logs:
+    driver: local
+  vault_file:
+    driver: local
+  vault_keys_data:
+    driver: local
+  approle_id_data:
+    driver: local

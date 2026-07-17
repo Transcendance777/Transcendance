@@ -1,0 +1,83 @@
+* {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+}
+
+@font-face {
+	font-family: "policePS3";
+	src: url("/WebslingerBold-z8eEX.ttf");
+}
+
+@font-face {
+	font-family: "policeConthrax";
+	src: url("/Conthrax-SemiBold.otf")
+}
+
+a {
+	text-decoration: none;
+}
+
+.texte {
+	font-family: "policeConthrax", sans-serif;
+	color: #e7e7e7;
+	z-index: 1;
+	font-size: clamp(14px, 2vw, 23px);
+}
+
+.navbar-avatar {
+	width: 45px;
+	height: 45px;
+	border-radius: 50%;
+	object-fit: cover;
+	border: 2px solid #e7e7e7;
+	transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.navbar-avatar:hover {
+	transform: scale(1.1);
+	border-color: white;
+}
+
+.profil-avatar-link {
+	display: inline-flex;
+	align-items: center;
+}
+
+.profile-settings-btn svg {
+	display: block;
+	width: 26px;
+	height: 26px;
+}
+
+html,
+body {
+	overflow-x: hidden;
+}
+
+@media (max-width: 900px) {
+	.profil-avatar-link {
+		display: none !important;
+	}
+}
+
+
+@media (max-width: 600px) {
+	.home-icon-link {
+		display: none !important;;
+		width: 28px;
+		height: 28px;
+		font-size: 14px;
+	}
+
+	.friends-navbar-title,
+	.games-navbar-title,
+	.gamepresentation-navbar-title,
+	.post-navbar-title,
+	.profile-navbar-title,
+	.reviews-navbar-title,
+	.settings-navbar-title,
+	.GameRev {
+		font-size: 16px;
+	}
+}
