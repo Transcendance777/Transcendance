@@ -16,4 +16,18 @@ const apiLimiter = rateLimit({
   }
 });
 
+// anti-bruteforce login / reset password -> 10 tentatives max / 15 min par IP
+export const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => ipKeyGenerator(req.ip),
+  validate: { xForwardedForHeader: false, trustProxy: false },
+  message: {
+    status: 429,
+    error: 'Too many attempts. Try again in 15 minutes.'
+  }
+});
+
 export default apiLimiter;
