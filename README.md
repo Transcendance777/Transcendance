@@ -169,7 +169,7 @@ The application is a **monolith**: one `backend` service handles all business lo
 
 Each service runs in its own container. All containers communicate over a private Docker network, and only the reverse proxy is exposed to the outside.
 
-<img width="646" height="325" alt="Screenshot 2026-07-12 at 20 55 54" src="https://github.com/user-attachments/assets/8a71fa0e-8d95-49d3-be4d-ca9bfa46ba04" />
+<img width="604" height="301" alt="Screenshot 2026-07-16 at 21 34 58" src="https://github.com/user-attachments/assets/1eb42fcc-2771-4b0c-9b49-013359371369" />
 
 - **WAF (ModSecurity) + nginx**: single public entry point, TLS termination, request filtering.
 - **Vault**: stores and injects secrets (DB credentials, API keys) into the backend at runtime instead of plain `.env` values.

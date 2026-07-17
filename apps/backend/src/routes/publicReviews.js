@@ -89,10 +89,11 @@ router.get('/:id', reviewsController.getReviewById);
  *                 minimum: 1
  *                 description: ID of the game being reviewed
  *               rating:
- *                 type: integer
- *                 minimum: 1
+ *                 type: number
+ *                 minimum: 0.5
  *                 maximum: 5
- *                 description: Rating from 1 to 5
+ *                 multipleOf: 0.5
+ *                 description: Rating from 0.5 to 5 in 0.5 increments
  *               reviewText:
  *                 type: string
  *                 maxLength: 2000
@@ -136,10 +137,11 @@ router.post('/', createReviewValidation, reviewsController.createReview);
  *               - rating
  *             properties:
  *               rating:
- *                 type: integer
- *                 minimum: 1
+ *                 type: number
+ *                 minimum: 0.5
  *                 maximum: 5
- *                 description: Updated rating from 1 to 5
+ *                 multipleOf: 0.5
+ *                 description: Updated rating from 0.5 to 5 in 0.5 increments
  *               reviewText:
  *                 type: string
  *                 maxLength: 2000
