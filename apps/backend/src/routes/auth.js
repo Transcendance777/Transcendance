@@ -13,6 +13,7 @@ import {
 	validateResetCode,
 	validateUsername,
 } from '../middlewares/validationUtils.js';
+import { authLimiter } from '../middlewares/rateLimiter.js';
 
 const router = express.Router();
 
@@ -83,7 +84,7 @@ router.post('/register', async (req, res) => {
 });
 
 // CONNEXION
-router.post('/login', async (req, res) => {
+router.post('/login', authLimiter, async (req, res) => {
 	const { identifier, password } = req.body;
 
 	const identifierResult = validateLoginIdentifier(identifier);
@@ -132,7 +133,7 @@ router.post('/login', async (req, res) => {
 
 // ─── MOT DE PASSE OUBLIÉ ───
 
-router.post('/forgot-password', async (req, res) => {
+router.post('/forgot-password', authLimiter, async (req, res) => {
 	const { email } = req.body;
 
 	const emailResult = validateEmail(email);
@@ -171,7 +172,7 @@ router.post('/forgot-password', async (req, res) => {
 	}
 })
 
-router.post('/verify-code', async (req, res) => {
+router.post('/verify-code', authLimiter, async (req, res) => {
 	const { email, code } = req.body;
 
 	const emailResult = validateEmail(email);
@@ -197,7 +198,7 @@ router.post('/verify-code', async (req, res) => {
 	}
 })
 
-router.post('/reset-password', async (req, res) => {
+router.post('/reset-password', authLimiter, async (req, res) => {
 	const { email, code, newPassword } = req.body;
 
 	if (email === undefined || code === undefined || newPassword === undefined) {

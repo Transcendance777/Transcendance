@@ -145,11 +145,12 @@ const createReview = async (req, res) => {
 		? sanitizeHtml(reviewText, { allowedTags: ['b', 'i', 'em', 'strong'], allowedAttributes: {} })
 		: null;
 
-		//insert into DB
+		//insert into DB (rating stocké sur l'échelle interne 1–10, comme /api/user/review)
+		const ratingInt = Math.round(rating * 2);
 		const newReview = await prisma.review.create({
 			data: {
 				reviewText: safeReviewText,
-				rating: rating,
+				rating: ratingInt,
 				// On connecte les relations via les IDs
 				userId: userId,
 				gameId: gameId
@@ -196,12 +197,14 @@ const updateReview = async (req, res) => {
 		? sanitizeHtml(reviewText, { allowedTags: ['b', 'i', 'em', 'strong'], allowedAttributes: {} })
 		: null;
 		
+		const ratingInt = Math.round(rating * 2);
+
 		const updatedReview = await prisma.review.update({
 			where: { id: id },
 			data: {
 			// On ne met à jour que les champs fournis (les autres restent inchangés)
 			...(reviewText && { reviewText: safeReviewText }),
-			...(rating && { rating }),
+			rating: ratingInt,
 			},
 		});
 
