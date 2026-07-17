@@ -438,6 +438,8 @@ Implemented by: mdodevsk.
 
 ### Implement WAF/ModSecurity + HashiCorp - Major (2pts)
 
+**Justification**: Some cybersecurity in a website is always good.
+
 ## 1. WAF / ModSecurity
 
 The WAF (Web Application Firewall) can either be embedded directly inside the Nginx container or deployed as a separate layer sitting between the Internet and Nginx. **The second architecture was chosen** for this project — a dedicated, standalone WAF container in front of Nginx.
