@@ -70,10 +70,13 @@ const InscriptionForm = () => {
 	}, [isLogin])
 
 	useEffect(() => {
-		const params = new URLSearchParams(window.location.search)
+		const fromHash = window.location.hash.startsWith('#')
+			? new URLSearchParams(window.location.hash.slice(1))
+			: null
+		const params = fromHash || new URLSearchParams(window.location.search)
 		const token = params.get('token')
 		const user = params.get('user')
-		const error = params.get('error')
+		const error = new URLSearchParams(window.location.search).get('error')
 
 		if (token && user) {
 			localStorage.setItem('token', token)

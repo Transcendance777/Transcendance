@@ -26,7 +26,10 @@ const HomePage = () => {
 	const [friendsActivity, setFriendsActivity] = useState([])
 
 	useEffect(() => {
-		const params = new URLSearchParams(window.location.search)
+		const fromHash = window.location.hash.startsWith('#')
+			? new URLSearchParams(window.location.hash.slice(1))
+			: null
+		const params = fromHash || new URLSearchParams(window.location.search)
 		const token = params.get('token')
 		const user = params.get('user')
 		if (token && user) {
