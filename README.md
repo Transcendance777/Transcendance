@@ -184,7 +184,7 @@ You can find more notes on the Database in /docs/notes/DEV_NOTES_DB_DANIYA.md
 # Team Information
 - **Product Owner** Rydom (rmiah) : Defines product vision and feature priorities, validates UX flows and acceptance criteria, and ensures deliverables match the project subject requirements.
 - **Project Manager** Daniya (dahmane) : Coordinates sprints and task distribution, maintains documentation and the README, and owns database design and Prisma schema decisions.
-- **Tech Lead** Mario (mdodevsk) : Owns overall architecture, Docker Compose stack, monitoring (Prometheus/Grafana), nginx reverse proxy, and CI/deployment workflows.
+- **Tech Lead** Mario (mdodevsk) : Owns overall architecture, Docker Compose stack, monitoring (Prometheus/Grafana), nginx reverse proxy.
 - **Developers** :
   - Yasser (yzeghari) : Cybersecurity — WAF/ModSecurity configuration, HashiCorp Vault bootstrap and secret management, TLS certificates, and security hardening.
   - Ugo (ufalzone) : Backend — Express API routes, authentication, Socket.IO chat, and IGDB integration.
